@@ -1,1 +1,8 @@
-
+#spring:
+#  profiles:
+#    active: dev
+server:
+  port: 3000
+  tomcat:
+    threads:
+      max: 500
