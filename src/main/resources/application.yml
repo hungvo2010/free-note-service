@@ -1,8 +1,11 @@
 spring:
   profiles:
-    active: dev
+    active: uat
 server:
   port: 3000
   tomcat:
     threads:
-      max: 500
+      max: 100
+
+kafka:
+  groupId: telco
