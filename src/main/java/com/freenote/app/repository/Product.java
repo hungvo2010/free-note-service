@@ -1,5 +1,7 @@
 package com.freenote.app.repository;
 
+import jakarta.persistence.Table;
+
 @Table
 public class Product {
     private String serviceId;
