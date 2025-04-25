@@ -1,4 +1,4 @@
-package com.freenote.app.server;
+package com.freenote.app.server.example;
 
 import java.io.IOException;
 import java.io.PrintWriter;
