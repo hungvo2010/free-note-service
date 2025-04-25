@@ -1,6 +1,8 @@
-package com.freenote.app.server.http;
+package com.freenote.app.server.parser.impl;
 
+import com.freenote.app.server.http.HttpUpgradeRequest;
 import com.freenote.app.server.http.exceptions.UpgradeParserException;
+import com.freenote.app.server.parser.HttpParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,8 +11,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
-public class HttpParser {
-    public static HttpUpgradeRequest parse(InputStream inputStream) {
+public class HttpParserImpl implements HttpParser {
+    public HttpUpgradeRequest parse(InputStream inputStream) {
         try (var reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             var requestBuilder = HttpUpgradeRequest.builder();
             var requestEndpoint = reader.readLine().split(" ");
