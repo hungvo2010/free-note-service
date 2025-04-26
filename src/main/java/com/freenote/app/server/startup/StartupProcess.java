@@ -6,8 +6,7 @@ import com.freenote.app.server.handler.impl.MockHandler;
 import java.util.Map;
 
 public class StartupProcess {
-    private static final Map<String, URIHandler> HANDLERS = Map.of(
+    public static final Map<String, URIHandler> HANDLERS = Map.of(
             "/example", new MockHandler()
     );
-    
 }

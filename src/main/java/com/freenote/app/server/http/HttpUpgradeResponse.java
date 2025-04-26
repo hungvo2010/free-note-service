@@ -1,8 +1,12 @@
 package com.freenote.app.server.http;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class HttpUpgradeResponse {
     //    HTTP/1.1 101 Switching Protocols
 //    Upgrade: websocket
@@ -14,13 +18,17 @@ public class HttpUpgradeResponse {
     private String upgrade;
     private String connection;
     private String secWebSocketAccept;
+    public static final HttpUpgradeResponse EMPTY_UPGRADE_RESPONSE = new HttpUpgradeResponse();
 
     @Override
     public String toString() {
-        String endpoint = String.join(" ", version, statusCode, statusText);
-        String upgrade = "Upgrade: " + this.upgrade;
-        String connection = "Connection: " + this.upgrade;
-        String secWebSocketAccept = "Sec-WebSocket-Accept: " + this.secWebSocketAccept;
-        return String.join("\n", endpoint, upgrade, connection, secWebSocketAccept);
+        String statusLine = String.join(" ", version, statusCode, statusText);
+        return String.join("\n",
+                statusLine,
+                "Upgrade: " + upgrade,
+                "Connection: " + connection,
+                "Sec-WebSocket-Accept: " + secWebSocketAccept,
+                "", "" // required to terminate HTTP headers
+        );
     }
 }

@@ -3,8 +3,9 @@ package com.freenote.app.server.auth.impl;
 import com.freenote.app.server.auth.AcceptHandshakeHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
 import com.freenote.app.server.http.HttpUpgradeResponse;
-import org.apache.commons.codec.digest.DigestUtils;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Base64;
 
 public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
@@ -12,27 +13,24 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
 
     @Override
     public HttpUpgradeResponse handle(HttpUpgradeRequest request) {
-        var handShakeKey = request.getSecWebSocketKey();
-        if (handShakeKey == null || handShakeKey.isEmpty()) {
+        try {
+            var handShakeKey = request.getSecWebSocketKey();
+            if (handShakeKey == null || handShakeKey.isEmpty()) {
+                return HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE;
+            }
+            var socketAccept = Base64.getEncoder().encodeToString(
+                    MessageDigest.getInstance("SHA-1").digest((handShakeKey + UNIVERSAL_WEBSOCKET_GUID).getBytes(StandardCharsets.UTF_8))
+            );
             return HttpUpgradeResponse.builder()
-                    .statusCode("")
-                    .statusText("")
-                    .version("")
-                    .upgrade("")
-                    .connection("")
-                    .secWebSocketAccept("")
+                    .statusCode("101")
+                    .statusText("Switching Protocols")
+                    .version("HTTP/1.1")
+                    .upgrade("websocket")
+                    .connection("Upgrade")
+                    .secWebSocketAccept(socketAccept)
                     .build();
+        } catch (Exception e) {
+            return new HttpUpgradeResponse();
         }
-        var socketAccept = Base64.getEncoder().encodeToString(
-                DigestUtils.sha1(handShakeKey + UNIVERSAL_WEBSOCKET_GUID)
-        );
-        return HttpUpgradeResponse.builder()
-                .statusCode("101")
-                .statusText("Switching Protocols")
-                .version("HTTP/1.1")
-                .upgrade("websocket")
-                .connection("Upgrade")
-                .secWebSocketAccept(socketAccept)
-                .build();
     }
 }
