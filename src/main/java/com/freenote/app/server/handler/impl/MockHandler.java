@@ -13,7 +13,6 @@ public class MockHandler implements URIHandler {
             while (reader.ready()) {
                 output.println(reader.readLine());
             }
-//            output.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
