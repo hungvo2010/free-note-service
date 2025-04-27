@@ -1,7 +1,6 @@
 package com.freenote.app.server.parser.impl;
 
 import com.freenote.app.server.http.HttpUpgradeRequest;
-import com.freenote.app.server.http.exceptions.UpgradeParserException;
 import com.freenote.app.server.parser.HttpParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,11 +32,9 @@ public class HttpParserImpl implements HttpParser {
             String line;
             while ((line = reader.readLine()) != null && !line.isEmpty()) {
                 int colonIndex = line.indexOf(":");
-                if (colonIndex > 0) {
-                    var name = line.substring(0, colonIndex).trim();
-                    var value = line.substring(colonIndex + 1).trim();
-                    headers.put(name, value);
-                }
+                var name = line.substring(0, colonIndex).trim();
+                var value = line.substring(colonIndex + 1).trim();
+                headers.put(name, value);
             }
 
             requestBuilder.secWebSocketKey(headers.get("Sec-WebSocket-Key"));
@@ -48,9 +45,9 @@ public class HttpParserImpl implements HttpParser {
             requestBuilder.origin(headers.get("Origin"));
 
             return requestBuilder.build();
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Failed to parse WebSocket upgrade request", e);
-            throw new UpgradeParserException(e);
+            return new HttpUpgradeRequest();
         }
     }
 }

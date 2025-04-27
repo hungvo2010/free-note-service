@@ -1,12 +1,11 @@
 package com.freenote.app.server.http;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 public class HttpUpgradeResponse {
     //    HTTP/1.1 101 Switching Protocols
 //    Upgrade: websocket
@@ -23,7 +22,7 @@ public class HttpUpgradeResponse {
     @Override
     public String toString() {
         String statusLine = String.join(" ", version, statusCode, statusText);
-        return String.join("\n",
+        return String.join("\r\n",
                 statusLine,
                 "Upgrade: " + upgrade,
                 "Connection: " + connection,

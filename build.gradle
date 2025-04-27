@@ -9,6 +9,7 @@ buildscript {
 
 plugins {
     id 'java'
+    id 'jacoco'
 }
 
 group = 'com.freenote'
@@ -22,6 +23,13 @@ repositories {
     mavenCentral()
 }
 
+test {
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+}
+
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.34'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
@@ -30,9 +38,17 @@ dependencies {
     implementation("commons-codec:commons-codec:1.18.0")
     implementation("org.apache.logging.log4j:log4j-core:2.24.3")
     implementation("org.apache.logging.log4j:log4j-api:2.24.3")
+    testImplementation("org.mockito:mockito-core:5.17.0")
 }
 
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.register('bootRun', JavaExec) {
+    group = 'application'
+    description = 'Run main class'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass.set('com.freenote.app.server.example.EchoServer')
 }
