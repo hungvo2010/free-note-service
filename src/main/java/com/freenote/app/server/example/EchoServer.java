@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 import static com.freenote.app.server.startup.StartupProcess.HANDLERS;
@@ -24,17 +25,7 @@ public class EchoServer {
         int port = args.length >= 1 ? Integer.parseInt(args[0]) : 8189;
         ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         try (var s = new ServerSocket(port)) {
-            while (true) {
-                var incommingSocket = s.accept();
-                executorService.submit(() -> {
-                    try {
-                        serve(incommingSocket);
-                    } catch (IOException e) {
-                        log.error("Failed to accept connection", e);
-                        throw new RuntimeException(e);
-                    }
-                });
-            }
+            run(s, executorService, new AtomicBoolean(true));
         }
     }
 
@@ -51,18 +42,27 @@ public class EchoServer {
 
         // Write response bytes (IMPORTANT: CRLF headers and blank line must be present)
         var responseBytes = response.toString().getBytes(StandardCharsets.UTF_8);
-        log.info("Received response: {}", response.toString());
 
         output.write(responseBytes);
         output.flush();
-//        log.info("socket state: {}", incomingSocket.isClosed());
-
-        // DO NOT close the socket here — the WebSocket communication continues over it
-        // Leave it open for later WebSocket frame communication
 
         while (!incomingSocket.isClosed()) {
             BiConsumer<InputStream, OutputStream> handler = HANDLERS.get(request.getPath())::handle;
             handler.accept(incomingSocket.getInputStream(), output);
+        }
+    }
+
+    public static void run(ServerSocket serverSocket, ExecutorService executorService, AtomicBoolean running) throws IOException {
+        while (running.get()) {
+            var incomingSocket = serverSocket.accept();
+            executorService.submit(() -> {
+                try {
+                    serve(incomingSocket);
+                } catch (IOException e) {
+                    log.error("Failed to accept connection", e);
+                    throw new RuntimeException(e);
+                }
+            });
         }
     }
 }
