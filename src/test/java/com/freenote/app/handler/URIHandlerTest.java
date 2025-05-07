@@ -20,6 +20,6 @@ public class URIHandlerTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         httpParser.handle(in, out);
         String result = out.toString();
-        assertEquals("hello\nworld\n", result);
+        assertEquals(String.join(System.lineSeparator(), new String[]{"hello", "world", ""}), result);
     }
 }

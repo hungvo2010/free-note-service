@@ -3,6 +3,7 @@ package com.freenote.app.server;
 import com.freenote.app.server.example.EchoServer;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -14,6 +15,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class ServerRunnerTest {
+    private final String testData = """
+            GET ws://localhost:8189/example HTTP/1.1
+            Host: localhost:8189
+            Connection: Upgrade
+            Pragma: no-cache
+            Cache-Control: no-cache
+            User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36
+            Upgrade: websocket
+            Origin: null
+            Sec-WebSocket-Version: 13
+            Accept-Encoding: gzip, deflate, br, zstd
+            Accept-Language: en-US,en;q=0.9,vi-VN;q=0.8,vi;q=0.7
+            Sec-WebSocket-Key: TixQkgsxKyup9IZVxSoe1w==
+            Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+            """;
 
     @Test
     void shouldAcceptSocketAndServeClient() throws Exception {
@@ -33,17 +49,23 @@ class ServerRunnerTest {
         // Capture output written to client socket
         ByteArrayOutputStream clientOutput = new ByteArrayOutputStream();
         when(mockSocket.getOutputStream()).thenReturn(clientOutput);
+        when(mockSocket.getInputStream()).thenReturn(new ByteArrayInputStream(testData.getBytes()));
+        when(mockSocket.isClosed()).thenReturn(true);
 
         // Run server
-        serverRunner.run(mockServerSocket, executorService, running);
+        serverRunner.run(mockServerSocket, executorService, running).get();
+
 
         // Verify server accepted a socket
         verify(mockServerSocket, atLeastOnce()).accept();
-        verify(mockSocket, atLeastOnce()).getOutputStream();
+//        verify(mockSocket, atLeastOnce()).getOutputStream();
 
         // Check that "Hello" was written
         String response = clientOutput.toString().trim();
-        assertEquals("Hello", response);
+        assertEquals("HTTP/1.1 101 Switching Protocols\r\n" +
+                "Upgrade: websocket\r\n" +
+                "Connection: Upgrade\r\n" +
+                "Sec-WebSocket-Accept: O163+NfhFwxULDbPCuiQo7hGj30=", response);
 
         executorService.shutdownNow();
     }

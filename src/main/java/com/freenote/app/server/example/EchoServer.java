@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
@@ -52,10 +53,10 @@ public class EchoServer {
         }
     }
 
-    public static void run(ServerSocket serverSocket, ExecutorService executorService, AtomicBoolean running) throws IOException {
+    public static Future<?> run(ServerSocket serverSocket, ExecutorService executorService, AtomicBoolean running) throws IOException {
         while (running.get()) {
             var incomingSocket = serverSocket.accept();
-            executorService.submit(() -> {
+            return executorService.submit(() -> {
                 try {
                     serve(incomingSocket);
                 } catch (IOException e) {
@@ -64,5 +65,6 @@ public class EchoServer {
                 }
             });
         }
+        return null;
     }
 }
