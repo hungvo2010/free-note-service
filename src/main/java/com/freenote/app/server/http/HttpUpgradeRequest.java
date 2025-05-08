@@ -31,12 +31,33 @@ public class HttpUpgradeRequest {
     private String origin;
     private String secWebSocketVersion;
     private String webSocketProtocol;
+    public static final HttpUpgradeRequest EMPTY_UPGRADE_REQUEST = new HttpUpgradeRequest();
 
     public static class HttpUpgradeRequestBuilder {
         public HttpUpgradeRequestBuilder uri(String uri) {
             this.uri = uri;
             this.path = URI.create(uri).getPath();
             return this;
+        }
+
+        public HttpUpgradeRequest build() {
+            if (secWebSocketKey == null || secWebSocketKey.isEmpty()
+                    || secWebSocketVersion == null || secWebSocketVersion.isEmpty()) {
+                return EMPTY_UPGRADE_REQUEST;
+            }
+            return new HttpUpgradeRequest(
+                    this.method,
+                    this.uri,
+                    this.path,
+                    this.version,
+                    this.host,
+                    this.upgrade,
+                    this.connection,
+                    this.secWebSocketKey,
+                    this.origin,
+                    this.secWebSocketVersion,
+                    this.webSocketProtocol
+            );
         }
     }
 }
