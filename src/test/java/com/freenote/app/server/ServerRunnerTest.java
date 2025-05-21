@@ -53,7 +53,7 @@ class ServerRunnerTest {
         when(mockSocket.isClosed()).thenReturn(true);
 
         // Run server
-        serverRunner.run(mockServerSocket, executorService, running).get();
+        serverRunner.run(mockServerSocket, executorService, running).get(0).get();
 
 
         // Verify server accepted a socket
