@@ -30,6 +30,7 @@ public class HttpUpgradeRequest {
     private String secWebSocketKey;
     private String origin;
     private String secWebSocketVersion;
+    private String secWebSocketExtensions;
     private String webSocketProtocol;
     public static final HttpUpgradeRequest EMPTY_UPGRADE_REQUEST = new HttpUpgradeRequest();
 
@@ -56,8 +57,25 @@ public class HttpUpgradeRequest {
                     this.secWebSocketKey,
                     this.origin,
                     this.secWebSocketVersion,
+                    this.secWebSocketExtensions,
                     this.webSocketProtocol
             );
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.join("\r\n",
+                method + " " + uri + " " + version,
+                "Host: " + host,
+                "Upgrade: " + upgrade,
+                "Connection: " + connection,
+                "Sec-WebSocket-Key: " + secWebSocketKey,
+                "Origin: " + origin,
+                "Sec-WebSocket-Version: " + secWebSocketVersion,
+                "Sec-WebSocket-Extensions: " + secWebSocketExtensions,
+                (webSocketProtocol != null ? "Sec-WebSocket-Protocol: " + webSocketProtocol : ""),
+                "", "" // required to terminate HTTP headers
+        );
     }
 }

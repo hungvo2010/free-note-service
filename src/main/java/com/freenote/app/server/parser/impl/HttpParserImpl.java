@@ -37,8 +37,11 @@ public class HttpParserImpl implements HttpParser {
                 headers.put(name, value);
             }
 
+            log.info(headers.get("Sec-WebSocket-Extensions"));
+
             requestBuilder.secWebSocketKey(headers.get("Sec-WebSocket-Key"));
             requestBuilder.secWebSocketVersion(headers.get("Sec-WebSocket-Version"));
+            requestBuilder.secWebSocketExtensions(headers.get("Sec-WebSocket-Extensions"));
             requestBuilder.upgrade(headers.get("Upgrade"));
             requestBuilder.connection(headers.get("Connection"));
             requestBuilder.host(headers.get("Host"));

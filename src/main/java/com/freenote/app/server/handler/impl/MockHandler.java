@@ -1,12 +1,18 @@
 package com.freenote.app.server.handler.impl;
 
-import com.freenote.app.server.frames.BaseFrame;
+import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.handler.URIHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.BitSet;
+
+import static com.freenote.app.server.frames.FrameFactory.createWebSocketFrame;
 
 public class MockHandler implements URIHandler {
     private static final Logger log = LogManager.getLogger(MockHandler.class);
@@ -16,20 +22,66 @@ public class MockHandler implements URIHandler {
         try {
             var reader = new BufferedReader(new InputStreamReader(inputStream));
             while (reader.ready()) {
-                byte[] data = new byte[1014];
-                inputStream.read(data);
-                var bitset = BitSet.valueOf(data);
-                for (int i = 0; i < 16; i++) {
-                    System.out.println(bitset.get(i));
-                }
-                log.info("Reading from input stream: {}", data);
-                var sampleFrame = new BaseFrame(data);
-                ObjectOutput objectOutput = new ObjectOutputStream(outputStream);
-                sampleFrame.writeExternal(objectOutput);
-                objectOutput.flush();
+                byte[] data = new byte[50];
+                var byteNumber = inputStream.read(data);
+                log.info("byteNumber: {}", byteNumber);
+                var bitset = BitSet.valueOf(toLittleEndian(Arrays.copyOfRange(data, 0, byteNumber + 1)));
+                log.info("mask bit: {}", bitset.get(8));
+                log.info("opcode: {}", bitset.get(4, 8).toString());
+                log.info("Reading from input stream: {}", toLittleEndian(Arrays.copyOfRange(data, 0, byteNumber + 1)));
+                outputStream.write(createWebSocketFrame("ABC".getBytes(StandardCharsets.UTF_8), FrameType.TEXT));
+                outputStream.flush();
             }
         } catch (IOException e) {
             log.error("Error handling input stream", e);
         }
+    }
+
+    public static byte[] toLittleEndian(int value) {
+        ByteBuffer buffer = ByteBuffer.allocate(4); // 4 bytes for an integer
+        buffer.order(ByteOrder.LITTLE_ENDIAN); // Set byte order to little-endian
+        buffer.putInt(value);
+        return buffer.array();
+    }
+
+
+    public static byte[] bitSetToByteArray(BitSet bitSet) {
+        log.info("bitSet: {}", bitSet);
+        log.info("opcode: {}", bitSet.get(4, 8).toString());
+        var littleEndians = bitSet.toByteArray();
+        log.info("Little Endian: {}", Arrays.toString(littleEndians));
+        var bigEndians = littleEndianToBigEndian(littleEndians);
+        log.info("Big Endian: {}", Arrays.toString(bigEndians));
+        return bitSetToByteArrayExact(bitSet, 24);
+    }
+
+    public static byte[] bitSetToByteArrayExact(BitSet bitSet, int bitLength) {
+        int byteLength = (bitLength + 7) / 8;
+        byte[] bytes = new byte[byteLength];
+        for (int i = 0; i < bitLength; i++) {
+            if (bitSet.get(i)) {
+                bytes[i / 8] |= 1 << (7 - (i % 8)); // big-endian bit placement
+            }
+        }
+        return bytes;
+    }
+
+    public static byte[] toLittleEndian(byte[] bigEndianBytes) {
+        byte[] littleEndianBytes = new byte[bigEndianBytes.length];
+        for (int i = 0; i < bigEndianBytes.length; i++) {
+            littleEndianBytes[i] = bigEndianBytes[bigEndianBytes.length - 1 - i];
+        }
+        return littleEndianBytes;
+    }
+
+    public static byte[] littleEndianToBigEndian(byte[] littleEndianBytes) {
+        int length = littleEndianBytes.length;
+
+        // Reverse the little-endian array to get big-endian
+        byte[] bigEndian = new byte[length];
+        for (int i = 0; i < length; i++) {
+            bigEndian[i] = littleEndianBytes[length - 1 - i];
+        }
+        return bigEndian;
     }
 }

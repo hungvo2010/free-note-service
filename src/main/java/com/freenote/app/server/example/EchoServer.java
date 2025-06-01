@@ -39,6 +39,8 @@ public class EchoServer {
         var output = incomingSocket.getOutputStream();
         var request = new HttpParserImpl().parse(input);
 
+        log.info("Received request: {}\n", request);
+
         var response = new AcceptHandshakeImpl().handle(request);
         var responseBytes = response.toString().getBytes(StandardCharsets.UTF_8);
         output.write(responseBytes);
