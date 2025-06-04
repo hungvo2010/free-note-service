@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>WebSocket Test Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        input,
+        button,
+        textarea {
+            margin-top: 10px;
+            display: block;
+            width: 100%;
+        }
+        #log {
+            height: 200px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+<h2>WebSocket Test Client</h2>
+
+<label>WebSocket Server URL:</label>
+<input type="text" id="wsUrl" value="ws://localhost:8189/example" />
+
+<button onclick="connectWebSocket()">Connect</button>
+
+<label>Message to Send:</label>
+<input type="text" id="message" placeholder="Type a message" />
+
+<button onclick="sendMessage()">Send Message</button>
+
+<h3>Log:</h3>
+<div id="log"></div>
+
+<script>
+    let socket
+
+    function log(message) {
+        const logDiv = document.getElementById("log")
+        logDiv.innerHTML += `<div>> ${message}</div>`
+        logDiv.scrollTop = logDiv.scrollHeight
+    }
+
+    function connectWebSocket() {
+        const url = document.getElementById("wsUrl").value
+        socket = new WebSocket(url)
+
+        socket.onopen = () => log("✅ Connected")
+        socket.onmessage = (event) => log(`📨 Received: ${event.data}`)
+        socket.onerror = (error) => {
+            console.error("WebSocket error:", error)
+            log(`❌ Error: ${error}`)
+        }
+        socket.onclose = () => log("🔌 Disconnected")
+    }
+
+    function sendMessage() {
+        const message = document.getElementById("message").value
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(message)
+            log(`📤 Sent: ${message}`)
+        } else {
+            log("⚠️ WebSocket is not connected.")
+        }
+    }
+</script>
+</body>
+</html>
