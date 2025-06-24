@@ -25,9 +25,9 @@ public class MockHandler implements URIHandler {
                 byte[] data = new byte[50];
                 var byteNumber = inputStream.read(data);
                 log.info("byteNumber: {}", byteNumber);
-                var bitset = BitSet.valueOf(toLittleEndian(Arrays.copyOfRange(data, 0, byteNumber + 1)));
+                var bitset = BitSet.valueOf((Arrays.copyOfRange(data, 0, byteNumber + 1)));
                 log.info("mask bit: {}", bitset.get(8));
-                log.info("opcode: {}", bitset.get(4, 8).toString());
+                log.info("opcode: {}", data[0] & 0x0F); // Extracting the opcode from the first byte
                 log.info("Reading from input stream: {}", toLittleEndian(Arrays.copyOfRange(data, 0, byteNumber + 1)));
                 outputStream.write(createWebSocketFrame("ABC".getBytes(StandardCharsets.UTF_8), FrameType.TEXT));
                 outputStream.flush();

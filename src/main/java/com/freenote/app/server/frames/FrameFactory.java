@@ -1,5 +1,8 @@
 package com.freenote.app.server.frames;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class FrameFactory {
     public static byte[] createWebSocketFrame(byte[] payload, FrameType frameType) {
         byte[] frame = new byte[payload.length + 2];
