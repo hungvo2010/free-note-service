@@ -1,4 +1,4 @@
-package com.freenote.app.server.frames;
+package com.freenote.app.server.test;
 
 import java.util.BitSet;
 

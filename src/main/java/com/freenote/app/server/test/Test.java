@@ -1,4 +1,4 @@
-package com.freenote.app.server.frames;
+package com.freenote.app.server.test;
 
 public class Test {
     public static void main(String[] args) {

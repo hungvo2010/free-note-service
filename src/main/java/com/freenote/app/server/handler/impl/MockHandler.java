@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.BitSet;
 
-import static com.freenote.app.server.frames.FrameFactory.createWebSocketFrame;
+import static com.freenote.app.server.frames.FrameFactory.createServerFrame;
 
 public class MockHandler implements URIHandler {
     private static final Logger log = LogManager.getLogger(MockHandler.class);
@@ -25,18 +25,31 @@ public class MockHandler implements URIHandler {
                 byte[] data = new byte[50];
                 var byteNumber = inputStream.read(data);
                 log.info("byteNumber: {}", byteNumber);
-                var bitset = BitSet.valueOf((Arrays.copyOfRange(data, 0, byteNumber + 1)));
-                log.info("mask bit: {}", bitset.get(8));
                 log.info("opcode: {}", data[0] & 0x0F); // Extracting the opcode from the first byte
                 log.info("Reading from input stream: {}", data);
-                log.info("Frame masked: {}", (data[1] & 0xFF) >>> 7); // Checking if the frame is masked
-                log.info("Payload length: {}", data[1] & 0x7F); // Extracting the payload length from the second byte
-                outputStream.write(createWebSocketFrame("ABC".getBytes(StandardCharsets.UTF_8), FrameType.TEXT));
+                log.info("Frame masked: {}", (data[1] & 0xFF) >>> 7);
+                log.info("Payload length: {}", data[1] & 0x7F);
+                var payloadLength = data[1] & 0x7F;
+                log.info("Masking key: {}", Arrays.toString(Arrays.copyOfRange(data, 2, 6)));
+                log.info("Payload: {}", Arrays.toString(maskPayload(Arrays.copyOfRange(data, 6, 6 + payloadLength), Arrays.copyOfRange(data, 2, 6))));
+                log.info("Payload in text: {}", new String(maskPayload(Arrays.copyOfRange(data, 6, 6 + payloadLength), Arrays.copyOfRange(data, 2, 6)), StandardCharsets.UTF_8));
+                outputStream.write(createServerFrame("chúng ta là một gia đình".getBytes(StandardCharsets.UTF_8), FrameType.TEXT));
                 outputStream.flush();
             }
         } catch (IOException e) {
             log.error("Error handling input stream", e);
         }
+    }
+
+    public static byte[] maskPayload(byte[] payload, byte[] maskingKey) {
+        if (maskingKey.length != 4) {
+            throw new IllegalArgumentException("Masking key must be 4 bytes long");
+        }
+        byte[] result = new byte[payload.length];
+        for (int i = 0; i < payload.length; i++) {
+            result[i] = (byte) (payload[i] ^ maskingKey[i % 4]); // XOR each byte with the masking key
+        }
+        return result;
     }
 
     public static byte[] toLittleEndian(int value) {
