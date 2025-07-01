@@ -26,12 +26,12 @@
 <body>
 <h2>WebSocket Test Client</h2>
 
-<label>WebSocket Server URL:</label>
+<label for="wsUrl">WebSocket Server URL:</label>
 <input type="text" id="wsUrl" value="ws://localhost:8189/example" />
 
 <button onclick="connectWebSocket()">Connect</button>
 
-<label>Message to Send:</label>
+<label for="message">Message to Send:</label>
 <input type="text" id="message" placeholder="Type a message" />
 
 <button onclick="sendMessage()">Send Message</button>
@@ -62,7 +62,7 @@
     }
 
     function sendMessage() {
-        const message = document.getElementById("message").value
+        let message = document.getElementById("message").value
         if (socket && socket.readyState === WebSocket.OPEN) {
             socket.send(message)
             log(`📤 Sent: ${message}`)
