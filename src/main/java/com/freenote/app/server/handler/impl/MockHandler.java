@@ -1,6 +1,6 @@
 package com.freenote.app.server.handler.impl;
 
-import com.freenote.app.server.frames.TextFrame;
+import com.freenote.app.server.frames.PingFrame;
 import com.freenote.app.server.handler.URIHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,13 +37,13 @@ public class MockHandler implements URIHandler {
                 var startPayload = startMaskingKey + 4;
                 log.info("Start masking key: {}", startMaskingKey);
                 log.info("Masking key: {}", maskingKey);
-//                log.info("Payload: {}", Arrays.toString(maskPayload(Arrays.copyOfRange(data, startPayload, startPayload + payloadLength), maskingKey)));
+                log.info("Payload: {}", Arrays.toString(maskPayload(Arrays.copyOfRange(data, startPayload, startPayload + payloadLength), maskingKey)));
                 log.info("Payload in text: {}", new String(
                         maskPayload(Arrays.copyOfRange(data, startPayload, startPayload + payloadLength), maskingKey), StandardCharsets.UTF_8));
                 var objectOutputStream = new NoHeaderObjectOutputStream(outputStream);
                 log.info("Writing to output stream: {}", "");
-                objectOutputStream.writeObject(new TextFrame("chúng ta là một gia đình".getBytes(StandardCharsets.UTF_8)));
-//                objectOutputStream.writeObject(new PingFrame());
+//                objectOutputStream.writeObject(new TextFrame("chúng ta là một gia đình".getBytes(StandardCharsets.UTF_8)));
+                objectOutputStream.writeObject(new PingFrame());
 //                outputStream.write(createServerFrame("chúng ta là một gia đình".getBytes(StandardCharsets.UTF_8), FrameType.TEXT));
 //                outputStream.flush();
                 objectOutputStream.flush();
