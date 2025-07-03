@@ -32,4 +32,16 @@ public class FrameUtil {
         }
         return result;
     }
+
+
+    public static byte[] maskPayload(byte[] payload, byte[] maskingKey) {
+        if (maskingKey.length != 4) {
+            throw new IllegalArgumentException("Masking key must be 4 bytes long");
+        }
+        byte[] result = new byte[payload.length];
+        for (int i = 0; i < payload.length; i++) {
+            result[i] = (byte) (payload[i] ^ maskingKey[i % 4]); // XOR each byte with the masking key
+        }
+        return result;
+    }
 }

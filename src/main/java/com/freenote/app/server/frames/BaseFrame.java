@@ -1,10 +1,13 @@
 package com.freenote.app.server.frames;
 
+import lombok.Getter;
+
 import java.io.*;
 import java.util.Arrays;
 
 import static com.freenote.app.server.frames.FrameUtil.parsePayloadLength;
 
+@Getter
 public class BaseFrame implements Serializable, Externalizable {
     @Serial
     private static final long serialVersionUID = -2140098214102580912L;
@@ -27,6 +30,13 @@ public class BaseFrame implements Serializable, Externalizable {
     public BaseFrame(short opcode) {
         this.opcode = opcode;
         this.maskingKeyStart = 2;
+    }
+
+    public BaseFrame(short opcode, byte[] payloadData) {
+        this.opcode = opcode;
+        this.payloadData = payloadData;
+        this.payloadLength = payloadData.length;
+        this.maskingKeyStart = payloadData.length < 126 ? 2 : (payloadData.length < 65536 ? 4 : 10);
     }
 
     public BaseFrame(byte[] bytes) {

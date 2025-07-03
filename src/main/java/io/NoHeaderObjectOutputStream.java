@@ -1,4 +1,4 @@
-package com.freenote.app.server.handler.impl;
+package io;
 
 import java.io.Externalizable;
 import java.io.IOException;
