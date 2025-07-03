@@ -72,5 +72,6 @@ public class BaseFrame implements Serializable, Externalizable {
 
     @Override
     public void readExternal(ObjectInput in) throws IOException {
+        // TODO: Implement readExternal method if needed
     }
 }
