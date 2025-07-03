@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 
 public class PongFrame extends BaseFrame {
-    private final FrameType opCode = FrameType.PONG;
+    public PongFrame() {
+        super(FrameType.PONG.getHexValue());
+    }
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-        var outputBytes = FrameFactory.createServerFrame(new byte[0], opCode);
+        var outputBytes = FrameFactory.createServerFrame(new byte[0], FrameType.PONG);
         out.write(outputBytes);
     }
 }

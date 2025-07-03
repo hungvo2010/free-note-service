@@ -1,5 +1,6 @@
 package com.freenote.app.server.handler.impl;
 
+
 import com.freenote.app.server.frames.PingFrame;
 import com.freenote.app.server.handler.URIHandler;
 import org.apache.logging.log4j.LogManager;
@@ -23,7 +24,6 @@ public class MockHandler implements URIHandler {
                 var byteNumber = inputStream.read(data);
                 log.info("byteNumber: {}", byteNumber);
                 log.info("opcode: {}", data[0] & 0x0F); // Extracting the opcode from the first byte
-//                log.info("Reading from input stream: {}", data);
                 log.info("Frame masked: {}", (data[1] & 0xFF) >>> 7);
                 log.info("Payload length: {}, {}", data[1] & 0x7F,
                         (data[1] & 0x7F) == 126 ?
