@@ -5,8 +5,6 @@ import lombok.Getter;
 import java.io.*;
 import java.util.Arrays;
 
-import static com.freenote.app.server.frames.FrameUtil.parsePayloadLength;
-
 @Getter
 public class BaseFrame implements Serializable, Externalizable {
     @Serial
@@ -46,10 +44,10 @@ public class BaseFrame implements Serializable, Externalizable {
         rsv3 = ((bytes[0] & 0x10) >> 4) == 1; // 0001 0000
         opcode = (short) (bytes[0] & 0x0F);
         masked = ((bytes[1] & 0x80) >> 7) == 1; // 1000 0000
-        payloadLength = parsePayloadLength(bytes);
+        payloadLength = FrameUtil.parsePayloadLength(bytes);
         maskingKeyStart = 2 + ((bytes[1] & 0x7F) < 126 ? 0 : ((bytes[1] & 0x7F) == 126 ? 4 : 10));
         maskingKey = masked ? Arrays.copyOfRange(bytes, maskingKeyStart, maskingKeyStart + 4) : new byte[0]; // Masking key is present if masked is true
-        payloadData = Arrays.copyOfRange(bytes, maskingKeyStart + 4, bytes.length);
+        payloadData = Arrays.copyOfRange(bytes, maskingKeyStart + maskingKey.length, bytes.length);
         extensionData = new byte[0];
         applicationData = bytes;
     }

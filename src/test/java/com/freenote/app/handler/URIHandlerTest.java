@@ -12,14 +12,14 @@ import java.io.InputStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class URIHandlerTest {
-    private final URIHandler httpParser = new MockHandler();
+    private final URIHandler mockURIHandler = new MockHandler();
 
     @Test
     public void givenInputStreamThenWriteToOutputStream() throws IOException {
-        InputStream in = new ByteArrayInputStream("hello\nworld\n".getBytes());
+        InputStream in = new ByteArrayInputStream("hello world".getBytes());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        httpParser.handle(in, out);
+        mockURIHandler.handle(in, out);
         String result = out.toString();
-        assertEquals(String.join(System.lineSeparator(), new String[]{"hello", "world", ""}), result);
+        assertEquals("world", result);
     }
 }

@@ -20,6 +20,9 @@ public class AcceptHandshakeHandlerTest {
     void testHandle_WithValidSecWebSocketKey() throws Exception {
         var request = mock(HttpUpgradeRequest.class);
         when(request.getSecWebSocketKey()).thenReturn("test-key");
+        when(request.getOrigin()).thenReturn("http://localhost:8082");
+        when(request.getSecWebSocketExtensions()).thenReturn("permessage-deflate");
+        when(request.getSecWebSocketVersion()).thenReturn("13");
 
         var expectedAccept = Base64.getEncoder().encodeToString(
                 MessageDigest.getInstance("SHA-1")

@@ -2,7 +2,6 @@ package com.freenote.app.server.handler.impl;
 
 
 import com.freenote.app.server.frames.BaseFrame;
-import com.freenote.app.server.frames.TextFrame;
 import com.freenote.app.server.handler.URIHandler;
 import io.NoHeaderObjectOutputStream;
 import org.apache.logging.log4j.LogManager;
@@ -45,7 +44,7 @@ public class MockHandler implements URIHandler {
 
                 var objectOutputStream = new NoHeaderObjectOutputStream(outputStream);
                 log.info("Writing to output stream" + " with payload: {}", new String(payload, StandardCharsets.UTF_8));
-                objectOutputStream.writeObject(new TextFrame("from your websocket".getBytes(StandardCharsets.UTF_8)));
+                objectOutputStream.write(payload);
                 objectOutputStream.flush();
             }
         } catch (IOException e) {
