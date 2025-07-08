@@ -74,7 +74,7 @@ public class HttpUpgradeRequest {
                 "Origin: " + origin,
                 "Sec-WebSocket-Version: " + secWebSocketVersion,
                 "Sec-WebSocket-Extensions: " + secWebSocketExtensions,
-                (webSocketProtocol != null ? "Sec-WebSocket-Protocol: " + webSocketProtocol : ""),
+                "Sec-WebSocket-Protocol: " + webSocketProtocol,
                 "", "" // required to terminate HTTP headers
         );
     }

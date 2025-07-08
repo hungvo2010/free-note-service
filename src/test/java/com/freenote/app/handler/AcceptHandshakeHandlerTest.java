@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AcceptHandshakeHandlerTest {
+class AcceptHandshakeHandlerTest {
     private final AcceptHandshakeImpl acceptHandshake = new AcceptHandshakeImpl();
 
     @Test
@@ -41,12 +41,74 @@ public class AcceptHandshakeHandlerTest {
     }
 
     @Test
-    void testHandle_WithNullSecWebSocketKey() {
-        var request = mock(HttpUpgradeRequest.class);
-        when(request.getSecWebSocketKey()).thenReturn(null);
+    void testHandle_InvalidOrigin_ShouldReturnEmptyResponse() {
+        HttpUpgradeRequest request = mock(HttpUpgradeRequest.class);
+        when(request.getOrigin()).thenReturn("http://malicious.com");
+        when(request.getSecWebSocketKey()).thenReturn("key");
+        when(request.getSecWebSocketExtensions()).thenReturn("ext");
+        when(request.getSecWebSocketVersion()).thenReturn("13");
 
         var response = acceptHandshake.handle(request);
 
+        assertSame(HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE, response);
+    }
+
+    @Test
+    void testHandle_WithNullSecWebSocketKey() {
+        var request = mock(HttpUpgradeRequest.class);
+        when(request.getSecWebSocketKey()).thenReturn(null);
+        when(request.getSecWebSocketExtensions()).thenReturn(null);
+        when(request.getSecWebSocketVersion()).thenReturn(null);
+
+        var response = acceptHandshake.handle(request);
+
+        assertSame(HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE, response);
+    }
+
+    @Test
+    void testHandle_MissingWebSocketKey_ShouldReturnEmptyResponse() {
+        // Arrange
+        HttpUpgradeRequest request = mock(HttpUpgradeRequest.class);
+        when(request.getOrigin()).thenReturn("http://localhost:3000"); // Allowed origin
+        when(request.getSecWebSocketKey()).thenReturn(null);           // Missing key
+        when(request.getSecWebSocketExtensions()).thenReturn("ext");
+        when(request.getSecWebSocketVersion()).thenReturn("13");
+
+        // Act
+        HttpUpgradeResponse response = acceptHandshake.handle(request);
+
+        // Assert
+        assertSame(HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE, response);
+    }
+
+    @Test
+    void testHandle_MissingWebSocketExtensions_ShouldReturnEmptyResponse() {
+        // Arrange
+        HttpUpgradeRequest request = mock(HttpUpgradeRequest.class);
+        when(request.getOrigin()).thenReturn("http://localhost:3000"); // Valid origin
+        when(request.getSecWebSocketKey()).thenReturn("key");
+        when(request.getSecWebSocketExtensions()).thenReturn(null);    // Missing extensions
+        when(request.getSecWebSocketVersion()).thenReturn("13");
+
+        // Act
+        HttpUpgradeResponse response = acceptHandshake.handle(request);
+
+        assertSame(HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE, response);
+    }
+
+    @Test
+    void testHandle_MissingWebSocketVersion_ShouldReturnEmptyResponse() {
+        // Arrange
+        HttpUpgradeRequest request = mock(HttpUpgradeRequest.class);
+        when(request.getOrigin()).thenReturn("http://localhost:3000"); // Valid origin
+        when(request.getSecWebSocketKey()).thenReturn("key");
+        when(request.getSecWebSocketExtensions()).thenReturn("ext");
+        when(request.getSecWebSocketVersion()).thenReturn(null);       // Missing version
+
+        // Act
+        HttpUpgradeResponse response = acceptHandshake.handle(request);
+
+        // Assert
         assertSame(HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE, response);
     }
 
@@ -64,6 +126,9 @@ public class AcceptHandshakeHandlerTest {
     void testHandle_WithException() {
         var request = mock(HttpUpgradeRequest.class);
         when(request.getSecWebSocketKey()).thenThrow(new RuntimeException("fail"));
+        when(request.getOrigin()).thenReturn("http://localhost:8082");
+        when(request.getSecWebSocketExtensions()).thenReturn("permessage-deflate");
+        when(request.getSecWebSocketVersion()).thenReturn("13");
 
         var response = acceptHandshake.handle(request);
 

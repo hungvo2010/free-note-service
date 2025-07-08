@@ -45,6 +45,8 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
         if (!ALLOWED_ORIGINS.contains(request.getOrigin())) {
             return false;
         }
-        return Objects.nonNull(request.getSecWebSocketKey()) && Objects.nonNull(request.getSecWebSocketExtensions()) && Objects.nonNull(request.getSecWebSocketVersion());
+        return !(Objects.isNull(request.getSecWebSocketKey())
+                || Objects.isNull(request.getSecWebSocketExtensions())
+                || Objects.isNull(request.getSecWebSocketVersion()));
     }
 }

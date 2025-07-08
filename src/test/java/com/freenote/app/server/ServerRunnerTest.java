@@ -15,21 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class ServerRunnerTest {
-    private final String testData = """
-            GET ws://localhost:8189/example HTTP/1.1
-            Host: localhost:8189
-            Connection: Upgrade
-            Pragma: no-cache
-            Cache-Control: no-cache
-            User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36
-            Upgrade: websocket
-            Origin: null
-            Sec-WebSocket-Version: 13
-            Accept-Encoding: gzip, deflate, br, zstd
-            Accept-Language: en-US,en;q=0.9,vi-VN;q=0.8,vi;q=0.7
-            Sec-WebSocket-Key: TixQkgsxKyup9IZVxSoe1w==
-            Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
-            """;
 
     @Test
     void shouldAcceptSocketAndServeClient() throws Exception {
@@ -49,6 +34,21 @@ class ServerRunnerTest {
         // Capture output written to client socket
         ByteArrayOutputStream clientOutput = new ByteArrayOutputStream();
         when(mockSocket.getOutputStream()).thenReturn(clientOutput);
+        String testData = """
+                GET ws://localhost:8189/example HTTP/1.1
+                Host: localhost:8189
+                Connection: Upgrade
+                Pragma: no-cache
+                Cache-Control: no-cache
+                User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36
+                Upgrade: websocket
+                Origin: http://localhost:8082
+                Sec-WebSocket-Version: 13
+                Accept-Encoding: gzip, deflate, br, zstd
+                Accept-Language: en-US,en;q=0.9,vi-VN;q=0.8,vi;q=0.7
+                Sec-WebSocket-Key: TixQkgsxKyup9IZVxSoe1w==
+                Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+                """;
         when(mockSocket.getInputStream()).thenReturn(new ByteArrayInputStream(testData.getBytes()));
         when(mockSocket.isClosed()).thenReturn(true);
 

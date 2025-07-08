@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class FrameFactoryTest {
+class FrameFactoryTest {
     @Test
-    public void givenFrameTypeThenCreateFrame() {
+    void givenFrameTypeThenCreateFrame() {
         FrameType frameType = FrameType.TEXT;
         byte[] frameBytes = FrameFactory.createServerFrame("Hello World".getBytes(), frameType);
         assertEquals(frameBytes[0], frameType.getHexValue());

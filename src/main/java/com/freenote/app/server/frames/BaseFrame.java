@@ -14,15 +14,16 @@ public class BaseFrame implements Serializable, Externalizable {
     private boolean rsv2 = false;
     private boolean rsv3 = false;
     private int maskingKeyStart = 0;
-    private short opcode; // Using BitSet to represent opcode
-    private boolean masked = false;
+    protected short opcode;
+    protected boolean masked = false;
     private long payloadLength;
-    private byte[] maskingKey;
+    protected byte[] maskingKey;
     private byte[] payloadData;
     private byte[] extensionData;
     private byte[] applicationData;
 
     public BaseFrame() {
+        this.maskingKeyStart = 2;
     }
 
     public BaseFrame(short opcode) {
@@ -74,7 +75,7 @@ public class BaseFrame implements Serializable, Externalizable {
             out.write(maskingKey);
         }
         if (payloadData != null && payloadData.length > 0) {
-            out.write(payloadData);
+            out.write(masked ? FrameUtil.maskPayload(payloadData, maskingKey) : payloadData);
         }
     }
 

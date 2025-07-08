@@ -1,4 +1,4 @@
-package com.freenote.app.server.test;
+package com.freenote.app;
 
 public class Test {
     public static void main(String[] args) {

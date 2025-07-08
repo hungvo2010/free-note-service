@@ -9,11 +9,26 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class HttpParserTest {
+class HttpParserTest {
     private final HttpParser httpParser = new HttpParserImpl();
 
     @Test
-    public void givenRawUpgradeRequest_whenParse_thenOk() throws IOException {
+    void givenRawUpgradeRequest_whenParse_thenOk() throws IOException {
+        InputStream targetStream = getInputStream();
+        var request = httpParser.parse(targetStream);
+        Assertions.assertEquals("HTTP/1.1", request.getVersion());
+        Assertions.assertEquals("GET", request.getMethod());
+        Assertions.assertEquals("ws://localhost:8189/example", request.getUri());
+        Assertions.assertEquals("/example", request.getPath());
+        Assertions.assertEquals("localhost:8189", request.getHost());
+        Assertions.assertEquals("Upgrade", request.getConnection());
+        Assertions.assertEquals("websocket", request.getUpgrade());
+        Assertions.assertEquals("null", request.getOrigin());
+        Assertions.assertEquals("13", request.getSecWebSocketVersion());
+        Assertions.assertEquals("TixQkgsxKyup9IZVxSoe1w==", request.getSecWebSocketKey());
+    }
+
+    private static InputStream getInputStream() {
         String initialString = """
                 GET ws://localhost:8189/example HTTP/1.1
                 Host: localhost:8189
@@ -29,22 +44,11 @@ public class HttpParserTest {
                 Sec-WebSocket-Key: TixQkgsxKyup9IZVxSoe1w==
                 Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
                 """;
-        InputStream targetStream = new ByteArrayInputStream(initialString.getBytes());
-        var request = httpParser.parse(targetStream);
-        Assertions.assertEquals("HTTP/1.1", request.getVersion());
-        Assertions.assertEquals("GET", request.getMethod());
-        Assertions.assertEquals("ws://localhost:8189/example", request.getUri());
-        Assertions.assertEquals("/example", request.getPath());
-        Assertions.assertEquals("localhost:8189", request.getHost());
-        Assertions.assertEquals("Upgrade", request.getConnection());
-        Assertions.assertEquals("websocket", request.getUpgrade());
-        Assertions.assertEquals("null", request.getOrigin());
-        Assertions.assertEquals("13", request.getSecWebSocketVersion());
-        Assertions.assertEquals("TixQkgsxKyup9IZVxSoe1w==", request.getSecWebSocketKey());
+        return new ByteArrayInputStream(initialString.getBytes());
     }
 
     @Test
-    public void givenInvalidHttpRequest_whenParse_thenOk() throws IOException {
+    void givenInvalidHttpRequest_whenParse_thenOk() throws IOException {
         String initialString = "";
         InputStream targetStream = new ByteArrayInputStream(initialString.getBytes());
         var request = httpParser.parse(targetStream);

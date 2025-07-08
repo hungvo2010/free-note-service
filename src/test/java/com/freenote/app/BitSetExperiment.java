@@ -1,6 +1,10 @@
-package com.freenote.app.server.test;
+package com.freenote.app;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.BitSet;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BitSetExperiment {
     public static void main(String[] args) {
@@ -22,5 +26,25 @@ public class BitSetExperiment {
         bs1 = (BitSet) bs0.clone();
         System.out.println("Length,Size bs0: " + bs0.length() + " , " + bs0.size());
         System.out.println("Length,Size bs1: " + bs1.length() + " , " + bs1.size());
+    }
+
+    @Test
+    void testBitSet() {
+        BitSet bs0 = new BitSet();
+        assertEquals(0, bs0.length());
+        assertEquals(64, bs0.size());
+        bs0.set(15);
+        assertEquals(16, bs0.length());
+        bs0.set(63);
+        assertEquals(64, bs0.length());
+        bs0.set(86);
+        assertEquals(87, bs0.length());
+        assertEquals(128, bs0.size());
+        bs0.clear(86);
+        assertEquals(64, bs0.length());
+        assertEquals(128, bs0.size());
+        bs0.clear(63);
+        assertEquals(16, bs0.length());
+        assertEquals(128, bs0.size());
     }
 }
