@@ -20,4 +20,14 @@ public enum FrameType {
         this.opCode = opcode;
         this.hexValue = hexValue;
     }
+
+    public static FrameType fromHexValue(short opcode) {
+        var allFrames = FrameType.values();
+        for (FrameType frameType : allFrames) {
+            if (frameType.getOpCode() == opcode) {
+                return frameType;
+            }
+        }
+        return FrameType.TEXT;
+    }
 }

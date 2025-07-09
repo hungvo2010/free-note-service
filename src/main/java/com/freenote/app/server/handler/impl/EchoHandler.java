@@ -2,7 +2,10 @@ package com.freenote.app.server.handler.impl;
 
 
 import com.freenote.app.server.frames.BaseFrame;
+import com.freenote.app.server.frames.FrameType;
+import com.freenote.app.server.frames.TextFrame;
 import com.freenote.app.server.handler.URIHandler;
+import com.freenote.app.server.util.FrameUtil;
 import io.NoHeaderObjectOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,10 +14,8 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import static com.freenote.app.server.frames.FrameUtil.maskPayload;
-
-public class MockHandler implements URIHandler {
-    private static final Logger log = LogManager.getLogger(MockHandler.class);
+public class EchoHandler implements URIHandler {
+    private static final Logger log = LogManager.getLogger(EchoHandler.class);
 
     @Override
     public void handle(InputStream inputStream, OutputStream outputStream) {
@@ -32,19 +33,19 @@ public class MockHandler implements URIHandler {
                 BaseFrame frame = new BaseFrame(actualData);
 
                 log.info("FIN: {}", frame.isFin());
-                log.info("Opcode: {}", frame.getOpcode());
+                log.info("Opcode: {} - {}", frame.getOpcode(), FrameType.fromHexValue(frame.getOpcode()));
                 log.info("Masked: {}", frame.isMasked());
                 log.info("Payload Length: {}", frame.getPayloadLength());
                 log.info("Masking Key: {}", Arrays.toString(frame.getMaskingKey()));
                 log.info("Raw Payload (masked): {}", Arrays.toString(frame.getPayloadData()));
 
-                byte[] payload = frame.isMasked() ? maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
+                byte[] payload = frame.isMasked() ? FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
                 log.info("Unmasked Payload: {}", Arrays.toString(payload));
                 log.info("Payload as Text: {}", new String(payload, StandardCharsets.UTF_8));
 
                 var objectOutputStream = new NoHeaderObjectOutputStream(outputStream);
                 log.info("Writing to output stream" + " with payload: {}", new String(payload, StandardCharsets.UTF_8));
-                objectOutputStream.write(payload);
+                objectOutputStream.writeObject(TextFrame.createServerFrame(payload));
                 objectOutputStream.flush();
             }
         } catch (IOException e) {

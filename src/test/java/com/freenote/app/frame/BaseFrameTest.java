@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class BaseFrameTest {
     @Test
-    void testBaseFrame() {
+    void testPingPongFrame() {
         var pingFrame = new PingFrame();
         assertEquals(FrameType.PING.getOpCode(), pingFrame.getOpcode());
         assertEquals(0, pingFrame.getPayloadLength());

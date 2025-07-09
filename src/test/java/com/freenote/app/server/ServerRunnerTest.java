@@ -1,6 +1,6 @@
 package com.freenote.app.server;
 
-import com.freenote.app.server.example.EchoServer;
+import com.freenote.app.server.example.SimpleServer;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -23,7 +23,7 @@ class ServerRunnerTest {
         Socket mockSocket = mock(Socket.class);
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         AtomicBoolean running = new AtomicBoolean(true);
-        EchoServer serverRunner = new EchoServer();
+        SimpleServer serverRunner = new SimpleServer();
 
         // Simulate accepting one connection then stop
         when(mockServerSocket.accept()).thenAnswer(invocation -> {

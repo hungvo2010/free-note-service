@@ -1,5 +1,6 @@
 package com.freenote.app.server.frames;
 
+import com.freenote.app.server.util.FrameUtil;
 import lombok.Getter;
 
 import java.io.*;
@@ -32,6 +33,14 @@ public class BaseFrame implements Serializable, Externalizable {
     }
 
     public BaseFrame(short opcode, byte[] payloadData) {
+        this.opcode = opcode;
+        this.payloadData = payloadData;
+        this.payloadLength = payloadData.length;
+        this.maskingKeyStart = payloadData.length < 126 ? 2 : (payloadData.length < 65536 ? 4 : 10);
+    }
+
+    public BaseFrame(boolean isFinal, short opcode, byte[] payloadData) {
+        this.fin = isFinal;
         this.opcode = opcode;
         this.payloadData = payloadData;
         this.payloadLength = payloadData.length;

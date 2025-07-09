@@ -30,6 +30,18 @@ jacocoTestReport {
     dependsOn test // tests are required to run before generating the report
 }
 
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.80 // 80% line coverage
+            }
+        }
+    }
+}
+
+check.dependsOn jacocoTestCoverageVerification
+
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.34'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'

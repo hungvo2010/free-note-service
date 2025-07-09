@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 
-public class EchoServer {
-    private static final Logger log = LogManager.getLogger(EchoServer.class);
+public class SimpleServer {
+    private static final Logger log = LogManager.getLogger(SimpleServer.class);
 
     public static void main(String[] args) throws IOException {
         int port = args.length >= 1 ? Integer.parseInt(args[0]) : 8189;

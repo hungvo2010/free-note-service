@@ -2,7 +2,7 @@ package com.freenote.app.handler;
 
 import com.freenote.app.server.frames.TextFrame;
 import com.freenote.app.server.handler.URIHandler;
-import com.freenote.app.server.handler.impl.MockHandler;
+import com.freenote.app.server.handler.impl.EchoHandler;
 import io.NoHeaderObjectOutputStream;
 import org.junit.jupiter.api.Test;
 
@@ -10,13 +10,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class URIHandlerTest {
-    private final URIHandler mockURIHandler = new MockHandler();
+    private final URIHandler mockURIHandler = new EchoHandler();
 
     @Test
     void givenInputStreamThenWriteToOutputStream() throws IOException {
@@ -28,7 +29,7 @@ class URIHandlerTest {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         mockURIHandler.handle(in, out);
-        String result = out.toString();
+        String result = new String(Arrays.copyOfRange(out.toByteArray(), 2, 2 + "Hello World".length())); // Ski    p the first two bytes which are the frame type and length
         assertEquals("Hello World", result);
     }
 

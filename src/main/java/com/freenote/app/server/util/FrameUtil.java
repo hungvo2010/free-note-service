@@ -1,8 +1,9 @@
-package com.freenote.app.server.frames;
+package com.freenote.app.server.util;
 
 import lombok.experimental.UtilityClass;
 
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 @UtilityClass
 public class FrameUtil {
@@ -43,5 +44,9 @@ public class FrameUtil {
             result[i] = (byte) (payload[i] ^ maskingKey[i % 4]); // XOR each byte with the masking key
         }
         return result;
+    }
+
+    public Supplier<Integer> getPayloadLengthSupplier(byte[] frame) {
+        return () -> parsePayloadLength(frame);
     }
 }
