@@ -27,6 +27,14 @@ class BaseFrameTest {
     }
 
     @Test
+    void testFragmentedFrame() {
+        var fragmentedFrame = new BaseFrame(false, FrameType.CONTINUATION.getOpCode(), "abc".getBytes());
+        assertEquals(FrameType.CONTINUATION.getOpCode(), fragmentedFrame.getOpcode());
+        assertEquals(3, fragmentedFrame.getPayloadLength());
+
+    }
+
+    @Test
     void testLargeTextFrame() throws IOException {
         var largeText = "a".repeat(126);
         var largeFrame = TextFrame.createServerFrame(largeText.getBytes());
