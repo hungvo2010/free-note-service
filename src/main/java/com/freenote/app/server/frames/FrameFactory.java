@@ -1,5 +1,7 @@
 package com.freenote.app.server.frames;
 
+import com.freenote.app.server.frames.base.FrameBuilder;
+import com.freenote.app.server.frames.base.WebSocketFrame;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -12,7 +14,30 @@ public class FrameFactory {
         return frame;
     }
 
-    public static BaseFrame createGeneralFrame(boolean isFinal, short opcode, byte[] payload) {
-        return new BaseFrame(isFinal, opcode, payload);
+    public static WebSocketFrame createControlFrame(byte[] frame, com.freenote.app.server.frames.base.FrameType frameType) {
+        return new WebSocketFrame(frame) {
+            @Override
+            protected void parsePayloadLength(byte[] bytes) {
+                frameType.parseFrame(bytes);
+            }
+        };
+    }
+
+    public static WebSocketFrame createDataFrame(byte[] frame, com.freenote.app.server.frames.base.FrameType frameType) {
+        return new WebSocketFrame(frame) {
+            @Override
+            protected void parsePayloadLength(byte[] bytes) {
+                frameType.parseFrame(bytes);
+            }
+        };
+    }
+
+    public static WebSocketFrame createFrame(FrameBuilder frameBuilder, com.freenote.app.server.frames.base.FrameType frameType) {
+        return new WebSocketFrame(frameBuilder, frameType) {
+            @Override
+            protected void parsePayloadLength(byte[] bytes) {
+
+            }
+        };
     }
 }

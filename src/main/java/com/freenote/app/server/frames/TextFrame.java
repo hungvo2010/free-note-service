@@ -1,8 +1,10 @@
 package com.freenote.app.server.frames;
 
+import com.freenote.app.server.frames.base.DataFrame;
+
 import java.util.Random;
 
-public class TextFrame extends BaseFrame {
+public class TextFrame extends DataFrame {
 
     public TextFrame() {
         super(FrameType.TEXT.getOpCode(), "".getBytes());

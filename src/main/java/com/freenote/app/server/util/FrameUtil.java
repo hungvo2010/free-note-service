@@ -7,6 +7,17 @@ import java.util.function.Supplier;
 
 @UtilityClass
 public class FrameUtil {
+    public static int calculatePayloadLength(byte byteData) {
+        int sevenBitsValue = (byteData & 0x7F); // 0111 1111 // Because in Java bit manipulation will result in integer.
+        if (sevenBitsValue < 126) {
+            return sevenBitsValue;
+        } else if (sevenBitsValue == 126) {
+            return 2; // Next two bytes are the payload length
+        } else {
+            return 8; // Next eight bytes are the payload length
+        }
+    }
+
     public static int parsePayloadLength(byte[] bytes) {
         int sevenBitsValue = (bytes[1] & 0x7F); // 0111 1111 // Because in Java bit manipulation will result in integer.
         if (sevenBitsValue < 126) {

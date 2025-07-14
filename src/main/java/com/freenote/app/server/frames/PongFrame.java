@@ -1,6 +1,8 @@
 package com.freenote.app.server.frames;
 
-public class PongFrame extends BaseFrame {
+import com.freenote.app.server.frames.base.ControlFrame;
+
+public class PongFrame extends ControlFrame {
     public PongFrame() {
         super(FrameType.PONG.getOpCode());
     }

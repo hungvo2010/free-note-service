@@ -1,4 +1,4 @@
-package com.freenote.app.server.frames;
+package com.freenote.app.server.frames.base;
 
 import com.freenote.app.server.util.FrameUtil;
 import lombok.Getter;
@@ -7,7 +7,7 @@ import java.io.*;
 import java.util.Arrays;
 
 @Getter
-public class BaseFrame implements Serializable, Externalizable {
+public abstract class WebSocketFrame implements Serializable, Externalizable {
     @Serial
     private static final long serialVersionUID = -2140098214102580912L;
     private boolean fin = true;
@@ -17,29 +17,23 @@ public class BaseFrame implements Serializable, Externalizable {
     private int maskingKeyStart = 0;
     protected short opcode;
     protected boolean masked = false;
-    private long payloadLength;
+    protected long payloadLength;
     protected byte[] maskingKey;
     private byte[] payloadData;
     private byte[] extensionData;
     private byte[] applicationData;
 
-    public BaseFrame() {
-        this.maskingKeyStart = 2;
+    protected WebSocketFrame() {
     }
 
-    public BaseFrame(short opcode) {
-        this.opcode = opcode;
-        this.maskingKeyStart = 2;
-    }
-
-    public BaseFrame(short opcode, byte[] payloadData) {
+    protected WebSocketFrame(short opcode, byte[] payloadData) {
         this.opcode = opcode;
         this.payloadData = payloadData;
         this.payloadLength = payloadData.length;
         this.maskingKeyStart = payloadData.length < 126 ? 2 : (payloadData.length < 65536 ? 4 : 10);
     }
 
-    public BaseFrame(boolean isFinal, short opcode, byte[] payloadData) {
+    protected WebSocketFrame(boolean isFinal, short opcode, byte[] payloadData) {
         this.fin = isFinal;
         this.opcode = opcode;
         this.payloadData = payloadData;
@@ -47,19 +41,42 @@ public class BaseFrame implements Serializable, Externalizable {
         this.maskingKeyStart = payloadData.length < 126 ? 2 : (payloadData.length < 65536 ? 4 : 10);
     }
 
-    public BaseFrame(byte[] bytes) {
+    protected WebSocketFrame(byte[] bytes) {
+        parseHeader(bytes);
+        parsePayloadLength(bytes);
+        parseMaskingKey(bytes);
+        parsePayload(bytes);
+    }
+
+    protected WebSocketFrame(FrameBuilder frameBuilder, FrameType frameType) {
+        this.fin = frameBuilder.isFin();
+        this.rsv1 = frameBuilder.isRsv1();
+        this.rsv2 = frameBuilder.isRsv2();
+        this.rsv3 = frameBuilder.isRsv3();
+        this.opcode = frameType.getOpcode();
+        this.masked = frameBuilder.isMasked();
+        frameType.handleVariableLength(frameBuilder);
+    }
+
+    protected abstract void parsePayloadLength(byte[] bytes);
+
+    protected void parseMaskingKey(byte[] bytes) {
+        maskingKeyStart = 2 + ((bytes[1] & 0x7F) < 126 ? 0 : ((bytes[1] & 0x7F) == 126 ? 4 : 10));
+        maskingKey = masked ? Arrays.copyOfRange(bytes, maskingKeyStart, maskingKeyStart + 4) : new byte[0]; // Masking key is present if masked is true
+    }
+
+    protected void parsePayload(byte[] bytes) {
+        payloadData = Arrays.copyOfRange(bytes, maskingKeyStart + maskingKey.length, bytes.length);
+        extensionData = new byte[0];
+        applicationData = bytes;
+    }
+
+    private void parseHeader(byte[] bytes) {
         fin = ((bytes[0] & 0x80) >> 7) == 1; // 1000 0000
         rsv1 = ((bytes[0] & 0x40) >> 6) == 1; // 0100 0000
         rsv2 = ((bytes[0] & 0x20) >> 5) == 1; // 0010 0000
         rsv3 = ((bytes[0] & 0x10) >> 4) == 1; // 0001 0000
         opcode = (short) (bytes[0] & 0x0F);
-        masked = ((bytes[1] & 0x80) >> 7) == 1; // 1000 0000
-        payloadLength = FrameUtil.parsePayloadLength(bytes);
-        maskingKeyStart = 2 + ((bytes[1] & 0x7F) < 126 ? 0 : ((bytes[1] & 0x7F) == 126 ? 4 : 10));
-        maskingKey = masked ? Arrays.copyOfRange(bytes, maskingKeyStart, maskingKeyStart + 4) : new byte[0]; // Masking key is present if masked is true
-        payloadData = Arrays.copyOfRange(bytes, maskingKeyStart + maskingKey.length, bytes.length);
-        extensionData = new byte[0];
-        applicationData = bytes;
     }
 
     @Override

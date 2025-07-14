@@ -1,6 +1,7 @@
 package com.freenote.app.frame;
 
 import com.freenote.app.server.frames.*;
+import com.freenote.app.server.frames.base.WebSocketFrame;
 import io.NoHeaderObjectOutputStream;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +11,7 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-class BaseFrameTest {
+class WebSocketFrameTest {
     @Test
     void testPingPongFrame() {
         var pingFrame = new PingFrame();
@@ -28,7 +29,7 @@ class BaseFrameTest {
 
     @Test
     void testFragmentedFrame() {
-        var fragmentedFrame = new BaseFrame(false, FrameType.CONTINUATION.getOpCode(), "abc".getBytes());
+        var fragmentedFrame = new WebSocketFrame(false, FrameType.CONTINUATION.getOpCode(), "abc".getBytes());
         assertEquals(FrameType.CONTINUATION.getOpCode(), fragmentedFrame.getOpcode());
         assertEquals(3, fragmentedFrame.getPayloadLength());
 
