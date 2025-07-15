@@ -1,6 +1,5 @@
 package com.freenote.app.server.frames.base;
 
-import com.freenote.app.server.util.FrameUtil;
 import lombok.Getter;
 
 import java.io.*;
@@ -19,7 +18,7 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
     protected boolean masked = false;
     protected long payloadLength;
     protected byte[] maskingKey;
-    private byte[] payloadData;
+    protected byte[] payloadData;
     private byte[] extensionData;
     private byte[] applicationData;
 
@@ -61,7 +60,7 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
     protected abstract void parsePayloadLength(byte[] bytes);
 
     protected void parseMaskingKey(byte[] bytes) {
-        maskingKeyStart = 2 + ((bytes[1] & 0x7F) < 126 ? 0 : ((bytes[1] & 0x7F) == 126 ? 4 : 10));
+        var maskingKeyStart = 2 + ((bytes[1] & 0x7F) < 126 ? 0 : ((bytes[1] & 0x7F) == 126 ? 4 : 10));
         maskingKey = masked ? Arrays.copyOfRange(bytes, maskingKeyStart, maskingKeyStart + 4) : new byte[0]; // Masking key is present if masked is true
     }
 
@@ -81,6 +80,26 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
+        writeFrameOpcode(out);
+        writeFrameMaskHeader(out);
+        writePayloadLength(out);
+        writeMaskingKey(out);
+        writePayload(out);
+    }
+
+    public abstract void writePayload(ObjectOutput out) throws IOException;
+
+    private void writeMaskingKey(ObjectOutput out) throws IOException {
+        if (masked) {
+            out.write(maskingKey);
+        }
+    }
+
+    public abstract void writePayloadLength(ObjectOutput out) throws IOException;
+
+    public abstract void writeFrameMaskHeader(ObjectOutput out) throws IOException;
+
+    private void writeFrameOpcode(ObjectOutput out) throws IOException {
         var firstByte = (byte) (
                 (fin ? 0x80 : 0) |    // FIN bit - 1st bit (10000000)
                         (rsv1 ? 0x40 : 0) |   // RSV1 bit - 2nd bit (01000000)
@@ -89,20 +108,6 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
                         (opcode & 0x0F)       // Opcode - lower 4 bits (00001111)
         );
         out.writeByte(firstByte);
-        var maskByte = masked ? (byte) 0x80 : (byte) 0x00;
-        var secondByte = (byte) (maskByte | (byte) (maskingKeyStart == 2 ? payloadLength : (maskingKeyStart == 4 ? 126 : 127)));
-        out.writeByte(secondByte);
-        if (maskingKeyStart == 4) {
-            out.writeShort((short) payloadLength);
-        } else if (maskingKeyStart == 10) {
-            out.writeLong(payloadLength);
-        }
-        if (masked) {
-            out.write(maskingKey);
-        }
-        if (payloadData != null && payloadData.length > 0) {
-            out.write(masked ? FrameUtil.maskPayload(payloadData, maskingKey) : payloadData);
-        }
     }
 
     @Override

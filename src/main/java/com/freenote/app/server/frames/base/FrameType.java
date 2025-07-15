@@ -11,7 +11,7 @@ public enum FrameType {
 
         @Override
         public void handleVariableLength(FrameBuilder frameBuilder) {
-
+            parseVariableLength(frameBuilder);
         }
     },
     TEXT((byte) 0x1) {
@@ -69,6 +69,12 @@ public enum FrameType {
 
         }
     };
+
+    private static void parseVariableLength(FrameBuilder frameBuilder) {
+        var payloadLength = frameBuilder.getPayloadData().length;
+        var maskByte = frameBuilder.isMasked() ? (byte) 0x80 : (byte) 0x00;
+        var secondByte = (byte) (maskByte | (byte) (payloadLength < 126 ? payloadLength : (payloadLength == 126 ? 126 : 127)));
+    }
 
     private final short opcode;
 
