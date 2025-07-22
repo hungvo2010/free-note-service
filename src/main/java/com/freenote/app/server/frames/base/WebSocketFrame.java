@@ -15,7 +15,7 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
     private boolean rsv3 = false;
     private int maskingKeyStart = 0;
     protected short opcode;
-    protected boolean masked = false;
+    protected boolean isMasked = false;
     protected long payloadLength;
     protected byte[] maskingKey;
     protected byte[] payloadData;
@@ -29,7 +29,6 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
         this.opcode = opcode;
         this.payloadData = payloadData;
         this.payloadLength = payloadData.length;
-        this.maskingKeyStart = payloadData.length < 126 ? 2 : (payloadData.length < 65536 ? 4 : 10);
     }
 
     protected WebSocketFrame(boolean isFinal, short opcode, byte[] payloadData) {
@@ -37,7 +36,10 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
         this.opcode = opcode;
         this.payloadData = payloadData;
         this.payloadLength = payloadData.length;
-        this.maskingKeyStart = payloadData.length < 126 ? 2 : (payloadData.length < 65536 ? 4 : 10);
+    }
+
+    protected WebSocketFrame(short opcode) {
+        this(false, opcode, new byte[0]);
     }
 
     protected WebSocketFrame(byte[] bytes) {
@@ -47,22 +49,19 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
         parsePayload(bytes);
     }
 
-    protected WebSocketFrame(FrameBuilder frameBuilder, FrameType frameType) {
+    protected WebSocketFrame(FrameBuilder frameBuilder, FrameTypeWithBehavior frameTypeWithBehavior) {
         this.fin = frameBuilder.isFin();
         this.rsv1 = frameBuilder.isRsv1();
         this.rsv2 = frameBuilder.isRsv2();
         this.rsv3 = frameBuilder.isRsv3();
-        this.opcode = frameType.getOpcode();
-        this.masked = frameBuilder.isMasked();
-        frameType.handleVariableLength(frameBuilder);
+        this.opcode = frameTypeWithBehavior.getOpcode();
+        this.isMasked = frameBuilder.isMasked();
+        frameTypeWithBehavior.handleVariableLength(frameBuilder);
     }
 
     protected abstract void parsePayloadLength(byte[] bytes);
 
-    protected void parseMaskingKey(byte[] bytes) {
-        var maskingKeyStart = 2 + ((bytes[1] & 0x7F) < 126 ? 0 : ((bytes[1] & 0x7F) == 126 ? 4 : 10));
-        maskingKey = masked ? Arrays.copyOfRange(bytes, maskingKeyStart, maskingKeyStart + 4) : new byte[0]; // Masking key is present if masked is true
-    }
+    protected abstract void parseMaskingKey(byte[] bytes);
 
     protected void parsePayload(byte[] bytes) {
         payloadData = Arrays.copyOfRange(bytes, maskingKeyStart + maskingKey.length, bytes.length);
@@ -90,7 +89,7 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
     public abstract void writePayload(ObjectOutput out) throws IOException;
 
     private void writeMaskingKey(ObjectOutput out) throws IOException {
-        if (masked) {
+        if (isMasked) {
             out.write(maskingKey);
         }
     }

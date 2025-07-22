@@ -3,6 +3,7 @@ package com.freenote.app.server.util;
 import lombok.experimental.UtilityClass;
 
 import java.util.Arrays;
+import java.util.function.IntUnaryOperator;
 import java.util.function.LongUnaryOperator;
 import java.util.function.Supplier;
 
@@ -64,8 +65,19 @@ public class FrameUtil {
 
     public static final LongUnaryOperator BIG_PAYLOAD_OPERATOR = length -> length < 65535 ? 126 : 127;
     public static final LongUnaryOperator PAYLOAD_LENGTH_OPERATOR = length -> length < 126 ? length : BIG_PAYLOAD_OPERATOR.applyAsLong(length);
+    public static final IntUnaryOperator BIG_PAYLOAD_MASKING_KEY_START_OPERATOR = secondByte -> secondByte == 126 ? 4 : 10;
+    public static final IntUnaryOperator MASKING_KEY_START_OPERATOR = secondByte -> secondByte < 126 ? 2 : BIG_PAYLOAD_MASKING_KEY_START_OPERATOR.applyAsInt(secondByte);
 
     public static LongUnaryOperator getFramePayloadLengthSupplier() {
         return PAYLOAD_LENGTH_OPERATOR;
+    }
+
+    public static IntUnaryOperator getMaskingKeyStartSupplier() {
+        return MASKING_KEY_START_OPERATOR;
+    }
+
+    public static LongUnaryOperator getBigPayloadLengthSupplier(byte secondByte) {
+        return secondByte == 126 ? length -> length < 65535 ? 126 : 127 : length -> length < 65535 ? 126 : 127;
+
     }
 }

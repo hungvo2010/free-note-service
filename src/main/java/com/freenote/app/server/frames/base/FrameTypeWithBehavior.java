@@ -2,7 +2,7 @@ package com.freenote.app.server.frames.base;
 
 import com.freenote.app.server.frames.FrameFactory;
 
-public enum FrameType {
+public enum FrameTypeWithBehavior {
     CONTINUATION((byte) 0x0) {
         @Override
         public WebSocketFrame parseFrame(byte[] frame) {
@@ -78,7 +78,7 @@ public enum FrameType {
 
     private final short opcode;
 
-    FrameType(byte opCode) {
+    FrameTypeWithBehavior(byte opCode) {
         this.opcode = opCode;
     }
 
@@ -86,12 +86,12 @@ public enum FrameType {
 
     public abstract void handleVariableLength(FrameBuilder frameBuilder);
 
-    private static WebSocketFrame parseDataFrame(byte[] frame, FrameType frameType) {
-        return FrameFactory.createDataFrame(frame, frameType);
+    private static WebSocketFrame parseDataFrame(byte[] frame, FrameTypeWithBehavior frameTypeWithBehavior) {
+        return FrameFactory.createDataFrame(frame, frameTypeWithBehavior);
     }
 
-    private static WebSocketFrame parseControlFrame(byte[] frame, FrameType frameType) {
-        return FrameFactory.createControlFrame(frame, frameType);
+    private static WebSocketFrame parseControlFrame(byte[] frame, FrameTypeWithBehavior frameTypeWithBehavior) {
+        return FrameFactory.createControlFrame(frame, frameTypeWithBehavior);
     }
 
     public short getOpcode() {

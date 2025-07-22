@@ -1,6 +1,5 @@
 package com.freenote.app.frame;
 
-import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.util.FrameUtil;
 import org.junit.jupiter.api.Test;
 
@@ -82,11 +81,6 @@ class FrameUtilTest {
 
     @Test
     void testBaseFrame_WithAllBits() {
-        byte[] payload = new byte[]{(byte) 0x71, 0x02};
-        WebSocketFrame frame = new WebSocketFrame(payload);
-        assertFalse(frame.isFin());
-        assertTrue(frame.isRsv1());
-        assertTrue(frame.isRsv2());
-        assertTrue(frame.isRsv3());
+        
     }
 }

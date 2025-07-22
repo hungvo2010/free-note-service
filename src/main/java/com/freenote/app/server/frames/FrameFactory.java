@@ -1,6 +1,8 @@
 package com.freenote.app.server.frames;
 
-import com.freenote.app.server.frames.base.FrameBuilder;
+import com.freenote.app.server.frames.base.ControlFrame;
+import com.freenote.app.server.frames.base.DataFrame;
+import com.freenote.app.server.frames.base.FrameTypeWithBehavior;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import lombok.experimental.UtilityClass;
 
@@ -14,30 +16,11 @@ public class FrameFactory {
         return frame;
     }
 
-    public static WebSocketFrame createControlFrame(byte[] frame, com.freenote.app.server.frames.base.FrameType frameType) {
-        return new WebSocketFrame(frame) {
-            @Override
-            protected void parsePayloadLength(byte[] bytes) {
-                frameType.parseFrame(bytes);
-            }
-        };
+    public static WebSocketFrame createControlFrame(byte[] frame, FrameTypeWithBehavior frameTypeWithBehavior) {
+        return new ControlFrame(frameTypeWithBehavior.getOpcode());
     }
 
-    public static WebSocketFrame createDataFrame(byte[] frame, com.freenote.app.server.frames.base.FrameType frameType) {
-        return new WebSocketFrame(frame) {
-            @Override
-            protected void parsePayloadLength(byte[] bytes) {
-                frameType.parseFrame(bytes);
-            }
-        };
-    }
-
-    public static WebSocketFrame createFrame(FrameBuilder frameBuilder, com.freenote.app.server.frames.base.FrameType frameType) {
-        return new WebSocketFrame(frameBuilder, frameType) {
-            @Override
-            protected void parsePayloadLength(byte[] bytes) {
-
-            }
-        };
+    public static WebSocketFrame createDataFrame(byte[] frame, FrameTypeWithBehavior frameTypeWithBehavior) {
+        return new DataFrame(frameTypeWithBehavior.getOpcode(), frame);
     }
 }
