@@ -3,7 +3,6 @@ package com.freenote.app.server.frames.base;
 import lombok.Getter;
 
 import java.io.*;
-import java.util.Arrays;
 
 @Getter
 public abstract class WebSocketFrame implements Serializable, Externalizable {
@@ -13,7 +12,6 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
     private boolean rsv1 = false;
     private boolean rsv2 = false;
     private boolean rsv3 = false;
-    private int maskingKeyStart = 0;
     protected short opcode;
     protected boolean isMasked = false;
     protected long payloadLength;
@@ -63,11 +61,7 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
 
     protected abstract void parseMaskingKey(byte[] bytes);
 
-    protected void parsePayload(byte[] bytes) {
-        payloadData = Arrays.copyOfRange(bytes, maskingKeyStart + maskingKey.length, bytes.length);
-        extensionData = new byte[0];
-        applicationData = bytes;
-    }
+    protected abstract void parsePayload(byte[] bytes);
 
     private void parseHeader(byte[] bytes) {
         fin = ((bytes[0] & 0x80) >> 7) == 1; // 1000 0000

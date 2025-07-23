@@ -19,7 +19,7 @@ public class EchoHandler implements URIHandler {
     private static final Logger log = LogManager.getLogger(EchoHandler.class);
 
     @Override
-    public void handle(InputStream inputStream, OutputStream outputStream) {
+    public boolean handle(InputStream inputStream, OutputStream outputStream) {
         try {
             var reader = new BufferedReader(new InputStreamReader(inputStream));
             while (reader.ready()) {
@@ -27,7 +27,7 @@ public class EchoHandler implements URIHandler {
                 int byteNumber = inputStream.read(data);
                 if (byteNumber == -1) {
                     log.warn("End of stream reached");
-                    break;
+                    return false;
                 }
 
                 byte[] actualData = Arrays.copyOfRange(data, 0, byteNumber);
@@ -49,8 +49,11 @@ public class EchoHandler implements URIHandler {
                 objectOutputStream.writeObject(TextFrame.createServerFrame(payload));
                 objectOutputStream.flush();
             }
+            log.info("Input stream handling completed successfully.");
+            return true;
         } catch (IOException e) {
             log.error("Error handling input stream", e);
+            return false;
         }
     }
 }

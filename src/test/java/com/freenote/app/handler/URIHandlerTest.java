@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -38,6 +39,7 @@ class URIHandlerTest {
         InputStream in = mock(InputStream.class);
         when(in.read()).thenReturn(-1);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        mockURIHandler.handle(in, out);
+        var result = mockURIHandler.handle(in, out);
+        assertFalse(result, "Expected handle to return false on end of input stream");
     }
 }

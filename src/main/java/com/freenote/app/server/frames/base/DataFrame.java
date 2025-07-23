@@ -16,6 +16,7 @@ public class DataFrame extends WebSocketFrame {
     private static final int MAX_PAYLOAD_LENGTH_7_BITS = 126;
 
     public DataFrame() {
+        super(FrameTypeWithBehavior.TEXT.getOpcode());
     }
 
     public DataFrame(short opCode, byte[] bytes) {

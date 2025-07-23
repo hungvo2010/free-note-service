@@ -38,4 +38,9 @@ public class ControlFrame extends WebSocketFrame {
     public void writePayload(ObjectOutput out) {
         // note: control frames do not have a payload
     }
+
+    @Override
+    protected void parsePayload(byte[] bytes) {
+        // Control frames do not have a payload, so this method does nothing.
+    }
 }
