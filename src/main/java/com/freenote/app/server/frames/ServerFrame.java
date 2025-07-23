@@ -3,7 +3,9 @@ package com.freenote.app.server.frames;
 import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class ServerFrame {
     public static WebSocketFrame createControlFrame(short opcode) {
         return new ControlFrame(opcode);

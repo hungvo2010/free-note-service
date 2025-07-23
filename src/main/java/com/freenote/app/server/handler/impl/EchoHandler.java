@@ -25,7 +25,7 @@ public class EchoHandler implements URIHandler {
             while (reader.ready()) {
                 byte[] data = new byte[70000];
                 int byteNumber = inputStream.read(data);
-                if (byteNumber == -1) {
+                if (byteNumber <= 0) {
                     log.warn("End of stream reached");
                     return false;
                 }
