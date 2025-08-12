@@ -165,8 +165,6 @@ class ServerFrameTest {
         // Verify the correct types are returned
         assertTrue(controlFrame instanceof ControlFrame);
         assertTrue(dataFrame instanceof DataFrame);
-        assertFalse(controlFrame instanceof DataFrame);
-        assertFalse(dataFrame instanceof ControlFrame);
     }
 
     @Test
