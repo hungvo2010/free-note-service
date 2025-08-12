@@ -1,10 +1,14 @@
 package com.freenote.app.server.frames.base;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.*;
 
+import static com.freenote.app.server.util.FrameUtil.boolToBit;
+
 @Getter
+@Setter
 public abstract class WebSocketFrame implements Serializable, Externalizable {
     @Serial
     private static final long serialVersionUID = -2140098214102580912L;
@@ -94,11 +98,11 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
 
     private void writeFrameOpcode(ObjectOutput out) throws IOException {
         var firstByte = (byte) (
-                (fin ? 0x80 : 0) |    // FIN bit - 1st bit (10000000)
-                        (rsv1 ? 0x40 : 0) |   // RSV1 bit - 2nd bit (01000000)
-                        (rsv2 ? 0x20 : 0) |   // RSV2 bit - 3rd bit (00100000)
-                        (rsv3 ? 0x10 : 0) |   // RSV3 bit - 4th bit (00010000)
-                        (opcode & 0x0F)       // Opcode - lower 4 bits (00001111)
+                (boolToBit(fin) << 7) |
+                        (boolToBit(rsv1) << 6) |
+                        (boolToBit(rsv2) << 5) |
+                        (boolToBit(rsv3) << 4) |
+                        (opcode & 0x0F)
         );
         out.writeByte(firstByte);
     }

@@ -80,4 +80,8 @@ public class FrameUtil {
         return secondByte == 126 ? length -> length < 65535 ? 126 : 127 : length -> length < 65535 ? 126 : 127;
 
     }
+
+    public static int boolToBit(boolean b) {
+        return Boolean.compare(b, false);
+    }
 }
