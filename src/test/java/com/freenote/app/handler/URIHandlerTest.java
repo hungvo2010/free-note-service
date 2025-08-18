@@ -29,7 +29,7 @@ class URIHandlerTest {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         mockURIHandler.handle(in, out);
-        String result = new String(Arrays.copyOfRange(out.toByteArray(), 2, 2 + "Hello World".length())); // Ski    p the first two bytes which are the frame type and length
+        String result = new String(Arrays.copyOfRange(out.toByteArray(), 2, 2 + "Hello World".length())); // Skip the first two bytes which are the frame type and length
         assertEquals("Hello World", result);
     }
 
