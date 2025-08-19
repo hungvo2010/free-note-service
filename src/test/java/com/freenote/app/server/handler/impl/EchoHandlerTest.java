@@ -26,7 +26,7 @@ class EchoHandlerTest {
 
     @Test
     void testHandle_SuccessfulEcho_UnmaskedFrame() {
-        // Create input stream with unmasked text frame data
+        // Create an input stream with unmasked text frame data
         byte[] frameData = createSimpleTextFrame("Hello World");
         inputStream = new ByteArrayInputStream(frameData);
 
