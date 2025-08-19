@@ -58,9 +58,13 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs << "-XprintProcessorInfo"
+}
+
 tasks.register('bootRun', JavaExec) {
     group = 'application'
     description = 'Run main class'
     classpath = sourceSets.main.runtimeClasspath
-    mainClass.set('com.freenote.app.server.example.EchoServer')
+    mainClass.set('com.freenote.app.server.example.SimpleServer')
 }

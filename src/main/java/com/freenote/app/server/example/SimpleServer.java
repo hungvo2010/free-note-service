@@ -55,6 +55,7 @@ public class SimpleServer {
 
     public static List<Future> run(ServerSocket serverSocket, ExecutorService executorService, AtomicBoolean running) throws IOException {
         List<Future> futures = new ArrayList<>();
+        log.info("Server started on port: {}", serverSocket.getLocalPort());
         while (running.get()) {
             var incomingSocket = serverSocket.accept();
             futures.add(executorService.submit(() -> {
