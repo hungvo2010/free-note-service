@@ -1,15 +1,14 @@
 package com.freenote.app.server.pizza;
 
-
 import com.freenote.annotations.Factory;
 
 @Factory(
-        id = "Margherita",
+        id = "Dummy",
         type = Meal.class
 )
-public class MargheritaPizza implements Meal {
+public class DummyPizza implements Meal {
     @Override
     public float getPrice() {
-        return 6.0f;
+        return 1000.0f;
     }
 }

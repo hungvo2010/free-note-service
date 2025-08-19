@@ -1,0 +1,39 @@
+plugins {
+    id 'java-library'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+group = 'com.freenote'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.34'
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation("org.apache.logging.log4j:log4j-core:2.25.1")
+    implementation("org.apache.logging.log4j:log4j-api:2.25.1")
+    compileOnly "com.google.auto.service:auto-service-annotations:1.1.1"
+    annotationProcessor "com.google.auto.service:auto-service:1.1.1"
+    implementation("com.squareup:javapoet:1.13.0")
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task wrapper(type: Wrapper){
+    gradleVersion = '8.10'
+}
+
+task prepareKotlinBuildScriptModel {
+
+}

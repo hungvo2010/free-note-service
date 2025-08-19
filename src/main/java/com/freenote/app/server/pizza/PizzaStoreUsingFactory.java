@@ -11,7 +11,7 @@ public class PizzaStoreUsingFactory {
 
     public static void main(String[] args) throws IOException {
         PizzaStoreUsingFactory pizzaStore = new PizzaStoreUsingFactory();
-        Meal meal = pizzaStore.order("Margherita");
+        Meal meal = pizzaStore.order("dummy");
         System.out.println("Bill: $" + meal.getPrice());
     }
 }

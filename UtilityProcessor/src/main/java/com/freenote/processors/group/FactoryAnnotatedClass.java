@@ -1,7 +1,8 @@
-package com.freenote.app.server.annotationProcessor;
+package com.freenote.processors.group;
 
-import com.freenote.app.server.annotations.Factory;
+import com.freenote.exceptions.ProcessingException;
 import lombok.Getter;
+import com.freenote.annotations.Factory;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;

@@ -1,7 +1,12 @@
-package com.freenote.app.server.annotationProcessor;
+package com.freenote.processors;
 
-import com.freenote.app.server.annotations.Factory;
+import com.freenote.annotations.Factory;
+import com.freenote.exceptions.ProcessingException;
+import com.freenote.processors.group.FactoryAnnotatedClass;
+import com.freenote.processors.group.FactoryGroupedClasses;
 import com.google.auto.service.AutoService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -20,6 +25,7 @@ import java.util.Set;
 @AutoService(Processor.class)
 public class FactoryProcessor extends AbstractProcessor {
 
+    private static final Logger log = LogManager.getLogger(FactoryProcessor.class);
     private Types typeUtils;
     private Elements elementUtils;
     private Filer filer;
@@ -37,7 +43,7 @@ public class FactoryProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        Set<String> annotations = new LinkedHashSet<String>();
+        Set<String> annotations = new LinkedHashSet<>();
         annotations.add(Factory.class.getCanonicalName());
         return annotations;
     }
@@ -52,6 +58,7 @@ public class FactoryProcessor extends AbstractProcessor {
         try {
             // Scan classes
             for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(Factory.class)) {
+                log.info("Processing element: {}", annotatedElement.getSimpleName());
 
                 // Check if a class has been annotated with @Factory
                 if (annotatedElement.getKind() != ElementKind.CLASS) {
