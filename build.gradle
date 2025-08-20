@@ -52,6 +52,7 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-api:2.25.1")
     testImplementation("org.mockito:mockito-core:5.17.0")
     implementation project(':UtilityProcessor')
+    annotationProcessor project(":UtilityProcessor")
 }
 
 java {

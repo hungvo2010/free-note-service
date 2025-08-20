@@ -1,6 +1,6 @@
 package com.freenote.app.server.launcher;
 
-import com.freenote.app.server.annotations.Singleton;
+import com.freenote.annotations.Singleton;
 import com.freenote.app.server.annotations.URIHandleAnnotation;
 import com.freenote.app.server.exceptions.TwoSingletonException;
 import com.freenote.app.server.handler.URIHandler;
@@ -52,8 +52,8 @@ public class WSLauncher {
     }
 
     public static void launch(String[] args) throws IOException, ClassNotFoundException {
-        checkSingletonBean();
-        injectAllDependencies();
+//        checkSingletonBean();
+//        injectAllDependencies();
     }
 
     private static void injectAllDependencies() throws IOException, ClassNotFoundException {

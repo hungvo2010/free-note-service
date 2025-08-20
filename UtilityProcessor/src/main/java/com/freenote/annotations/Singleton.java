@@ -1,4 +1,4 @@
-package com.freenote.app.server.annotations;
+package com.freenote.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
