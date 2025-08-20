@@ -1,6 +1,7 @@
 package com.freenote.app.server.handler.impl;
 
 
+import com.freenote.annotations.WebSocketServer;
 import com.freenote.app.server.frames.ClientFrame;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.TextFrame;
@@ -15,6 +16,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+@WebSocketServer
 public class EchoHandler implements URIHandler {
     private static final Logger log = LogManager.getLogger(EchoHandler.class);
 

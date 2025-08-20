@@ -1,6 +1,5 @@
 package com.freenote.app.server.example;
 
-import com.freenote.app.server.annotations.WebSocketServer;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
 import com.freenote.app.server.context.ApplicationContext;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
@@ -21,7 +20,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
-@WebSocketServer
 public class SimpleServer {
     private static final Logger log = LogManager.getLogger(SimpleServer.class);
 
