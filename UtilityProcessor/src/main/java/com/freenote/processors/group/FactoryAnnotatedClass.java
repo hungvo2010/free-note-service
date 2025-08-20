@@ -15,7 +15,7 @@ public class FactoryAnnotatedClass {
     @Getter
     private String simpleFactoryGroupName;
     @Getter
-    private String id;
+    private final String id;
 
     /**
      * @throws ProcessingException if id() from annotation is null

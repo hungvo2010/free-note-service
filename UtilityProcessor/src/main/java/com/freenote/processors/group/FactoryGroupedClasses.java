@@ -24,10 +24,6 @@ import java.util.Map;
  * @author Hannes Dorfmann
  */
 public class FactoryGroupedClasses {
-
-    /**
-     * Will be added to the name of the generated factory class
-     */
     private static final String SUFFIX = "Factory";
 
     private final String qualifiedClassName;
@@ -61,9 +57,8 @@ public class FactoryGroupedClasses {
     public void generateCode(Elements elementUtils, Filer filer) throws IOException {
         TypeElement superClassName = elementUtils.getTypeElement(qualifiedClassName);
         String factoryClassName = superClassName.getSimpleName() + SUFFIX;
-        String qualifiedFactoryClassName = qualifiedClassName + SUFFIX;
         PackageElement pkg = elementUtils.getPackageOf(superClassName);
-        String packageName = pkg.isUnnamed() ? null : pkg.getQualifiedName().toString();
+        String packageName = pkg.isUnnamed() ? "" : pkg.getQualifiedName().toString();
 
         MethodSpec.Builder method = MethodSpec.methodBuilder("create")
                 .addModifiers(Modifier.PUBLIC)
@@ -90,52 +85,4 @@ public class FactoryGroupedClasses {
         // Write file
         JavaFile.builder(packageName, typeSpec).build().writeTo(filer);
     }
-
-    /**
-     * Generate the java code
-     *
-     * @throws IOException
-
-    public void generateCode(Elements elementUtils, Filer filer) throws IOException {
-
-    TypeElement superClassName = elementUtils.getTypeElement(qualifiedClassName);
-    String factoryClassName = superClassName.getSimpleName() + SUFFIX;
-
-    JavaFileObject jfo = filer.createSourceFile(qualifiedClassName + SUFFIX);
-    Writer writer = jfo.openWriter();
-    JavaWriter jw = new JavaWriter(writer);
-
-    // Write package
-    PackageElement pkg = elementUtils.getPackageOf(superClassName);
-    if (!pkg.isUnnamed()) {
-    jw.emitPackage(pkg.getQualifiedName().toString());
-    jw.emitEmptyLine();
-    } else {
-    jw.emitPackage("");
-    }
-
-    jw.beginType(factoryClassName, "class", EnumSet.of(Modifier.PUBLIC));
-    jw.emitEmptyLine();
-    jw.beginMethod(qualifiedClassName, "create", EnumSet.of(Modifier.PUBLIC), "String", "id");
-
-    jw.beginControlFlow("if (id == null)");
-    jw.emitStatement("throw new IllegalArgumentException(\"id is null!\")");
-    jw.endControlFlow();
-
-    for (FactoryAnnotatedClass item : itemsMap.values()) {
-    jw.beginControlFlow("if (\"%s\".equals(id))", item.getId());
-    jw.emitStatement("return new %s()", item.getTypeElement().getQualifiedName().toString());
-    jw.endControlFlow();
-    jw.emitEmptyLine();
-    }
-
-    jw.emitStatement("throw new IllegalArgumentException(\"Unknown id = \" + id)");
-    jw.endMethod();
-
-    jw.endType();
-
-    jw.close();
-    }
-
-     */
 }

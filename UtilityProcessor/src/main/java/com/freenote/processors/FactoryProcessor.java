@@ -11,10 +11,10 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -26,7 +26,6 @@ import java.util.Set;
 public class FactoryProcessor extends AbstractProcessor {
 
     private static final Logger log = LogManager.getLogger(FactoryProcessor.class);
-    private Types typeUtils;
     private Elements elementUtils;
     private Filer filer;
     private Messager messager;
@@ -35,7 +34,6 @@ public class FactoryProcessor extends AbstractProcessor {
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-        typeUtils = processingEnv.getTypeUtils();
         elementUtils = processingEnv.getElementUtils();
         filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
@@ -120,57 +118,55 @@ public class FactoryProcessor extends AbstractProcessor {
                     classElement.getQualifiedName().toString(), Factory.class.getSimpleName());
         }
 
-        // Check inheritance: Class must be childclass as specified in @Factory.type();
-        TypeElement superClassElement =
-                elementUtils.getTypeElement(item.getQualifiedFactoryGroupName());
-        if (superClassElement.getKind() == ElementKind.INTERFACE) {
-            // Check interface implemented
-            if (!classElement.getInterfaces().contains(superClassElement.asType())) {
-                throw new ProcessingException(classElement,
-                        "The class %s annotated with @%s must implement the interface %s",
-                        classElement.getQualifiedName().toString(), Factory.class.getSimpleName(),
-                        item.getQualifiedFactoryGroupName());
-            }
-        } else {
-            // Check subclassing
-            TypeElement currentClass = classElement;
-            while (true) {
-                TypeMirror superClassType = currentClass.getSuperclass();
+        TypeElement superClassElement = elementUtils.getTypeElement(item.getQualifiedFactoryGroupName());
+        checkImplementInterface(item, superClassElement, classElement);
+        checkSubclassOfAnyType(item, classElement);
 
-                if (superClassType.getKind() == TypeKind.NONE) {
-                    // Basis class (java.lang.Object) reached, so exit
-                    throw new ProcessingException(classElement,
-                            "The class %s annotated with @%s must inherit from %s",
-                            classElement.getQualifiedName().toString(), Factory.class.getSimpleName(),
-                            item.getQualifiedFactoryGroupName());
-                }
-
-                if (superClassType.toString().equals(item.getQualifiedFactoryGroupName())) {
-                    // Required super class found
-                    break;
-                }
-
-                // Moving up in inheritance tree
-                currentClass = (TypeElement) typeUtils.asElement(superClassType);
-            }
+        if (!checkDefaultConstructor(classElement)) {
+            throw new ProcessingException(classElement,
+                    "[LATER]The class %s annotated with @%s must inherit from %s",
+                    classElement.getQualifiedName().toString(), Factory.class.getSimpleName(),
+                    item.getQualifiedFactoryGroupName());
         }
+    }
 
-        // Check if an empty public constructor is given
+    private boolean checkDefaultConstructor(TypeElement classElement) {
         for (Element enclosed : classElement.getEnclosedElements()) {
             if (enclosed.getKind() == ElementKind.CONSTRUCTOR) {
                 ExecutableElement constructorElement = (ExecutableElement) enclosed;
                 if (constructorElement.getParameters().isEmpty() && constructorElement.getModifiers()
                         .contains(Modifier.PUBLIC)) {
                     // Found an empty constructor
-                    return;
+                    return true;
                 }
             }
         }
+        return false;
+    }
 
-        // No empty constructor found
-        throw new ProcessingException(classElement,
-                "The class %s annotated with @%s must inherit from %s", classElement.getQualifiedName().toString(), "The class %s must provide an public empty default constructor",
-                classElement.getQualifiedName().toString());
+    private void checkImplementInterface(FactoryAnnotatedClass item, TypeElement superClassElement, TypeElement classElement) throws ProcessingException {
+        if (superClassElement.getKind() == ElementKind.INTERFACE && !classElement.getInterfaces().contains(superClassElement.asType())) {
+            throw new ProcessingException(classElement,
+                    "The class %s annotated with @%s must implement the interface %s",
+                    classElement.getQualifiedName().toString(), Factory.class.getSimpleName(),
+                    item.getQualifiedFactoryGroupName());
+        }
+    }
+
+    private void checkSubclassOfAnyType(FactoryAnnotatedClass item, TypeElement classElement) throws ProcessingException {
+        TypeMirror superClassType = classElement.getSuperclass();
+        this.messager.printMessage(Diagnostic.Kind.NOTE, "Checking superclass: " + superClassType.toString());
+
+        if (superClassType.getKind() == TypeKind.DECLARED) {
+            DeclaredType declaredType = (DeclaredType) superClassType;
+            Element element = declaredType.asElement();
+            if (element.getKind() == ElementKind.CLASS && !element.toString().equals(Object.class.getCanonicalName())) {
+                throw new ProcessingException(classElement,
+                        "[SUBCLASS]The class %s annotated with @%s must inherit from %s",
+                        classElement.getQualifiedName().toString(), Factory.class.getSimpleName(),
+                        item.getQualifiedFactoryGroupName());
+            }
+        }
     }
 
     public void error(Element e, String msg) {
