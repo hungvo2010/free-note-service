@@ -36,7 +36,7 @@ public class WebServerProcessor extends AbstractProcessor {
                     return false;
                 }
                 WebSocketServer annotation = element.getAnnotation(WebSocketServer.class);
-                String path = annotation.path();
+                String path = annotation.value();
                 if (path.isEmpty()) {
                     messager.printMessage(Diagnostic.Kind.ERROR, "WebSocketServer path cannot be empty.", element);
                     return false;
@@ -68,21 +68,22 @@ public class WebServerProcessor extends AbstractProcessor {
     private void checkIncludeRequireMethods(WebSocketServer annotation, ExecutableElement method, List<? extends VariableElement> params) throws URIHandlerException {
         // name
         if (!method.getSimpleName().contentEquals("handle")) {
-            throw new URIHandlerException(annotation.path(), "WebSocketServer method '%s' must be named 'handle'.");
+            throw new URIHandlerException(annotation.value(), "WebSocketServer method '%s' must be named 'handle'.");
         }
 
+        this.messager.printMessage(Diagnostic.Kind.NOTE, "Checking method: " + method.getSimpleName() + " with return type: " + method.getReturnType().getKind());
         // return type
-        if (!method.getReturnType().toString().equals(Boolean.class.getCanonicalName())) {
-            throw new URIHandlerException(annotation.path(), "WebSocketServer method '%s' must return boolean.");
+        if (!method.getReturnType().getKind().toString().equals(Boolean.class.getSimpleName().toUpperCase())) {
+            throw new URIHandlerException(annotation.value(), String.format("WebSocketServer method '%s' must return boolean.", method.getSimpleName().toString()));
         }
 
         if (params.size() != 2) {
-            throw new URIHandlerException(annotation.path(), "WebSocketServer method '%s' must have exactly two parameters: InputStream and OutputStream.");
+            throw new URIHandlerException(annotation.value(), "WebSocketServer method '%s' must have exactly two parameters: InputStream and OutputStream.");
         }
 
         for (int i = 0; i < params.size(); i++) {
             if (!params.get(i).asType().toString().equals(expectedParams.get(i))) {
-                throw new URIHandlerException(annotation.path(), "WebSocketServer method '%s' must have exactly two parameters: InputStream and OutputStream.");
+                throw new URIHandlerException(annotation.value(), "WebSocketServer method '%s' must have exactly two parameters: InputStream and OutputStream.");
             }
         }
     }
