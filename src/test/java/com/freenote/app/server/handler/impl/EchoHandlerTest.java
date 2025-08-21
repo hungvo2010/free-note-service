@@ -14,13 +14,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EchoHandlerTest {
 
-    private EchoHandler echoHandler;
+    private EchoHandlerImplementation echoHandler;
     private ByteArrayInputStream inputStream;
     private ByteArrayOutputStream outputStream;
 
     @BeforeEach
     void setUp() {
-        echoHandler = new EchoHandler();
+        echoHandler = new EchoHandlerImplementation();
         outputStream = new ByteArrayOutputStream();
     }
 

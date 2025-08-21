@@ -1,7 +1,7 @@
 package com.freenote.app.server.example;
 
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
-import com.freenote.app.server.context.ApplicationContext;
+import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +19,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
+
+import static generated.URIHandlerRegistry.getInstanceByURI;
 
 public class SimpleServer {
     private static final Logger log = LogManager.getLogger(SimpleServer.class);
@@ -46,7 +48,7 @@ public class SimpleServer {
         output.flush();
 
         while (!incomingSocket.isClosed()) {
-            BiConsumer<InputStream, OutputStream> handler = ApplicationContext.getHandlers().get(request.getPath())::handle;
+            BiConsumer<InputStream, OutputStream> handler = ((URIHandler) (getInstanceByURI(request.getPath())))::handle;
             handler.accept(input, output);
         }
     }

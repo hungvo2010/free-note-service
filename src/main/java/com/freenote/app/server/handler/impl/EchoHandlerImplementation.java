@@ -1,7 +1,7 @@
 package com.freenote.app.server.handler.impl;
 
 
-import com.freenote.annotations.WebSocketServer;
+import com.freenote.annotations.URIHandlerImplementation;
 import com.freenote.app.server.frames.ClientFrame;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.TextFrame;
@@ -16,23 +16,17 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-@WebSocketServer("/echo")
-public class EchoHandler implements URIHandler {
-    private static final Logger log = LogManager.getLogger(EchoHandler.class);
+@URIHandlerImplementation("/example")
+public class EchoHandlerImplementation implements URIHandler {
+    private static final Logger log = LogManager.getLogger(EchoHandlerImplementation.class);
 
     @Override
     public boolean handle(InputStream inputStream, OutputStream outputStream) {
         try {
             var reader = new BufferedReader(new InputStreamReader(inputStream));
             while (reader.ready()) {
-                byte[] data = new byte[70000];
-                int byteNumber = inputStream.read(data);
-                if (byteNumber <= 0) {
-                    log.warn("End of stream reached");
-                    return false;
-                }
-
-                byte[] actualData = Arrays.copyOfRange(data, 0, byteNumber);
+                byte[] actualData = getRawBytes(inputStream);
+                if (actualData == null) return false;
                 WebSocketFrame frame = new ClientFrame(actualData);
 
                 log.info("FIN: {}", frame.isFin());
@@ -57,5 +51,15 @@ public class EchoHandler implements URIHandler {
             log.error("Error handling input stream", e);
             return false;
         }
+    }
+
+    public byte[] getRawBytes(InputStream inputStream) throws IOException {
+        byte[] data = new byte[70000];
+        int byteNumber = inputStream.read(data);
+        if (byteNumber <= 0) {
+            log.warn("End of stream reached");
+            return null;
+        }
+        return Arrays.copyOfRange(data, 0, byteNumber);
     }
 }

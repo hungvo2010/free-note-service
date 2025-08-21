@@ -15,12 +15,13 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
-import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static com.freenote.utils.LogUtils.error;
 
 @AutoService(Processor.class)
 public class FactoryProcessor extends AbstractProcessor {
@@ -90,9 +91,9 @@ public class FactoryProcessor extends AbstractProcessor {
             }
             factoryClasses.clear();
         } catch (ProcessingException e) {
-            error(e.getElement(), e.getMessage());
+            error(this.messager, e.getElement(), e.getMessage());
         } catch (IOException e) {
-            error(null, e.getMessage());
+            error(this.messager, null, e.getMessage());
         }
 
         return true;
@@ -103,7 +104,7 @@ public class FactoryProcessor extends AbstractProcessor {
      */
     private void checkValidClass(FactoryAnnotatedClass item) throws ProcessingException {
 
-        // Cast to TypeElement, has more type specific methods
+        // Cast to TypeElement, has more types specific methods
         TypeElement classElement = item.getTypeElement();
 
         if (!classElement.getModifiers().contains(Modifier.PUBLIC)) {
@@ -155,7 +156,7 @@ public class FactoryProcessor extends AbstractProcessor {
 
     private void checkSubclassOfAnyType(FactoryAnnotatedClass item, TypeElement classElement) throws ProcessingException {
         TypeMirror superClassType = classElement.getSuperclass();
-        this.messager.printMessage(Diagnostic.Kind.NOTE, "Checking superclass: " + superClassType.toString());
+//        this.messager.printMessage(Diagnostic.Kind.NOTE, "Checking superclass: " + superClassType.toString());
 
         if (superClassType.getKind() == TypeKind.DECLARED) {
             DeclaredType declaredType = (DeclaredType) superClassType;
@@ -167,9 +168,5 @@ public class FactoryProcessor extends AbstractProcessor {
                         item.getQualifiedFactoryGroupName());
             }
         }
-    }
-
-    public void error(Element e, String msg) {
-        messager.printMessage(Diagnostic.Kind.ERROR, msg, e);
     }
 }

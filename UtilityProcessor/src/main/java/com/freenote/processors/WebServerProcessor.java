@@ -1,6 +1,6 @@
 package com.freenote.processors;
 
-import com.freenote.annotations.WebSocketServer;
+import com.freenote.annotations.URIHandlerImplementation;
 import com.freenote.exceptions.URIHandlerException;
 import com.google.auto.service.AutoService;
 
@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Set;
+
+import static com.freenote.utils.LogUtils.error;
 
 @AutoService(Processor.class)
 public class WebServerProcessor extends AbstractProcessor {
@@ -29,43 +31,48 @@ public class WebServerProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         try {
-            var elementsAnnotatedWith = roundEnv.getElementsAnnotatedWith(WebSocketServer.class);
+            var elementsAnnotatedWith = roundEnv.getElementsAnnotatedWith(URIHandlerImplementation.class);
             for (var element : elementsAnnotatedWith) {
                 if (!(element instanceof TypeElement)) {
                     messager.printMessage(Diagnostic.Kind.ERROR, "WebSocketServer annotation can only be applied to classes.");
-                    return false;
+                    return true;
                 }
-                WebSocketServer annotation = element.getAnnotation(WebSocketServer.class);
+                URIHandlerImplementation annotation = element.getAnnotation(URIHandlerImplementation.class);
                 String path = annotation.value();
                 if (path.isEmpty()) {
                     messager.printMessage(Diagnostic.Kind.ERROR, "WebSocketServer path cannot be empty.", element);
-                    return false;
+                    return true;
                 }
                 var allTypeElements = element.getEnclosedElements();
-                for (var enclosedElement : allTypeElements) {
-                    if (enclosedElement.getKind() == ElementKind.METHOD) {
-                        if (!enclosedElement.getModifiers().contains(Modifier.PUBLIC)) {
-                            messager.printMessage(Diagnostic.Kind.ERROR, "WebSocketServer methods must be public.", enclosedElement);
-                            return false;
-                        }
-                        ExecutableElement method = (ExecutableElement) enclosedElement;
-                        List<? extends VariableElement> params = method.getParameters();
-                        checkIncludeRequireMethods(annotation, method, params);
-                    }
+                var valid = allTypeElements.stream().filter(e -> e.getKind() == ElementKind.METHOD)
+                        .filter(e -> e.getModifiers().contains(Modifier.PUBLIC))
+                        .filter(this::isMatchSignature)
+                        .count() == 1;
+                if (!valid) {
+                    error(messager, element, "WebSocketServer class must have exactly one public method named 'handle' with the correct signature.");
                 }
-                messager.printMessage(Diagnostic.Kind.NOTE, "Processing WebSocketServer at path: " + path, element);
+                return true;
             }
             return true;
-        } catch (URIHandlerException e) {
-            messager.printMessage(Diagnostic.Kind.ERROR, e.getMessage() + e.getPath());
-            return false;
         } catch (Exception e) {
-            messager.printMessage(Diagnostic.Kind.ERROR, "Unexpected error: " + e.getMessage());
+            error(messager, null, "An unexpected error occurred: " + e.getMessage());
+            return true;
+        }
+    }
+
+    private boolean isMatchSignature(Element element) {
+        try {
+            URIHandlerImplementation annotation = element.getAnnotation(URIHandlerImplementation.class);
+            ExecutableElement method = (ExecutableElement) element;
+            List<? extends VariableElement> params = method.getParameters();
+            checkIncludeRequireMethods(annotation, method, params);
+            return true;
+        } catch (Exception e) {
             return false;
         }
     }
 
-    private void checkIncludeRequireMethods(WebSocketServer annotation, ExecutableElement method, List<? extends VariableElement> params) throws URIHandlerException {
+    private void checkIncludeRequireMethods(URIHandlerImplementation annotation, ExecutableElement method, List<? extends VariableElement> params) throws URIHandlerException {
         // name
         if (!method.getSimpleName().contentEquals("handle")) {
             throw new URIHandlerException(annotation.value(), "WebSocketServer method '%s' must be named 'handle'.");
@@ -90,7 +97,7 @@ public class WebServerProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        return Set.of(WebSocketServer.class.getCanonicalName());
+        return Set.of(URIHandlerImplementation.class.getCanonicalName());
     }
 
     @Override
