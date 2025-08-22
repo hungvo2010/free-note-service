@@ -1,4 +1,4 @@
-package com.freenote.app.server.annotations;
+package com.freenote.annotations;
 
 
 public class Subclass extends Superclass {

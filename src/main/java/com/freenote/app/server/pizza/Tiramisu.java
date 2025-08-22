@@ -1,7 +1,6 @@
-package com.freenote.app.server.annotations;
+package com.freenote.app.server.pizza;
 
 import com.freenote.annotations.Factory;
-import com.freenote.app.server.pizza.Meal;
 
 @Factory(
         id = "Tiramisu",

@@ -1,7 +1,5 @@
 package com.freenote.app.server.pizza;
 
-import com.freenote.app.server.annotations.Tiramisu;
-
 import java.io.IOException;
 
 public class PizzaStore {
