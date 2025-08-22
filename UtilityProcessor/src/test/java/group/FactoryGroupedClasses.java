@@ -1,4 +1,4 @@
-package com.freenote.processors.group;
+package group;
 
 
 import com.freenote.exceptions.ProcessingException;

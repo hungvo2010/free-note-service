@@ -1,7 +1,7 @@
-package com.freenote.app.server.pizza;
+package pizza;
 
 
-import com.freenote.annotations.Factory;
+import annotation.Factory;
 
 @Factory(
         id = "Margherita",

@@ -1,4 +1,4 @@
-package com.freenote.app.server.pizza;
+package pizza;
 
 import java.io.IOException;
 
