@@ -53,6 +53,10 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.17.0")
     implementation project(':UtilityProcessor')
     annotationProcessor project(":UtilityProcessor")
+
+    // For tests
+    testAnnotationProcessor "com.google.auto.service:auto-service:1.1.1"
+    testCompileOnly "com.google.auto.service:auto-service-annotations:1.1.1"
 }
 
 java {
