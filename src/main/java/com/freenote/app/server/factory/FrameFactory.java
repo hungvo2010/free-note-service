@@ -1,9 +1,17 @@
 package com.freenote.app.server.factory;
 
-import java.awt.*;
+import com.freenote.app.server.frames.base.WebSocketFrame;
 
 public interface FrameFactory {
-    Frame createTextFrame(String text);
-    Frame createBinaryFrame(byte[] data);
-    Frame createPingFrame(byte[] data);
+    WebSocketFrame createTextFrame(String text);
+
+    WebSocketFrame createBinaryFrame(byte[] data);
+
+    WebSocketFrame createPingFrame();
+
+    WebSocketFrame createPongFrame();
+
+    WebSocketFrame createCloseFrame(int code, String reason);
+
+    WebSocketFrame createContinuationFrame(byte[] data);
 }

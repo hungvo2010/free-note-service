@@ -11,6 +11,10 @@ public class ControlFrame extends WebSocketFrame {
         super(opCode);
     }
 
+    public ControlFrame(short opCode, boolean isMasked) {
+        super(opCode, isMasked);
+    }
+
     @Override
     protected void parsePayloadLength(byte[] bytes) {
         isMasked = false;

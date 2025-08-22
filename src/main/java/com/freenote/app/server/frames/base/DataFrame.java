@@ -23,6 +23,12 @@ public class DataFrame extends WebSocketFrame {
         super(opCode, bytes);
     }
 
+    public DataFrame(short opCode, byte[] bytes, boolean isMasked, byte[] maskingKey) {
+        super(opCode, bytes);
+        this.isMasked = isMasked;
+        this.maskingKey = maskingKey;
+    }
+
     public DataFrame(byte[] payload) {
         super(payload);
     }

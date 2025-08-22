@@ -44,6 +44,11 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
         this(false, opcode, new byte[0]);
     }
 
+    protected WebSocketFrame(short opcode, boolean isMasked) {
+        this(false, opcode, new byte[0]);
+        this.isMasked = isMasked;
+    }
+
     protected WebSocketFrame(byte[] bytes) {
         parseHeader(bytes);
         parsePayloadLength(bytes);

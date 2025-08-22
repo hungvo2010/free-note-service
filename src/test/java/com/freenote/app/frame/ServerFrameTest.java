@@ -1,11 +1,12 @@
 package com.freenote.app.frame;
 
-import com.freenote.app.server.frames.PongFrame;
+import com.freenote.app.server.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.ServerFrame;
 import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import io.NoHeaderObjectOutputStream;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -14,6 +15,12 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ServerFrameTest {
+    private static ServerFrameFactory serverFrameFactory = null;
+
+    @BeforeAll
+    static void setup() {
+        serverFrameFactory = new ServerFrameFactory();
+    }
 
     @Test
     void testCreateControlFrame_ReturnsControlFrameInstance() {
@@ -193,7 +200,7 @@ class ServerFrameTest {
 
     @Test
     void testControlFrameWriting() throws IOException {
-        var pongFrame = new PongFrame();
+        var pongFrame = serverFrameFactory.createPongFrame();
         var byteArrayOutputStream = new ByteArrayOutputStream();
         var outputStream = new NoHeaderObjectOutputStream(byteArrayOutputStream);
         pongFrame.writeExternal(outputStream);
@@ -204,7 +211,7 @@ class ServerFrameTest {
 
     @Test
     void testMaskedControlFrameWriting() throws IOException {
-        var pongFrame = ServerFrame.createControlFrame((short) 0x0A); // Pong frame opcode
+        var pongFrame = serverFrameFactory.createPongFrame();
         pongFrame.setMasked(true); // Set masked to true for testing
         pongFrame.setMaskingKey(new byte[]{0x1, 0x2, 0x3, 0x4}); // Example masking key
         var byteArrayOutputStream = new ByteArrayOutputStream();

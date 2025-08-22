@@ -2,7 +2,7 @@ package com.freenote.app.handler;
 
 import com.freenote.app.server.frames.TextFrame;
 import com.freenote.app.server.handler.URIHandler;
-import com.freenote.app.server.handler.impl.EchoHandlerImplementation;
+import com.freenote.app.server.handler.impl.EchoHandler;
 import io.NoHeaderObjectOutputStream;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class URIHandlerTest {
-    private final URIHandler mockURIHandler = new EchoHandlerImplementation();
+    private final URIHandler mockURIHandler = new EchoHandler();
 
     @Test
     void givenInputStreamThenWriteToOutputStream() throws IOException {

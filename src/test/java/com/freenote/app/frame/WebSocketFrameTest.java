@@ -1,10 +1,12 @@
 package com.freenote.app.frame;
 
+import com.freenote.app.server.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.PingFrame;
 import com.freenote.app.server.frames.PongFrame;
 import com.freenote.app.server.frames.TextFrame;
 import io.NoHeaderObjectOutputStream;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -13,6 +15,13 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class WebSocketFrameTest {
+    private static ServerFrameFactory serverFrameFactory = null;
+
+    @BeforeAll
+    static void setup() {
+        serverFrameFactory = new ServerFrameFactory();
+    }
+
     @Test
     void testPingPongFrame() {
         var pingFrame = new PingFrame();
@@ -21,15 +30,6 @@ class WebSocketFrameTest {
         var pongFrame = new PongFrame();
         assertEquals(FrameType.PONG.getOpCode(), pongFrame.getOpcode());
     }
-//
-//
-//    @Test
-//    void testFragmentedFrame() {
-//        var fragmentedFrame = new WebSocketFrame(false, FrameType.CONTINUATION.getOpCode(), "abc".getBytes());
-//        assertEquals(FrameType.CONTINUATION.getOpCode(), fragmentedFrame.getOpcode());
-//        assertEquals(3, fragmentedFrame.getPayloadLength());
-//
-//    }
 
     @Test
     void testLargeTextFrame() throws IOException {

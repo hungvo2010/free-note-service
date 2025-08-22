@@ -17,8 +17,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 @URIHandlerImplementation("/example")
-public class EchoHandlerImplementation implements URIHandler {
-    private static final Logger log = LogManager.getLogger(EchoHandlerImplementation.class);
+public class EchoHandler implements URIHandler {
+    private static final Logger log = LogManager.getLogger(EchoHandler.class);
 
     @Override
     public boolean handle(InputStream inputStream, OutputStream outputStream) {
