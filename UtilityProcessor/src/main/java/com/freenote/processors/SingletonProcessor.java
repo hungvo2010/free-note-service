@@ -6,8 +6,8 @@ import com.google.auto.service.AutoService;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
 import java.util.Set;
+import static com.freenote.utils.LogUtils.error;
 
 @AutoService(Processor.class)
 public class SingletonProcessor extends AbstractProcessor {
@@ -22,7 +22,7 @@ public class SingletonProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         var elements = roundEnv.getElementsAnnotatedWith(Singleton.class);
         if (elements == null || elements.size() > 1) {
-            this.messager.printMessage(Diagnostic.Kind.ERROR, "Singleton annotation can only be applied to one class.");
+            error(this.messager, null, "Singleton annotation can only be applied to one class.");
             return false;
         }
         return true;

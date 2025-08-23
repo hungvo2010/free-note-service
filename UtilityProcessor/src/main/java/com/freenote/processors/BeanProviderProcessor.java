@@ -8,7 +8,6 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -17,19 +16,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import static com.freenote.utils.LogUtils.error;
+import static com.freenote.utils.LogUtils.info;
+
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
 public class BeanProviderProcessor extends AbstractProcessor {
     private Filer filer;
     private Messager messager;
-    private Elements elementUtils;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
-        elementUtils = processingEnv.getElementUtils();
     }
 
     @Override
@@ -43,8 +43,8 @@ public class BeanProviderProcessor extends AbstractProcessor {
         // Collect all annotated classes
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(URIHandlerImplementation.class)) {
             if (annotatedElement.getKind() != ElementKind.CLASS) {
-                messager.printMessage(Diagnostic.Kind.ERROR,
-                        "@URIHandlerImplementation can only be applied to classes", annotatedElement);
+                error(this.messager, annotatedElement, 
+                        "@URIHandlerImplementation can only be applied to classes");
                 continue;
             }
 
@@ -57,7 +57,7 @@ public class BeanProviderProcessor extends AbstractProcessor {
 
             annotatedClasses.add(new AnnotatedClass(className, qualifiedName, value));
 
-            messager.printMessage(Diagnostic.Kind.NOTE,
+            info(this.messager, classElement, 
                     "Processing @URIHandlerImplementation on " + qualifiedName);
         }
 
@@ -66,8 +66,7 @@ public class BeanProviderProcessor extends AbstractProcessor {
             try {
                 generateRegistryClass(annotatedClasses);
             } catch (IOException e) {
-                messager.printMessage(Diagnostic.Kind.ERROR,
-                        "Failed to generate registry class: " + e.getMessage());
+                error(this.messager, null, "Failed to generate registry class: " + e.getMessage());
             }
         }
 
