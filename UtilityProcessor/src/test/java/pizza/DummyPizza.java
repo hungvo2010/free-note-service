@@ -1,6 +1,6 @@
 package pizza;
 
-import annotation.Factory;
+import com.freenote.annotations.Factory;
 
 @Factory(
         id = "Dummy",

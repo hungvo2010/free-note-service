@@ -23,14 +23,35 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     implementation("org.apache.logging.log4j:log4j-core:2.25.1")
     implementation("org.apache.logging.log4j:log4j-api:2.25.1")
+    testImplementation("org.apache.logging.log4j:log4j-core:2.25.1")
+    testImplementation("org.apache.logging.log4j:log4j-api:2.25.1")
     compileOnly "com.google.auto.service:auto-service-annotations:1.1.1"
     annotationProcessor "com.google.auto.service:auto-service:1.1.1"
     implementation("com.squareup:javapoet:1.13.0")
     testAnnotationProcessor "com.google.auto.service:auto-service:1.1.1"
     testCompileOnly "com.google.auto.service:auto-service-annotations:1.1.1"
+    
+    // Make main source available to test compilation
+    testImplementation sourceSets.main.output
 
-    testCompileOnly "com.google.auto.service:auto-service-annotations:1.1.1"
+}
 
+// Configure test compilation to use annotation processors from main source
+compileTestJava {
+    // Depend on main classes being compiled first
+    dependsOn compileJava
+    
+    // Make annotation processors from main available to test classpath
+    options.annotationProcessorPath = sourceSets.main.output + configurations.annotationProcessor + configurations.runtimeClasspath
+}
+
+// Add generated test sources to source sets
+sourceSets {
+    test {
+        java {
+            srcDir "${buildDir}/generated/sources/annotationProcessor/java/test"
+        }
+    }
 }
 
 test {

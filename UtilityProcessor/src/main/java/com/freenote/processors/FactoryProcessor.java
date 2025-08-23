@@ -1,9 +1,9 @@
-package processor;
+package com.freenote.processors;
 
-import annotation.Factory;
+import com.freenote.annotations.Factory;
 import com.freenote.exceptions.ProcessingException;
-import group.FactoryAnnotatedClass;
-import group.FactoryGroupedClasses;
+import com.freenote.processors.group.FactoryAnnotatedClass;
+import com.freenote.processors.group.FactoryGroupedClasses;
 import com.google.auto.service.AutoService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

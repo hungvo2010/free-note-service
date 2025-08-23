@@ -1,6 +1,7 @@
-package group;
+package com.freenote.processors.group;
 
-import annotation.Factory;
+
+import com.freenote.annotations.Factory;
 import com.freenote.exceptions.ProcessingException;
 import lombok.Getter;
 
