@@ -1,4 +1,4 @@
-package com.freenote.app.server.test;
+package com.freenote.app;
 
 import com.freenote.annotations.Singleton;
 

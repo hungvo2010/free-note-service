@@ -1,14 +1,22 @@
 package com.freenote.app.frame;
 
-import com.freenote.app.server.frames.ClientFrame;
+import com.freenote.app.server.factory.ClientFrameFactory;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClientFrameTest {
+    static ClientFrameFactory clientFrameFactory = null;
+
+    @BeforeAll
+    static void setup() {
+        clientFrameFactory = new ClientFrameFactory();
+    }
+
     @Test
     void testClientFrameCreation() {
-        var clientFrame = new ClientFrame(new byte[]{(byte) 0x70, (byte) 0x80, (byte) 0x90, (byte) 0x80, (byte) 0xF0, (byte) 0x80, (byte) 0x90, (byte) 0x80});
+        var clientFrame = clientFrameFactory.createPongFrame();
         assertTrue(clientFrame.isMasked());
     }
 }

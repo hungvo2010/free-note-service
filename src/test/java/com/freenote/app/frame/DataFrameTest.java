@@ -1,10 +1,12 @@
 package com.freenote.app.frame;
 
-import com.freenote.app.server.frames.TextFrame;
+import com.freenote.app.server.factory.ClientFrameFactory;
+import com.freenote.app.server.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.FrameTypeWithBehavior;
 import com.freenote.app.server.util.FrameUtil;
 import io.NoHeaderObjectOutputStream;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -13,6 +15,15 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DataFrameTest {
+    static ClientFrameFactory clientFrameFactory = null;
+    static ServerFrameFactory serverFrameFactory = null;
+
+    @BeforeAll
+    static void setup() {
+        clientFrameFactory = new ClientFrameFactory();
+        serverFrameFactory = new ServerFrameFactory();
+    }
+
     @Test
     void givenDefaultDataFrame_whenCreated_thenSuccess() {
         var dataFrame = new DataFrame();
@@ -21,7 +32,7 @@ class DataFrameTest {
 
     @Test
     void givenClientFrame_whenParsedToDataFrame_thenSuccess() throws IOException {
-        var clientFrame = TextFrame.createClientFrame("Hello World".getBytes());
+        var clientFrame = clientFrameFactory.createTextFrame("Hello World");
         ByteArrayOutputStream bytesOutputStream = new ByteArrayOutputStream();
         var outputStream = new NoHeaderObjectOutputStream(bytesOutputStream);
         clientFrame.writeExternal(outputStream);
@@ -34,10 +45,10 @@ class DataFrameTest {
     @Test
     void givenServerFrame_whenParsedToDataFrame_thenSuccess() throws IOException {
         // given
-        var clientFrame = TextFrame.createServerFrame("Hello World".getBytes());
+        var serverFrame = serverFrameFactory.createTextFrame("Hello World");
         ByteArrayOutputStream bytesOutputStream = new ByteArrayOutputStream();
         var outputStream = new NoHeaderObjectOutputStream(bytesOutputStream);
-        clientFrame.writeExternal(outputStream);
+        serverFrame.writeExternal(outputStream);
         outputStream.flush();
 
         // when

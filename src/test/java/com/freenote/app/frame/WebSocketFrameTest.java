@@ -2,9 +2,7 @@ package com.freenote.app.frame;
 
 import com.freenote.app.server.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.FrameType;
-import com.freenote.app.server.frames.PingFrame;
 import com.freenote.app.server.frames.PongFrame;
-import com.freenote.app.server.frames.TextFrame;
 import io.NoHeaderObjectOutputStream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -13,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class WebSocketFrameTest {
     private static ServerFrameFactory serverFrameFactory = null;
@@ -24,17 +23,18 @@ class WebSocketFrameTest {
 
     @Test
     void testPingPongFrame() {
-        var pingFrame = new PingFrame();
+        var pingFrame = serverFrameFactory.createPingFrame();
         assertEquals(FrameType.PING.getOpCode(), pingFrame.getOpcode());
         assertEquals(0, pingFrame.getPayloadLength());
         var pongFrame = new PongFrame();
         assertEquals(FrameType.PONG.getOpCode(), pongFrame.getOpcode());
+        assertFalse(pingFrame.isMasked());
     }
 
     @Test
     void testLargeTextFrame() throws IOException {
         var largeText = "a".repeat(126);
-        var largeFrame = TextFrame.createServerFrame(largeText.getBytes());
+        var largeFrame = serverFrameFactory.createTextFrame(largeText);
         var byteArrayOutputStream = new ByteArrayOutputStream();
         var outputStream = new NoHeaderObjectOutputStream(byteArrayOutputStream);
         largeFrame.writeExternal(outputStream);
@@ -46,7 +46,7 @@ class WebSocketFrameTest {
     @Test
     void testSuperLargeTextFrame() throws IOException {
         var largeText = "a".repeat(647136);
-        var largeFrame = TextFrame.createServerFrame(largeText.getBytes());
+        var largeFrame = serverFrameFactory.createTextFrame(largeText);
         var byteArrayOutputStream = new ByteArrayOutputStream();
         var outputStream = new NoHeaderObjectOutputStream(byteArrayOutputStream);
         largeFrame.writeExternal(outputStream);

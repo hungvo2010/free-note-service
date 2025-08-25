@@ -1,9 +1,11 @@
 package com.freenote.app.handler;
 
-import com.freenote.app.server.frames.TextFrame;
+import com.freenote.app.server.factory.ClientFrameFactory;
+import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.handler.impl.EchoHandler;
 import io.NoHeaderObjectOutputStream;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -12,16 +14,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class URIHandlerTest {
+    static ClientFrameFactory clientFrameFactory = null;
+
+    @BeforeAll
+    static void setup() {
+        clientFrameFactory = new ClientFrameFactory();
+    }
     private final URIHandler mockURIHandler = new EchoHandler();
 
     @Test
     void givenInputStreamThenWriteToOutputStream() throws IOException {
-        TextFrame textFrame = TextFrame.createClientFrame("Hello World".getBytes());
+        WebSocketFrame textFrame = clientFrameFactory.createTextFrame("Hello World");
         var byteArrayOutputStream = new ByteArrayOutputStream();
         textFrame.writeExternal(new NoHeaderObjectOutputStream(byteArrayOutputStream));
         byteArrayOutputStream.flush();

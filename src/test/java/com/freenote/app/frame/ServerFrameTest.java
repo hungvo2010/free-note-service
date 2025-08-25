@@ -1,7 +1,6 @@
 package com.freenote.app.frame;
 
 import com.freenote.app.server.factory.ServerFrameFactory;
-import com.freenote.app.server.frames.ServerFrame;
 import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
@@ -24,137 +23,140 @@ class ServerFrameTest {
 
     @Test
     void testCreateControlFrame_ReturnsControlFrameInstance() {
-        short opcode = 0x08; // Close frame opcode
-
-        WebSocketFrame result = ServerFrame.createControlFrame(opcode);
+        // Test Close frame creation (opcode 8)
+        WebSocketFrame result = serverFrameFactory.createCloseFrame(1000, "Normal closure");
 
         assertNotNull(result);
         assertTrue(result instanceof ControlFrame);
-        assertEquals(opcode, result.getOpcode());
+        assertEquals(8, result.getOpcode());
     }
 
     @Test
     void testCreateControlFrame_WithDifferentOpcodes() {
-        // Test various control frame opcodes
-        short[] opcodes = {0x08, 0x09, 0x0A}; // Close, Ping, Pong
+        // Test various control frame types with valid opcodes
+        WebSocketFrame closeFrame = serverFrameFactory.createCloseFrame(1000, "Normal closure"); // opcode 8
+        WebSocketFrame pingFrame = serverFrameFactory.createPingFrame(); // opcode 9
+        WebSocketFrame pongFrame = serverFrameFactory.createPongFrame(); // opcode 10
 
-        for (short opcode : opcodes) {
-            WebSocketFrame result = ServerFrame.createControlFrame(opcode);
-
-            assertNotNull(result);
-            assertTrue(result instanceof ControlFrame);
-            assertEquals(opcode, result.getOpcode());
-        }
+        assertNotNull(closeFrame);
+        assertNotNull(pingFrame);
+        assertNotNull(pongFrame);
+        
+        assertTrue(closeFrame instanceof ControlFrame);
+        assertTrue(pingFrame instanceof ControlFrame);
+        assertTrue(pongFrame instanceof ControlFrame);
+        
+        assertEquals(8, closeFrame.getOpcode());
+        assertEquals(9, pingFrame.getOpcode());
+        assertEquals(10, pongFrame.getOpcode());
     }
 
     @Test
-    void testCreateControlFrame_WithZeroOpcode() {
-        short opcode = 0x00;
-
-        WebSocketFrame result = ServerFrame.createControlFrame(opcode);
+    void testCreatePingFrame() {
+        WebSocketFrame result = serverFrameFactory.createPingFrame(); // opcode 9
 
         assertNotNull(result);
         assertTrue(result instanceof ControlFrame);
-        assertEquals(opcode, result.getOpcode());
+        assertEquals(9, result.getOpcode());
     }
 
     @Test
-    void testCreateControlFrame_WithMaxOpcode() {
-        short opcode = Short.MAX_VALUE;
-
-        WebSocketFrame result = ServerFrame.createControlFrame(opcode);
+    void testCreatePongFrame() {
+        WebSocketFrame result = serverFrameFactory.createPongFrame(); // opcode 10
 
         assertNotNull(result);
         assertTrue(result instanceof ControlFrame);
-        assertEquals(opcode, result.getOpcode());
+        assertEquals(10, result.getOpcode());
     }
 
     @Test
-    void testCreateControlFrame_WithNegativeOpcode() {
-        short opcode = -1;
-
-        WebSocketFrame result = ServerFrame.createControlFrame(opcode);
+    void testCreateCloseFrame() {
+        WebSocketFrame result = serverFrameFactory.createCloseFrame(1000, "Normal closure"); // opcode 8
 
         assertNotNull(result);
         assertTrue(result instanceof ControlFrame);
-        assertEquals(opcode, result.getOpcode());
+        assertEquals(8, result.getOpcode());
     }
 
     @Test
     void testCreateDataFrame_ReturnsDataFrameInstance() {
-        short opcode = 0x01; // Text frame opcode
-
-        WebSocketFrame result = ServerFrame.createDataFrame(opcode);
+        // Text frame (opcode 1)
+        WebSocketFrame result = serverFrameFactory.createTextFrame("Hello World");
 
         assertNotNull(result);
         assertTrue(result instanceof DataFrame);
+        assertEquals(1, result.getOpcode());
     }
 
     @Test
-    void testCreateDataFrame_IgnoresOpcodeParameter() {
-        // The current implementation ignores the opcode parameter
-        // and always creates a DataFrame with default TEXT opcode
-        short inputOpcode = 0x02; // Binary frame opcode
-
-        WebSocketFrame result = ServerFrame.createDataFrame(inputOpcode);
+    void testCreateDataFrame_BinaryFrame() {
+        // Binary frame (opcode 2)
+        byte[] testData = {0x01, 0x02, 0x03, 0x04};
+        WebSocketFrame result = serverFrameFactory.createBinaryFrame(testData);
 
         assertNotNull(result);
         assertTrue(result instanceof DataFrame);
-        // Note: The implementation currently ignores the opcode parameter
-        // This might be a bug that should be addressed
+        assertEquals(2, result.getOpcode());
     }
 
     @Test
     void testCreateDataFrame_WithDifferentOpcodes() {
-        short[] opcodes = {0x01, 0x02, 0x00, 0x0F}; // Text, Binary, Continuation, Reserved
+        // Test valid data frame types
+        WebSocketFrame textFrame = serverFrameFactory.createTextFrame("Hello"); // opcode 1
+        WebSocketFrame binaryFrame = serverFrameFactory.createBinaryFrame(new byte[]{1, 2, 3}); // opcode 2
+        WebSocketFrame continuationFrame = serverFrameFactory.createContinuationFrame(new byte[]{4, 5, 6}); // opcode 0
 
-        for (short opcode : opcodes) {
-            WebSocketFrame result = ServerFrame.createDataFrame(opcode);
-
-            assertNotNull(result);
-            assertTrue(result instanceof DataFrame);
-            // All should return DataFrame instances regardless of opcode
-        }
+        assertNotNull(textFrame);
+        assertNotNull(binaryFrame);
+        assertNotNull(continuationFrame);
+        
+        assertTrue(textFrame instanceof DataFrame);
+        assertTrue(binaryFrame instanceof DataFrame);
+        assertTrue(continuationFrame instanceof DataFrame);
+        
+        assertEquals(1, textFrame.getOpcode());
+        assertEquals(2, binaryFrame.getOpcode());
+        assertEquals(0, continuationFrame.getOpcode());
     }
 
     @Test
-    void testCreateDataFrame_WithZeroOpcode() {
-        short opcode = 0x00;
-
-        WebSocketFrame result = ServerFrame.createDataFrame(opcode);
+    void testCreateContinuationFrame() {
+        // Continuation frame (opcode 0)
+        byte[] testData = {0x05, 0x06, 0x07};
+        WebSocketFrame result = serverFrameFactory.createContinuationFrame(testData);
 
         assertNotNull(result);
         assertTrue(result instanceof DataFrame);
+        assertEquals(0, result.getOpcode());
     }
 
     @Test
-    void testCreateDataFrame_WithMaxOpcode() {
-        short opcode = Short.MAX_VALUE;
-
-        WebSocketFrame result = ServerFrame.createDataFrame(opcode);
+    void testCreateTextFrame() {
+        // Text frame (opcode 1)
+        WebSocketFrame result = serverFrameFactory.createTextFrame("Test message");
 
         assertNotNull(result);
         assertTrue(result instanceof DataFrame);
+        assertEquals(1, result.getOpcode());
     }
 
     @Test
-    void testCreateDataFrame_WithNegativeOpcode() {
-        short opcode = -1;
-
-        WebSocketFrame result = ServerFrame.createDataFrame(opcode);
+    void testCreateBinaryFrame() {
+        // Binary frame (opcode 2)
+        byte[] testData = {0x0A, 0x0B, 0x0C};
+        WebSocketFrame result = serverFrameFactory.createBinaryFrame(testData);
 
         assertNotNull(result);
         assertTrue(result instanceof DataFrame);
+        assertEquals(2, result.getOpcode());
     }
 
     @Test
     void testFactoryMethods_ReturnDifferentInstances() {
-        short opcode = 0x01;
-
-        WebSocketFrame controlFrame1 = ServerFrame.createControlFrame(opcode);
-        WebSocketFrame controlFrame2 = ServerFrame.createControlFrame(opcode);
-        WebSocketFrame dataFrame1 = ServerFrame.createDataFrame(opcode);
-        WebSocketFrame dataFrame2 = ServerFrame.createDataFrame(opcode);
+        WebSocketFrame controlFrame1 = serverFrameFactory.createPingFrame();
+        WebSocketFrame controlFrame2 = serverFrameFactory.createPingFrame();
+        WebSocketFrame dataFrame1 = serverFrameFactory.createTextFrame("Test1");
+        WebSocketFrame dataFrame2 = serverFrameFactory.createTextFrame("Test2");
 
         // Each call should return a new instance
         assertNotSame(controlFrame1, controlFrame2);
@@ -164,10 +166,8 @@ class ServerFrameTest {
 
     @Test
     void testFactoryMethods_ReturnCorrectTypes() {
-        short opcode = 0x01;
-
-        WebSocketFrame controlFrame = ServerFrame.createControlFrame(opcode);
-        WebSocketFrame dataFrame = ServerFrame.createDataFrame(opcode);
+        WebSocketFrame controlFrame = serverFrameFactory.createPingFrame();
+        WebSocketFrame dataFrame = serverFrameFactory.createTextFrame("Test");
 
         // Verify the correct types are returned
         assertTrue(controlFrame instanceof ControlFrame);
@@ -176,25 +176,22 @@ class ServerFrameTest {
 
     @Test
     void testControlFrameProperties() {
-        short opcode = 0x08; // Close frame
-
-        ControlFrame controlFrame = (ControlFrame) ServerFrame.createControlFrame(opcode);
+        // Close frame (opcode 8)
+        ControlFrame controlFrame = (ControlFrame) serverFrameFactory.createCloseFrame(1000, "Normal closure");
 
         assertNotNull(controlFrame);
-        assertEquals(opcode, controlFrame.getOpcode());
+        assertEquals(8, controlFrame.getOpcode());
         assertFalse(controlFrame.isMasked()); // Control frames are not masked by default
         assertEquals(0, controlFrame.getPayloadLength()); // Control frames have no payload
     }
 
     @Test
     void testDataFrameProperties() {
-        short opcode = 0x01;
-
-        DataFrame dataFrame = (DataFrame) ServerFrame.createDataFrame(opcode);
+        // Text frame (opcode 1)
+        DataFrame dataFrame = (DataFrame) serverFrameFactory.createTextFrame("Test message");
 
         assertNotNull(dataFrame);
-        // Note: Current implementation ignores opcode parameter
-        // This test documents the current behavior
+        assertEquals(1, dataFrame.getOpcode());
         assertFalse(dataFrame.isMasked()); // Server frames are not masked
     }
 

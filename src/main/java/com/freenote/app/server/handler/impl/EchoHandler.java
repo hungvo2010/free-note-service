@@ -2,9 +2,10 @@ package com.freenote.app.server.handler.impl;
 
 
 import com.freenote.annotations.URIHandlerImplementation;
+import com.freenote.app.server.factory.ClientFrameFactory;
+import com.freenote.app.server.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.ClientFrame;
 import com.freenote.app.server.frames.FrameType;
-import com.freenote.app.server.frames.TextFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.util.FrameUtil;
@@ -19,6 +20,8 @@ import java.util.Arrays;
 @URIHandlerImplementation("/example")
 public class EchoHandler implements URIHandler {
     private static final Logger log = LogManager.getLogger(EchoHandler.class);
+    private static final ServerFrameFactory serverFrameFactory = new ServerFrameFactory();
+    private static final ClientFrameFactory clientFrameFactory = new ClientFrameFactory();
 
     @Override
     public boolean handle(InputStream inputStream, OutputStream outputStream) {
@@ -42,7 +45,7 @@ public class EchoHandler implements URIHandler {
 
                 var objectOutputStream = new NoHeaderObjectOutputStream(outputStream);
                 log.info("Writing to output stream" + " with payload: {}", new String(payload, StandardCharsets.UTF_8));
-                objectOutputStream.writeObject(TextFrame.createServerFrame(payload));
+                objectOutputStream.writeObject(serverFrameFactory.createTextFrame(new String(payload, StandardCharsets.UTF_8)));
                 objectOutputStream.flush();
             }
             log.info("Input stream handling completed successfully.");
