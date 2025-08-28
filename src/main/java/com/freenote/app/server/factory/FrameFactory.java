@@ -14,4 +14,6 @@ public interface FrameFactory {
     WebSocketFrame createCloseFrame(int code, String reason);
 
     WebSocketFrame createContinuationFrame(byte[] data);
+
+    WebSocketFrame createFrameFromBytes(byte[] frameBytes);
 }

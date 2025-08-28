@@ -37,4 +37,9 @@ public class ServerFrameFactory implements FrameFactory {
     public WebSocketFrame createContinuationFrame(byte[] data) {
         return new DataFrame(FrameType.CONTINUATION.getOpCode(), data);
     }
+
+    @Override
+    public WebSocketFrame createFrameFromBytes(byte[] frameBytes) {
+        return null;
+    }
 }

@@ -4,7 +4,6 @@ package com.freenote.app.server.handler.impl;
 import com.freenote.annotations.URIHandlerImplementation;
 import com.freenote.app.server.factory.ClientFrameFactory;
 import com.freenote.app.server.factory.ServerFrameFactory;
-import com.freenote.app.server.frames.ClientFrame;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.handler.URIHandler;
@@ -30,7 +29,7 @@ public class EchoHandler implements URIHandler {
             while (reader.ready()) {
                 byte[] actualData = getRawBytes(inputStream);
                 if (actualData == null) return false;
-                WebSocketFrame frame = new ClientFrame(actualData);
+                WebSocketFrame frame = clientFrameFactory.createFrameFromBytes(actualData);
 
                 log.info("FIN: {}", frame.isFin());
                 log.info("Opcode: {} - {}", frame.getOpcode(), FrameType.fromHexValue(frame.getOpcode()));

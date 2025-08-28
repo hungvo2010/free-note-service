@@ -17,7 +17,7 @@ import java.net.URL;
 import java.util.*;
 
 public class WSLauncher {
-    private static final Logger log = LogManager.getLogger(WSLauncher.class);
+    private static final Logger logger = LogManager.getLogger(WSLauncher.class);
     public static final Map<String, Class<URIHandler>> ALL_URI_HANDLERS = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
@@ -34,18 +34,18 @@ public class WSLauncher {
             for (Method method : methods) {
                 Annotation[] methodAnnotations = method.getAnnotations();
                 if (methodAnnotations.length > 0) {
-                    System.out.println("Method: " + method.getName());
-                    System.out.println("Return Type: " + method.getReturnType().getName());
-                    System.out.println("Parameter Count: " + method.getParameterCount());
+                    logger.info("Method: " + method.getName());
+                    logger.info("Return Type: " + method.getReturnType().getName());
+                    logger.info("Parameter Count: " + method.getParameterCount());
                     for (Annotation ann : methodAnnotations) {
-                        System.out.println("  -> " + ann.annotationType().getName());
+                        logger.info("  -> " + ann.annotationType().getName());
                     }
                 }
             }
             if (annotations.length > 0) {
-                System.out.println(clazz.getName());
+                logger.info(clazz.getName());
                 for (Annotation ann : annotations) {
-                    System.out.println("  -> " + ann.annotationType().getName());
+                    logger.info("  -> " + ann.annotationType().getName());
                 }
             }
         }
@@ -71,7 +71,7 @@ public class WSLauncher {
             }
             Method method = clazz.getMethod("handle", InputStream.class, OutputStream.class);
             if (method == null) {
-                log.error(String.format("Class %s does not have a handle method with the correct signature.", clazz.getName()));
+                logger.error(String.format("Class %s does not have a handle method with the correct signature.", clazz.getName()));
                 return;
             }
             ALL_URI_HANDLERS.put(clazz.getAnnotation(URIHandleAnnotation.class).path(), (Class<URIHandler>) clazz);
@@ -79,7 +79,7 @@ public class WSLauncher {
             System.err.println("Class " + clazz.getName() + " does not have a handle method with the correct signature.");
             e.printStackTrace();
         } catch (SecurityException e) {
-            log.info("Security exception while accessing method in class " + clazz.getName());
+            logger.info("Security exception while accessing method in class " + clazz.getName());
             e.printStackTrace();
         }
 
