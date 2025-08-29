@@ -42,7 +42,9 @@ public class ClientFrameFactory implements FrameFactory {
 
     @Override
     public WebSocketFrame createContinuationFrame(byte[] data) {
-        return new ControlFrame(FrameType.CONTINUATION.getOpCode(), true);
+        var bytes = new byte[4];
+        secureRandom.nextBytes(bytes);
+        return new DataFrame(FrameType.CONTINUATION.getOpCode(), data, true, bytes);
     }
 
     @Override
