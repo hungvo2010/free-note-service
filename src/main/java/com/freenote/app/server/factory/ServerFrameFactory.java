@@ -40,6 +40,8 @@ public class ServerFrameFactory implements FrameFactory {
 
     @Override
     public WebSocketFrame createFrameFromBytes(byte[] frameBytes) {
-        return null;
+        var serverFrame = new DataFrame(frameBytes);
+        serverFrame.setMasked(false);
+        return serverFrame;
     }
 }

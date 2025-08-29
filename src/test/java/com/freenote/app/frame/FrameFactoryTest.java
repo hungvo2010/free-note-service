@@ -1,5 +1,6 @@
 package com.freenote.app.frame;
 
+import com.freenote.app.server.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.FrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import org.junit.jupiter.api.Test;
@@ -13,5 +14,12 @@ class FrameFactoryTest {
         byte[] frameBytes = FrameFactory.createServerFrame("Hello World".getBytes(), frameType);
         assertEquals(frameBytes[0], frameType.getHexValue());
         assertEquals(frameBytes[1], "Hello World".getBytes().length);
+    }
+
+    @Test
+    void givenFrameTypeThenCreateServerFrame() {
+        FrameType frameType = FrameType.BINARY;
+        var factory = new ServerFrameFactory();
+        var frame = factory.createFrameFromBytes("Hello World".getBytes());
     }
 }
