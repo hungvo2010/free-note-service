@@ -44,15 +44,21 @@ public class EchoHandler implements URIHandler {
 
                 var objectOutputStream = new NoHeaderObjectOutputStream(outputStream);
                 log.info("Writing to output stream" + " with payload: {}", new String(payload, StandardCharsets.UTF_8));
+                log.info("===========================================================================");
                 objectOutputStream.writeObject(serverFrameFactory.createTextFrame(new String(payload, StandardCharsets.UTF_8)));
                 objectOutputStream.flush();
             }
-            log.info("Input stream handling completed successfully.");
+//            log.info("Input stream handling completed successfully.");
             return true;
         } catch (IOException e) {
             log.error("Error handling input stream", e);
             return false;
         }
+    }
+
+    @Override
+    public boolean continuationHandler(WebSocketFrame clientFrame, InputStream inputStream, OutputStream outputStream) {
+        return false;
     }
 
     public byte[] getRawBytes(InputStream inputStream) throws IOException {

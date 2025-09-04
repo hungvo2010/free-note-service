@@ -67,4 +67,8 @@ public class LargeFrame {
         }
         return new DataFrame(fragmentMessages.get(0).getOpcode(), mergedFrame.getPayloadData().clone());
     }
+
+    public boolean isComplete() {
+        return fragmentState == FragmentState.COMPLETED;
+    }
 }

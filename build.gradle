@@ -81,9 +81,9 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.compilerArgs << "-XprintProcessorInfo"
-}
+//tasks.withType(JavaCompile).configureEach {
+//    options.compilerArgs << "-XprintProcessorInfo"
+//}
 
 tasks.register('bootRun', JavaExec) {
     group = 'application'

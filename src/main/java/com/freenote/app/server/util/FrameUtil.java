@@ -1,5 +1,6 @@
 package com.freenote.app.server.util;
 
+import com.freenote.app.server.exceptions.InvalidFrameException;
 import lombok.experimental.UtilityClass;
 
 import java.util.Arrays;
@@ -17,13 +18,13 @@ public class FrameUtil {
         } else if (sevenBitsValue == 126) {
             // 126 means the next two bytes are the payload length
             if (bytes.length < 4) {
-                throw new IllegalArgumentException("Payload length is too short for extended payload length");
+                throw new InvalidFrameException("Payload length is too short for extended payload length");
             }
             return bytesToInt(Arrays.copyOfRange(bytes, 2, 4)); // Combine two bytes into one short
         } else {
             // 127 means the next 8 bytes are the payload length
             if (bytes.length < 10) {
-                throw new IllegalArgumentException("Payload length is too short for extended payload length");
+                throw new InvalidFrameException("Payload length is too short for extended payload length");
             }
             return bytesToInt(Arrays.copyOfRange(bytes, 2, 10)); // Combine eight bytes into one long
         }
@@ -40,7 +41,7 @@ public class FrameUtil {
 
     public static byte[] maskPayload(byte[] payload, byte[] maskingKey) {
         if (maskingKey.length != 4) {
-            throw new IllegalArgumentException("Masking key must be 4 bytes long");
+            throw new InvalidFrameException("Masking key must be 4 bytes long");
         }
         byte[] result = new byte[payload.length];
         for (int i = 0; i < payload.length; i++) {

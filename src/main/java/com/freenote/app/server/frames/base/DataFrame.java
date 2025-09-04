@@ -45,7 +45,7 @@ public class DataFrame extends WebSocketFrame {
 
     @Override
     protected void parsePayload(byte[] bytes) {
-        var maskingKeyStart = getMaskingKeyStartSupplier().applyAsInt(bytes[1]);
+        var maskingKeyStart = getMaskingKeyStartSupplier().applyAsInt(bytes[1] & 0x7F);
         payloadData = Arrays.copyOfRange(bytes, maskingKeyStart + maskingKey.length, bytes.length);
     }
 
@@ -70,7 +70,7 @@ public class DataFrame extends WebSocketFrame {
 
     @Override
     public void parseMaskingKey(byte[] bytes) {
-        var maskingKeyStart = getMaskingKeyStartSupplier().applyAsInt(bytes[1]);
+        var maskingKeyStart = getMaskingKeyStartSupplier().applyAsInt(bytes[1] & 0x7F);
         maskingKey = isMasked ? Arrays.copyOfRange(bytes, maskingKeyStart, maskingKeyStart + DEFAULT_MASKING_KEY_LENGTH) : new byte[0]; // Masking key is present if masked is true
     }
 
