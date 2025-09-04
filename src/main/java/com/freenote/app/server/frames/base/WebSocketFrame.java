@@ -56,16 +56,6 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
         parsePayload(bytes);
     }
 
-    protected WebSocketFrame(FrameBuilder frameBuilder, FrameTypeWithBehavior frameTypeWithBehavior) {
-        this.fin = frameBuilder.isFin();
-        this.rsv1 = frameBuilder.isRsv1();
-        this.rsv2 = frameBuilder.isRsv2();
-        this.rsv3 = frameBuilder.isRsv3();
-        this.opcode = frameTypeWithBehavior.getOpcode();
-        this.isMasked = frameBuilder.isMasked();
-        frameTypeWithBehavior.handleVariableLength(frameBuilder);
-    }
-
     protected abstract void parsePayloadLength(byte[] bytes);
 
     protected abstract void parseMaskingKey(byte[] bytes);

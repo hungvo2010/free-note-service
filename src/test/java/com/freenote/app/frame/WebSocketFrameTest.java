@@ -2,7 +2,7 @@ package com.freenote.app.frame;
 
 import com.freenote.app.server.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.FrameType;
-import com.freenote.app.server.frames.PongFrame;
+import com.freenote.app.server.frames.control.PongFrame;
 import io.NoHeaderObjectOutputStream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

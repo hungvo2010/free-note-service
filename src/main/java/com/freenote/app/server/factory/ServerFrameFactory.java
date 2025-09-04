@@ -1,11 +1,11 @@
 package com.freenote.app.server.factory;
 
-import com.freenote.app.server.frames.CloseFrame;
 import com.freenote.app.server.frames.FrameType;
-import com.freenote.app.server.frames.PingFrame;
-import com.freenote.app.server.frames.PongFrame;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.frames.control.CloseFrame;
+import com.freenote.app.server.frames.control.PingFrame;
+import com.freenote.app.server.frames.control.PongFrame;
 
 public class ServerFrameFactory implements FrameFactory {
     @Override
@@ -40,7 +40,7 @@ public class ServerFrameFactory implements FrameFactory {
 
     @Override
     public WebSocketFrame createFrameFromBytes(byte[] frameBytes) {
-        var serverFrame = new DataFrame(frameBytes);
+        var serverFrame = DataFrame.fromRawFrameBytes(frameBytes);
         serverFrame.setMasked(false);
         return serverFrame;
     }

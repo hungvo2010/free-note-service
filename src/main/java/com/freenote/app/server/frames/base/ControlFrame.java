@@ -5,6 +5,7 @@ import java.io.ObjectOutput;
 
 public class ControlFrame extends WebSocketFrame {
     public ControlFrame() {
+        throw new UnsupportedOperationException("ControlFrame must be instantiated with an opCode.");
     }
 
     public ControlFrame(short opCode) {

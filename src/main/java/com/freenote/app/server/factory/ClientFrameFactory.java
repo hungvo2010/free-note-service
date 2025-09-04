@@ -1,6 +1,5 @@
 package com.freenote.app.server.factory;
 
-import com.freenote.app.server.frames.ClientFrame;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.frames.base.DataFrame;
@@ -49,6 +48,6 @@ public class ClientFrameFactory implements FrameFactory {
 
     @Override
     public WebSocketFrame createFrameFromBytes(byte[] frameBytes) {
-        return new ClientFrame(frameBytes);
+        return DataFrame.fromRawFrameBytes(frameBytes);
     }
 }

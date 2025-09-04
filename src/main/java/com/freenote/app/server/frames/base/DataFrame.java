@@ -16,7 +16,7 @@ public class DataFrame extends WebSocketFrame {
     private static final int MAX_PAYLOAD_LENGTH_7_BITS = 126;
 
     public DataFrame() {
-        super(FrameTypeWithBehavior.TEXT.getOpcode());
+        throw new UnsupportedOperationException("Default constructor is not supported for DataFrame. Use parameterized constructors instead.");
     }
 
     public DataFrame(short opCode, byte[] bytes) {
@@ -29,8 +29,12 @@ public class DataFrame extends WebSocketFrame {
         this.maskingKey = maskingKey;
     }
 
-    public DataFrame(byte[] payload) {
+    private DataFrame(byte[] payload) {
         super(payload);
+    }
+
+    public static DataFrame fromRawFrameBytes(byte[] rawFrameBytes) {
+        return new DataFrame(rawFrameBytes);
     }
 
     @Override
