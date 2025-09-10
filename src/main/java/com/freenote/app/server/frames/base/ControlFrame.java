@@ -12,6 +12,10 @@ public class ControlFrame extends WebSocketFrame {
         super(opCode);
     }
 
+    public ControlFrame(byte[] bytes) {
+        super(bytes);
+    }
+
     public ControlFrame(short opCode, boolean isMasked) {
         super(opCode, isMasked);
     }

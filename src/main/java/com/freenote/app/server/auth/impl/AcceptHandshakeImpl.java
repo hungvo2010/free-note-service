@@ -18,7 +18,6 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
     private static final Collection<String> ALLOWED_ORIGINS = Arrays.asList(
             "http://localhost:3000",
             "",
-            null,
             "http://localhost:63342",
             "http://localhost:8082",
             "http://localhost:8083",
@@ -41,7 +40,14 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
             var socketAccept = Base64.getEncoder().encodeToString(
                     MessageDigest.getInstance("SHA-1")
                             .digest((request.getSecWebSocketKey() + UNIVERSAL_WEBSOCKET_GUID).getBytes(StandardCharsets.UTF_8)));
-            return HttpUpgradeResponse.builder().statusCode("101").statusText("Switching Protocols").version("HTTP/1.1").upgrade("websocket").connection("Upgrade").secWebSocketAccept(socketAccept).build();
+            return HttpUpgradeResponse.builder()
+                    .statusCode("101")
+                    .statusText("Switching Protocols")
+                    .version("HTTP/1.1")
+                    .upgrade("websocket")
+                    .connection("Upgrade")
+                    .secWebSocketAccept(socketAccept)
+                    .build();
         } catch (Exception e) {
             return new HttpUpgradeResponse();
         }
@@ -52,7 +58,7 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
             return false;
         }
         return !(Objects.isNull(request.getSecWebSocketKey())
-//                || Objects.isNull(request.getSecWebSocketExtensions())
+                || Objects.isNull(request.getSecWebSocketExtensions())
                 || Objects.isNull(request.getSecWebSocketVersion()));
     }
 }

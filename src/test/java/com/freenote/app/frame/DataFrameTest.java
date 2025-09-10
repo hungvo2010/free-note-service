@@ -54,4 +54,40 @@ class DataFrameTest {
         assertFalse(dataFrame.isMasked());
         assertThrows(InvalidFrameException.class, () -> new String(FrameUtil.maskPayload(dataFrame.getPayloadData(), dataFrame.getMaskingKey())));
     }
+
+    @Test
+    void givenFreshDataFrame_whenGetTotalFrameLength_thenSuccess() throws IOException {
+        var dataFrame = serverFrameFactory.createTextFrame("");
+        assertEquals(2, dataFrame.getTotalFrameLength());
+    }
+
+    @Test
+    void givenShortServerTextDataFrame_whenGetTotalFrameLength_thenSuccess() throws IOException {
+        var shortTextFrame = serverFrameFactory.createTextFrame("123"); // 2 + 1 = 3
+        assertEquals(5, shortTextFrame.getTotalFrameLength());
+
+        var mediumDataFrame = serverFrameFactory.createTextFrame("123456789012345"); // 2 + 1 + 2 = 5
+        assertEquals(17, mediumDataFrame.getTotalFrameLength());
+
+        var intermediateDataFrame = serverFrameFactory.createTextFrame("1".repeat(129)); // 2 + 1 + 2 = 5
+        assertEquals(2 + 2 + 129, intermediateDataFrame.getTotalFrameLength());
+
+        var superLargeDataFrame = serverFrameFactory.createTextFrame("1".repeat(67855)); // 2 + 1 + 2 = 5
+        assertEquals(2 + 8 + 67855, superLargeDataFrame.getTotalFrameLength());
+    }
+
+    @Test
+    void givenClientFrame_whenGetTotalFrameLength_thenSuccess() throws IOException {
+        var clientFrame = clientFrameFactory.createTextFrame("123"); // 2 + 1 = 3
+        assertEquals(5 + 4, clientFrame.getTotalFrameLength());
+
+        var mediumDataFrame = clientFrameFactory.createTextFrame("123456789012345"); // 2 + 1 + 2 = 5
+        assertEquals(17 + 4, mediumDataFrame.getTotalFrameLength());
+
+        var intermediateDataFrame = clientFrameFactory.createTextFrame("1".repeat(129)); // 2 + 1 + 2 = 5
+        assertEquals(2 + 2 + 129 + 4, intermediateDataFrame.getTotalFrameLength());
+
+        var superLargeDataFrame = clientFrameFactory.createTextFrame("1".repeat(67855)); // 2 + 1 + 2 = 5
+        assertEquals(2 + 8 + 67855 + 4, superLargeDataFrame.getTotalFrameLength());
+    }
 }

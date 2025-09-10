@@ -60,7 +60,7 @@ public class DataFrame extends WebSocketFrame {
     @Override
     public int getTotalFrameLength() {
         var fixedHeaderLength = 2;
-        var extendedPayloadLength = payloadLength == 126 ? 2 : payloadLength == 127 ? 8 : 0;
+        var extendedPayloadLength = payloadLength >= MAX_PAYLOAD_LENGTH_2_BYTES ? 8 : (payloadLength >= MAX_PAYLOAD_LENGTH_7_BITS ? 2 : 0);
         var maskingKeyLength = isMasked ? DEFAULT_MASKING_KEY_LENGTH : 0;
         return fixedHeaderLength + extendedPayloadLength + maskingKeyLength + (int) this.payloadLength;
     }
