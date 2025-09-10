@@ -35,6 +35,11 @@ public class ControlFrame extends WebSocketFrame {
     }
 
     @Override
+    public int getTotalFrameLength() {
+        return 2;
+    }
+
+    @Override
     public void writePayloadLength(ObjectOutput out) {
         // note: control frames do not have a payload length
     }

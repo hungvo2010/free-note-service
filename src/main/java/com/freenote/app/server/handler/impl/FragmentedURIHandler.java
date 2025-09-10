@@ -1,6 +1,7 @@
 package com.freenote.app.server.handler.impl;
 
 import com.freenote.annotations.URIHandlerImplementation;
+import com.freenote.app.server.factory.FrameFactory;
 import com.freenote.app.server.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.LargeFrame;
@@ -8,18 +9,23 @@ import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.util.FrameUtil;
-import io.NoHeaderObjectOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+
+import static com.freenote.app.server.util.IOUtils.writeOutPut;
 
 @URIHandlerImplementation("/update")
 public class FragmentedURIHandler implements URIHandler {
     private static final Logger log = LogManager.getLogger(FragmentedURIHandler.class);
+    private final FrameFactory frameFactory = new ServerFrameFactory();
 
     @Override
     public boolean handle(InputStream inputStream, OutputStream outputStream) {
@@ -29,25 +35,38 @@ public class FragmentedURIHandler implements URIHandler {
             var bytes = new byte[70000];
             int read = inputStream.read(bytes);
             if (read == -1) return false;
-            var clientFrame = DataFrame.fromRawFrameBytes(Arrays.copyOfRange(bytes, 0, read));
-            if (!clientFrame.isFin() && clientFrame.getOpcode() == FrameType.CONTINUATION.getOpCode()) {
-                return continuationHandler(clientFrame, inputStream, outputStream);
+            var clientFrames = readOneOrMultipleFrames(Arrays.copyOfRange(bytes, 0, read));
+            var clientFrame = clientFrames.get(0);
+            if (!clientFrame.isFin() && clientFrame.getOpcode() != FrameType.CONTINUATION.getOpCode()) {
+                return continuationHandler(clientFrames, inputStream, outputStream);
             }
-            var objectOutputStream = new NoHeaderObjectOutputStream(outputStream);
-            objectOutputStream.writeObject(new ServerFrameFactory().createTextFrame(new String(FrameUtil.maskPayload(clientFrame.getPayloadData(), clientFrame.getMaskingKey()), "UTF-8")));
+            writeOutPut(outputStream, frameFactory.createTextFrame(new String(FrameUtil.maskPayload(clientFrame.getPayloadData(), clientFrame.getMaskingKey()), "UTF-8")));
             return true;
         } catch (IOException e) {
             return false;
         }
     }
 
+    private List<WebSocketFrame> readOneOrMultipleFrames(byte[] bytes) {
+        int byteRead = 0;
+        var allFrames = new ArrayList<WebSocketFrame>();
+        while (byteRead < bytes.length) {
+            var frame = DataFrame.fromRawFrameBytes(Arrays.copyOfRange(bytes, byteRead, bytes.length));
+            allFrames.add(frame);
+            byteRead += frame.getTotalFrameLength();
+        }
+        return allFrames;
+    }
+
     @Override
-    public boolean continuationHandler(WebSocketFrame clientFrame, InputStream inputStream, OutputStream outputStream) throws IOException {
+    public boolean continuationHandler(List<WebSocketFrame> clientFrames, InputStream inputStream, OutputStream outputStream) throws IOException {
+        LargeFrame largeFrame = new LargeFrame();
         try {
             int read = 0;
-            LargeFrame largeFrame = new LargeFrame();
-            largeFrame.addFragmentMessage((DataFrame) clientFrame);
-            log.info("Frame content: {}", new String(clientFrame.getPayloadData()));
+            for (var clientFrame : clientFrames) {
+                largeFrame.addFragmentMessage((DataFrame) clientFrame);
+                log.info("Frame content: {}", new String(FrameUtil.maskPayload(clientFrame.getPayloadData(), clientFrame.getMaskingKey()), StandardCharsets.UTF_8));
+            }
             do {
                 var bytes = new byte[70000];
                 read = inputStream.read(bytes);
@@ -56,10 +75,13 @@ public class FragmentedURIHandler implements URIHandler {
                 }
             } while (!largeFrame.isComplete() || read != -1);
             var mergedFrame = largeFrame.getMergedFrame();
-            var objectOutputStream = new NoHeaderObjectOutputStream(outputStream);
-            objectOutputStream.writeObject(mergedFrame);
+            writeOutPut(outputStream, mergedFrame);
             return true;
         } catch (IOException e) {
+            var mergedFrame = largeFrame.getMergedFrame();
+            var content = new String(mergedFrame.getPayloadData(), StandardCharsets.UTF_8);
+            log.error("Error during continuation handling. Partial content: {}", content, e);
+            writeOutPut(outputStream, mergedFrame);
             return false;
         }
     }

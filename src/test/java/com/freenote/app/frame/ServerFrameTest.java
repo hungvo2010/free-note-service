@@ -4,7 +4,7 @@ import com.freenote.app.server.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
-import io.NoHeaderObjectOutputStream;
+import com.freenote.app.server.util.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -41,11 +41,11 @@ class ServerFrameTest {
         assertNotNull(closeFrame);
         assertNotNull(pingFrame);
         assertNotNull(pongFrame);
-        
+
         assertTrue(closeFrame instanceof ControlFrame);
         assertTrue(pingFrame instanceof ControlFrame);
         assertTrue(pongFrame instanceof ControlFrame);
-        
+
         assertEquals(8, closeFrame.getOpcode());
         assertEquals(9, pingFrame.getOpcode());
         assertEquals(10, pongFrame.getOpcode());
@@ -67,15 +67,6 @@ class ServerFrameTest {
         assertNotNull(result);
         assertTrue(result instanceof ControlFrame);
         assertEquals(10, result.getOpcode());
-    }
-
-    @Test
-    void testCreateCloseFrame() {
-        WebSocketFrame result = serverFrameFactory.createCloseFrame(1000, "Normal closure"); // opcode 8
-
-        assertNotNull(result);
-        assertTrue(result instanceof ControlFrame);
-        assertEquals(8, result.getOpcode());
     }
 
     @Test
@@ -109,11 +100,11 @@ class ServerFrameTest {
         assertNotNull(textFrame);
         assertNotNull(binaryFrame);
         assertNotNull(continuationFrame);
-        
+
         assertTrue(textFrame instanceof DataFrame);
         assertTrue(binaryFrame instanceof DataFrame);
         assertTrue(continuationFrame instanceof DataFrame);
-        
+
         assertEquals(1, textFrame.getOpcode());
         assertEquals(2, binaryFrame.getOpcode());
         assertEquals(0, continuationFrame.getOpcode());
@@ -199,9 +190,7 @@ class ServerFrameTest {
     void testControlFrameWriting() throws IOException {
         var pongFrame = serverFrameFactory.createPongFrame();
         var byteArrayOutputStream = new ByteArrayOutputStream();
-        var outputStream = new NoHeaderObjectOutputStream(byteArrayOutputStream);
-        pongFrame.writeExternal(outputStream);
-        outputStream.flush();
+        IOUtils.writeOutPut(byteArrayOutputStream, pongFrame);
         byte[] bytes = byteArrayOutputStream.toByteArray();
         assertEquals(0x0A, bytes[0]); // Pong frame opcode
     }
@@ -212,9 +201,7 @@ class ServerFrameTest {
         pongFrame.setMasked(true); // Set masked to true for testing
         pongFrame.setMaskingKey(new byte[]{0x1, 0x2, 0x3, 0x4}); // Example masking key
         var byteArrayOutputStream = new ByteArrayOutputStream();
-        var outputStream = new NoHeaderObjectOutputStream(byteArrayOutputStream);
-        pongFrame.writeExternal(outputStream);
-        outputStream.flush();
+        IOUtils.writeOutPut(byteArrayOutputStream, pongFrame);
         byte[] bytes = byteArrayOutputStream.toByteArray();
         assertEquals(0x0A, bytes[0]); // Pong frame opcode
     }

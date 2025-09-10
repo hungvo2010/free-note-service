@@ -106,4 +106,6 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
     public void readExternal(ObjectInput in) throws IOException {
         // TODO: Implement readExternal method if needed
     }
+
+    public abstract int getTotalFrameLength();
 }

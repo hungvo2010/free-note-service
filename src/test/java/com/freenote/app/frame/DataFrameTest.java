@@ -1,11 +1,12 @@
 package com.freenote.app.frame;
 
+import com.freenote.app.server.exceptions.InvalidFrameException;
 import com.freenote.app.server.factory.ClientFrameFactory;
 import com.freenote.app.server.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.util.FrameUtil;
-import io.NoHeaderObjectOutputStream;
+import com.freenote.app.server.util.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -33,9 +34,7 @@ class DataFrameTest {
     void givenClientFrame_whenParsedToDataFrame_thenSuccess() throws IOException {
         var clientFrame = clientFrameFactory.createTextFrame("Hello World");
         ByteArrayOutputStream bytesOutputStream = new ByteArrayOutputStream();
-        var outputStream = new NoHeaderObjectOutputStream(bytesOutputStream);
-        clientFrame.writeExternal(outputStream);
-        outputStream.flush();
+        IOUtils.writeOutPut(bytesOutputStream, clientFrame);
         var dataFrame = DataFrame.fromRawFrameBytes(bytesOutputStream.toByteArray());
         assertEquals(FrameType.TEXT.getOpCode(), dataFrame.getOpcode());
         assertEquals("Hello World", new String(FrameUtil.maskPayload(dataFrame.getPayloadData(), dataFrame.getMaskingKey())));
@@ -46,16 +45,13 @@ class DataFrameTest {
         // given
         var serverFrame = serverFrameFactory.createTextFrame("Hello World");
         ByteArrayOutputStream bytesOutputStream = new ByteArrayOutputStream();
-        var outputStream = new NoHeaderObjectOutputStream(bytesOutputStream);
-        serverFrame.writeExternal(outputStream);
-        outputStream.flush();
-
+        IOUtils.writeOutPut(bytesOutputStream, serverFrame);
         // when
         var dataFrame = DataFrame.fromRawFrameBytes(bytesOutputStream.toByteArray());
 
         // then
         assertEquals(FrameType.TEXT.getOpCode(), dataFrame.getOpcode());
         assertFalse(dataFrame.isMasked());
-        assertThrows(IllegalArgumentException.class, () -> new String(FrameUtil.maskPayload(dataFrame.getPayloadData(), dataFrame.getMaskingKey())));
+        assertThrows(InvalidFrameException.class, () -> new String(FrameUtil.maskPayload(dataFrame.getPayloadData(), dataFrame.getMaskingKey())));
     }
 }

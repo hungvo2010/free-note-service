@@ -46,7 +46,8 @@ public class DataFrame extends WebSocketFrame {
     @Override
     protected void parsePayload(byte[] bytes) {
         var maskingKeyStart = getMaskingKeyStartSupplier().applyAsInt(bytes[1] & 0x7F);
-        payloadData = Arrays.copyOfRange(bytes, maskingKeyStart + maskingKey.length, bytes.length);
+        var payloadDataStart = maskingKeyStart + maskingKey.length;
+        payloadData = Arrays.copyOfRange(bytes, payloadDataStart, payloadDataStart + (int) payloadLength);
     }
 
     @Override
@@ -54,6 +55,14 @@ public class DataFrame extends WebSocketFrame {
         var maskByte = isMasked ? (byte) 0x80 : (byte) 0x00;
         var secondByte = (byte) (maskByte | (byte) (getFramePayloadLengthSupplier().applyAsLong(payloadLength)));
         out.writeByte(secondByte);
+    }
+
+    @Override
+    public int getTotalFrameLength() {
+        var fixedHeaderLength = 2;
+        var extendedPayloadLength = payloadLength == 126 ? 2 : payloadLength == 127 ? 8 : 0;
+        var maskingKeyLength = isMasked ? DEFAULT_MASKING_KEY_LENGTH : 0;
+        return fixedHeaderLength + extendedPayloadLength + maskingKeyLength + (int) this.payloadLength;
     }
 
     @Override

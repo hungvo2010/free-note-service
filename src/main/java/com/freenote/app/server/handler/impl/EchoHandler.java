@@ -8,13 +8,14 @@ import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.util.FrameUtil;
-import io.NoHeaderObjectOutputStream;
+import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 
 @URIHandlerImplementation("/example")
 public class EchoHandler implements URIHandler {
@@ -42,11 +43,9 @@ public class EchoHandler implements URIHandler {
                 log.info("Unmasked Payload: {}", Arrays.toString(payload));
                 log.info("Payload as Text: {}", new String(payload, StandardCharsets.UTF_8));
 
-                var objectOutputStream = new NoHeaderObjectOutputStream(outputStream);
                 log.info("Writing to output stream" + " with payload: {}", new String(payload, StandardCharsets.UTF_8));
                 log.info("===========================================================================");
-                objectOutputStream.writeObject(serverFrameFactory.createTextFrame(new String(payload, StandardCharsets.UTF_8)));
-                objectOutputStream.flush();
+                IOUtils.writeOutPut(outputStream, serverFrameFactory.createTextFrame(new String(payload, StandardCharsets.UTF_8)));
             }
 //            log.info("Input stream handling completed successfully.");
             return true;
@@ -57,7 +56,7 @@ public class EchoHandler implements URIHandler {
     }
 
     @Override
-    public boolean continuationHandler(WebSocketFrame clientFrame, InputStream inputStream, OutputStream outputStream) {
+    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputStream inputStream, OutputStream outputStream) {
         return false;
     }
 

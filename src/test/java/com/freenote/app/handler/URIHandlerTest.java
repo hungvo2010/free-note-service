@@ -4,7 +4,7 @@ import com.freenote.app.server.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.handler.impl.EchoHandler;
-import io.NoHeaderObjectOutputStream;
+import com.freenote.app.server.util.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -32,8 +32,7 @@ class URIHandlerTest {
     void givenInputStreamThenWriteToOutputStream() throws IOException {
         WebSocketFrame textFrame = clientFrameFactory.createTextFrame("Hello World");
         var byteArrayOutputStream = new ByteArrayOutputStream();
-        textFrame.writeExternal(new NoHeaderObjectOutputStream(byteArrayOutputStream));
-        byteArrayOutputStream.flush();
+        IOUtils.writeOutPut(byteArrayOutputStream, textFrame);
         var bytes = byteArrayOutputStream.toByteArray();
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         ByteArrayOutputStream out = new ByteArrayOutputStream();

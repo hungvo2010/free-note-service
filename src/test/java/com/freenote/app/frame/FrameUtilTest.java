@@ -1,5 +1,6 @@
 package com.freenote.app.frame;
 
+import com.freenote.app.server.exceptions.InvalidFrameException;
 import com.freenote.app.server.util.FrameUtil;
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +43,7 @@ class FrameUtilTest {
         byte[] frame = new byte[]{
                 0x00, 126, 0x01 // Only one byte after 126 marker
         };
-        assertThrows(IllegalArgumentException.class, () -> FrameUtil.parsePayloadLength(frame));
+        assertThrows(InvalidFrameException.class, () -> FrameUtil.parsePayloadLength(frame));
     }
 
     @Test
@@ -50,7 +51,7 @@ class FrameUtilTest {
         byte[] frame = new byte[]{
                 0x00, 127, 0x01, 0x02, 0x03, 0x04 // Less than 8 bytes
         };
-        assertThrows(IllegalArgumentException.class, () -> FrameUtil.parsePayloadLength(frame));
+        assertThrows(InvalidFrameException.class, () -> FrameUtil.parsePayloadLength(frame));
     }
 
     @Test
@@ -76,7 +77,7 @@ class FrameUtilTest {
     void testMaskPayload_InvalidKeyLength() {
         byte[] payload = new byte[]{0x01, 0x02};
         byte[] invalidKey = new byte[]{0x0F, 0x0F}; // Only 2 bytes
-        assertThrows(IllegalArgumentException.class, () -> FrameUtil.maskPayload(payload, invalidKey));
+        assertThrows(InvalidFrameException.class, () -> FrameUtil.maskPayload(payload, invalidKey));
     }
 
     @Test

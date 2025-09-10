@@ -60,6 +60,7 @@ public class SimpleServer {
             var incomingSocket = serverSocket.accept();
             futures.add(executorService.submit(() -> {
                 try {
+                    incomingSocket.setSoTimeout(5000); // to make timeout after 5 seconds of blocking read
                     serve(incomingSocket);
                 } catch (IOException e) {
                     log.error("Failed to accept connection", e);
