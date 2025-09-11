@@ -43,11 +43,25 @@ public class ClientFrameFactory implements FrameFactory {
     public WebSocketFrame createContinuationFrame(byte[] data) {
         var bytes = new byte[4];
         secureRandom.nextBytes(bytes);
-        return new DataFrame(FrameType.CONTINUATION.getOpCode(), data, true, bytes);
+        var dataFrame = new DataFrame(FrameType.CONTINUATION.getOpCode(), data, true, bytes);
+        dataFrame.setFin(false);
+        return dataFrame;
     }
 
     @Override
     public WebSocketFrame createFrameFromBytes(byte[] frameBytes) {
         return DataFrame.fromRawFrameBytes(frameBytes);
+    }
+
+    @Override
+    public WebSocketFrame createNonFinalFrame(short opCode, byte[] data) {
+        if (opCode == FrameType.CONTINUATION.getOpCode()) {
+            throw new IllegalArgumentException("Continuation frames cannot be non-final frames.");
+        }
+        var maskingKey = new byte[4];
+        secureRandom.nextBytes(maskingKey);
+        var frame = new DataFrame(opCode, data, true, maskingKey);
+        frame.setFin(false);
+        return frame;
     }
 }

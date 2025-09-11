@@ -36,18 +36,14 @@ public class EchoHandler implements URIHandler {
                 log.info("Opcode: {} - {}", frame.getOpcode(), FrameType.fromHexValue(frame.getOpcode()));
                 log.info("Masked: {}", frame.isMasked());
                 log.info("Payload Length: {}", frame.getPayloadLength());
-                log.info("Masking Key: {}", Arrays.toString(frame.getMaskingKey()));
-                log.info("Raw Payload (masked): {}", Arrays.toString(frame.getPayloadData()));
+                log.info("Masking Key: {}", frame.getMaskingKey());
 
                 byte[] payload = frame.isMasked() ? FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
-                log.info("Unmasked Payload: {}", Arrays.toString(payload));
-                log.info("Payload as Text: {}", new String(payload, StandardCharsets.UTF_8));
 
                 log.info("Writing to output stream" + " with payload: {}", new String(payload, StandardCharsets.UTF_8));
                 log.info("===========================================================================");
                 IOUtils.writeOutPut(outputStream, serverFrameFactory.createTextFrame(new String(payload, StandardCharsets.UTF_8)));
             }
-//            log.info("Input stream handling completed successfully.");
             return true;
         } catch (IOException e) {
             log.error("Error handling input stream", e);

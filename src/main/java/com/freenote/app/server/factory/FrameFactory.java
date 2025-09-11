@@ -16,4 +16,6 @@ public interface FrameFactory {
     WebSocketFrame createContinuationFrame(byte[] data);
 
     WebSocketFrame createFrameFromBytes(byte[] frameBytes);
+
+    WebSocketFrame createNonFinalFrame(short opCode, byte[] data);
 }

@@ -46,7 +46,7 @@ public class LargeFrame {
 
     private void mergeFragmentsIfCompleted() {
         if (fragmentState != FragmentState.COMPLETED) {
-            return;
+            throw new InvalidFrameStateException("Cannot merge fragments, message is not completed");
         }
         long totalLength = fragmentMessages.stream().map(DataFrame::getPayloadLength).reduce(0L, Long::sum);
         var mergedPayload = ByteBuffer.allocate((int) totalLength);

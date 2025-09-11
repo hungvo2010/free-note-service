@@ -35,7 +35,9 @@ public class ServerFrameFactory implements FrameFactory {
 
     @Override
     public WebSocketFrame createContinuationFrame(byte[] data) {
-        return new DataFrame(FrameType.CONTINUATION.getOpCode(), data);
+        var dataFrame = new DataFrame(FrameType.CONTINUATION.getOpCode(), data);
+        dataFrame.setFin(false);
+        return dataFrame;
     }
 
     @Override
@@ -43,5 +45,15 @@ public class ServerFrameFactory implements FrameFactory {
         var serverFrame = DataFrame.fromRawFrameBytes(frameBytes);
         serverFrame.setMasked(false);
         return serverFrame;
+    }
+
+    @Override
+    public WebSocketFrame createNonFinalFrame(short opCode, byte[] data) {
+        if (opCode == FrameType.CONTINUATION.getOpCode()) {
+            throw new IllegalArgumentException("Continuation frames cannot be non-final frames.");
+        }
+        var frame = new DataFrame(opCode, data);
+        frame.setFin(false);
+        return frame;
     }
 }
