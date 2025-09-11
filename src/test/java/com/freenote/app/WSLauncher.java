@@ -1,4 +1,4 @@
-package com.freenote.app.server.launcher;
+package com.freenote.app;
 
 import com.freenote.annotations.Singleton;
 import com.freenote.annotations.URIHandleAnnotation;
