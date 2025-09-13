@@ -9,6 +9,7 @@ import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.util.FrameUtil;
+import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,8 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static com.freenote.app.server.util.IOUtils.writeOutPut;
 
 @URIHandlerImplementation("/update")
 public class FragmentedURIHandler implements URIHandler {
@@ -34,15 +33,23 @@ public class FragmentedURIHandler implements URIHandler {
         try {
             var bytes = new byte[70000];
             int read = inputStream.read(bytes);
-            if (read == -1) return false;
+            if (read == -1) {
+                log.info("End of stream reached");
+                return false;
+            }
             var clientFrames = readOneOrMultipleFrames(Arrays.copyOfRange(bytes, 0, read));
             var clientFrame = clientFrames.get(0);
             if (!clientFrame.isFin() && clientFrame.getOpcode() != FrameType.CONTINUATION.getOpCode()) {
+                log.info("Received non-final frame. Continuation expected.");
                 return continuationHandler(clientFrames, inputStream, outputStream);
+            } else if (clientFrame.getOpcode() == FrameType.CONTINUATION.getOpCode()) {
+                log.info("Received continuation frame without initial fragmented frame. Ignoring.");
+                return false;
             }
-            writeOutPut(outputStream, frameFactory.createTextFrame(new String(FrameUtil.maskPayload(clientFrame.getPayloadData(), clientFrame.getMaskingKey()), "UTF-8")));
+            IOUtils.writeOutPut(outputStream, frameFactory.createTextFrame(new String(FrameUtil.maskPayload(clientFrame.getPayloadData(), clientFrame.getMaskingKey()), "UTF-8")));
             return true;
         } catch (IOException e) {
+            log.error("Error handling input stream", e);
             return false;
         }
     }
@@ -68,20 +75,23 @@ public class FragmentedURIHandler implements URIHandler {
                 log.info("Frame content: {}", new String(FrameUtil.maskPayload(clientFrame.getPayloadData(), clientFrame.getMaskingKey()), StandardCharsets.UTF_8));
             }
             do {
+                log.info("Reading more data...");
                 var bytes = new byte[70000];
                 read = inputStream.read(bytes);
+                log.info("Read {} bytes", read);
                 if (read != -1) {
                     largeFrame.addFragmentMessage(DataFrame.fromRawFrameBytes(Arrays.copyOfRange(bytes, 0, read)));
                 }
-            } while (!largeFrame.isComplete() || read != -1);
+            } while (!largeFrame.isComplete() || read == -1);
+            log.info("Large frame is complete");
             var mergedFrame = largeFrame.getMergedFrame();
-            writeOutPut(outputStream, mergedFrame);
+            IOUtils.writeOutPut(outputStream, mergedFrame);
             return true;
         } catch (IOException e) {
             var mergedFrame = largeFrame.getMergedFrame();
             var content = new String(mergedFrame.getPayloadData(), StandardCharsets.UTF_8);
             log.error("Error during continuation handling. Partial content: {}", content, e);
-            writeOutPut(outputStream, mergedFrame);
+            IOUtils.writeOutPut(outputStream, mergedFrame);
             return false;
         }
     }

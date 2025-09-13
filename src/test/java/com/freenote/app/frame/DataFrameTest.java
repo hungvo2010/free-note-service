@@ -63,8 +63,8 @@ class DataFrameTest {
 
     @Test
     void givenShortServerTextDataFrame_whenGetTotalFrameLength_thenSuccess() throws IOException {
-        var shortTextFrame = serverFrameFactory.createTextFrame("123"); // 2 + 1 = 3
-        assertEquals(5, shortTextFrame.getTotalFrameLength());
+        var shortTextFrame = serverFrameFactory.createTextFrame("!"); // 2 + 1 = 3
+        assertEquals(3, shortTextFrame.getTotalFrameLength());
 
         var mediumDataFrame = serverFrameFactory.createTextFrame("123456789012345"); // 2 + 1 + 2 = 5
         assertEquals(17, mediumDataFrame.getTotalFrameLength());
