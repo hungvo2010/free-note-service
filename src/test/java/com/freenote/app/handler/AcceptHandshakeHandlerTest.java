@@ -43,7 +43,7 @@ class AcceptHandshakeHandlerTest {
     @Test
     void testHandle_InvalidOrigin_ShouldReturnEmptyResponse() {
         HttpUpgradeRequest request = mock(HttpUpgradeRequest.class);
-        when(request.getOrigin()).thenReturn("http://malicious.com");
+        when(request.getOrigin()).thenReturn("https://malicious.com");
         when(request.getSecWebSocketKey()).thenReturn("key");
         when(request.getSecWebSocketExtensions()).thenReturn("ext");
         when(request.getSecWebSocketVersion()).thenReturn("13");

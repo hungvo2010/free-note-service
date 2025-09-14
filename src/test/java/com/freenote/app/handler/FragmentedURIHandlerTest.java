@@ -68,9 +68,7 @@ public class FragmentedURIHandlerTest {
 
     @Test
     void givenFragmentedHandler_whenSendNonFinalNotContinuationFrame_thenReturnFalse() throws IOException {
-        assertThrows(IllegalArgumentException.class, () -> {
-            clientFactory.createNonFinalFrame(FrameType.CONTINUATION.getOpCode(), "Hello ".getBytes());
-        });
+        assertThrows(IllegalArgumentException.class, () -> clientFactory.createNonFinalFrame(FrameType.CONTINUATION.getOpCode(), "Hello ".getBytes()));
         var someFrame = DataFrame.fromRawFrameBytes(new byte[]{0x00, 0x00});
         var pipedOutputStream = new PipedOutputStream();
         var inputStream = new PipedInputStream(pipedOutputStream);
@@ -108,8 +106,7 @@ public class FragmentedURIHandlerTest {
         IOUtils.writeOutPut(pipedOutputStream, someFrame);
 
         var outputStream = mock(OutputStream.class);
-        doThrow(new IOException("Simulated write error"))
-                .when(outputStream).write(any(byte[].class));
+        doThrow(new IOException("Simulated write error")).when(outputStream).write(any(byte[].class));
 
         var result = handler.handle(inputStream, outputStream);
 

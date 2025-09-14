@@ -33,9 +33,7 @@ class LargeFrameTest {
     @Test
     void givenLargeFrame_whenAddNullFragment_thenThrowIllegalArgumentException() {
         LargeFrame largeFrame = new LargeFrame();
-        assertThrows(IllegalArgumentException.class, () -> {
-            largeFrame.addFragmentMessage(null);
-        });
+        assertThrows(IllegalArgumentException.class, () -> largeFrame.addFragmentMessage(null));
     }
 
     @Test
@@ -44,9 +42,7 @@ class LargeFrameTest {
         var finalFrame = clientFrameFactory.createTextFrame("part1");
         largeFrame.addFragmentMessage((DataFrame) finalFrame);
         var anotherFrame = clientFrameFactory.createTextFrame("part2");
-        assertThrows(IllegalStateException.class, () -> {
-            largeFrame.addFragmentMessage((DataFrame) anotherFrame);
-        });
+        assertThrows(IllegalStateException.class, () -> largeFrame.addFragmentMessage((DataFrame) anotherFrame));
     }
 
     @Test
