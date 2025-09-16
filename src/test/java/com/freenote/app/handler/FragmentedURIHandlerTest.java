@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class FragmentedURIHandlerTest {
+class FragmentedURIHandlerTest {
     private static final Logger log = LogManager.getLogger(FragmentedURIHandlerTest.class);
     private final FrameFactory clientFactory = new ClientFrameFactory();
     private final FragmentedURIHandler handler = new FragmentedURIHandler();

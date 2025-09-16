@@ -58,14 +58,11 @@ class ServerRunnerTest {
 
         // Verify server accepted a socket
         verify(mockServerSocket, atLeastOnce()).accept();
-//        verify(mockSocket, atLeastOnce()).getOutputStream();
+        verify(mockSocket, atLeastOnce()).getOutputStream();
 
         // Check that "Hello" was written
         String response = clientOutput.toString().trim();
-        assertEquals("HTTP/1.1 101 Switching Protocols\r\n" +
-                "Upgrade: websocket\r\n" +
-                "Connection: Upgrade\r\n" +
-                "Sec-WebSocket-Accept: O163+NfhFwxULDbPCuiQo7hGj30=", response);
+        assertEquals(new StringBuilder().append("HTTP/1.1 101 Switching Protocols\r\n").append("Upgrade: websocket\r\n").append("Connection: Upgrade\r\n").append("Sec-WebSocket-Accept: O163+NfhFwxULDbPCuiQo7hGj30=").toString(), response);
 
         executorService.shutdownNow();
     }
