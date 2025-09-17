@@ -18,6 +18,7 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
     private static final Collection<String> ALLOWED_ORIGINS = Arrays.asList(
             "http://localhost:3000",
             "",
+            null,
             "http://localhost:63342",
             "http://localhost:8082",
             "http://localhost:8083",
@@ -58,7 +59,7 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
             return false;
         }
         return !(Objects.isNull(request.getSecWebSocketKey())
-                || Objects.isNull(request.getSecWebSocketExtensions())
+//                || Objects.isNull(request.getSecWebSocketExtensions())
                 || Objects.isNull(request.getSecWebSocketVersion()));
     }
 }

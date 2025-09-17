@@ -1,21 +1,18 @@
 package com.freenote.app.server.example;
 
 
-import javax.net.ssl.*;
-import java.io.*;
-import java.net.Socket;
-import java.security.KeyStore;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-/**
- * Generic SSL/TLS server that delegates handling of each client connection
- * to a user-provided ConnectionHandler.
- */
+import javax.net.ssl.*;
+import java.io.FileInputStream;
+import java.security.KeyStore;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class SSLServer {
 
-    public interface ConnectionHandler {
-        void handle(Socket socket) throws Exception;
-    }
-
+    private static final Logger log = LogManager.getLogger(SSLServer.class);
     private final int port;
     private final String keystorePath;
     private final char[] password;
@@ -45,32 +42,20 @@ public class SSLServer {
         SSLServerSocketFactory factory = ctx.getServerSocketFactory();
         SSLServerSocket serverSocket = (SSLServerSocket) factory.createServerSocket(port);
 
-        System.out.println("SSL Server listening on port " + port + "...");
+        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+        log.info("SSL Server listening on port {}...", port);
 
         while (true) {
             SSLSocket socket = (SSLSocket) serverSocket.accept();
-            new Thread(() -> {
-                try (socket) {
-                    handler.handle(socket);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }).start();
-        }
-    }
-
-    // Example: Echo line-based handler
-    public static class EchoHandler implements ConnectionHandler {
-        @Override
-        public void handle(Socket socket) throws Exception {
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-
-            String line;
-            while ((line = in.readLine()) != null) {
-                System.out.println("Received: " + line);
-                out.println("Echo: " + line);
-            }
+            executorService.submit(() -> {
+                        try {
+                            handler.handle(socket);
+                        } catch (Exception e) {
+                            log.error("Error handling connection", e);
+                        }
+                    }
+            );
         }
     }
 
@@ -80,7 +65,7 @@ public class SSLServer {
                 8443,
                 "keystore.p12",
                 "changeit".toCharArray(),
-                new EchoHandler() // can swap this with WebSocketHandler later
+                new WebSocketHandler() // can swap this with WebSocketHandler later
         );
         server.start();
     }

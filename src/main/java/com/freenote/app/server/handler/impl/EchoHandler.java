@@ -27,7 +27,7 @@ public class EchoHandler implements URIHandler {
     public boolean handle(InputStream inputStream, OutputStream outputStream) {
         try {
             var reader = new BufferedReader(new InputStreamReader(inputStream));
-            while (reader.ready()) {
+//            while (reader.ready()) {
                 byte[] actualData = getRawBytes(inputStream);
                 if (actualData == null) return false;
                 WebSocketFrame frame = clientFrameFactory.createFrameFromBytes(actualData);
@@ -39,11 +39,12 @@ public class EchoHandler implements URIHandler {
                 log.info("Masking Key: {}", frame.getMaskingKey());
 
                 byte[] payload = frame.isMasked() ? FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
+                String content = new String(payload, StandardCharsets.UTF_8);
 
-                log.info("Writing to output stream" + " with payload: {}", new String(payload, StandardCharsets.UTF_8));
+                log.info("Writing to output stream with payload: {}", content);
                 log.info("===========================================================================");
-                IOUtils.writeOutPut(outputStream, serverFrameFactory.createTextFrame(new String(payload, StandardCharsets.UTF_8)));
-            }
+                IOUtils.writeOutPut(outputStream, serverFrameFactory.createTextFrame(content));
+//            }
             return true;
         } catch (IOException e) {
             log.error("Error handling input stream", e);
