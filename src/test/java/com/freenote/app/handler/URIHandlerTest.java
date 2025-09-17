@@ -14,8 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,7 +29,7 @@ class URIHandlerTest {
     private final URIHandler mockURIHandler = new EchoHandler();
 
     @Test
-    void givenInputStreamThenWriteToOutputStream() throws IOException {
+    void givenWebSocketFrameInputStream_whenHandled_thenEchoesToOutputStream() throws IOException {
         WebSocketFrame textFrame = clientFrameFactory.createTextFrame("Hello World");
         var byteArrayOutputStream = new ByteArrayOutputStream();
         IOUtils.writeOutPut(byteArrayOutputStream, textFrame);
@@ -42,11 +42,11 @@ class URIHandlerTest {
     }
 
     @Test
-    void givenEndOfInputStream_ThenReturn() throws IOException {
+    void givenEndOfInputStream_whenHandled_thenReturnsFalse() throws IOException {
         InputStream in = mock(InputStream.class);
-        when(in.read()).thenReturn(-1);
+        when(in.read(any(byte[].class))).thenReturn(-1);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         var result = mockURIHandler.handle(in, out);
-        assertTrue(result, "Expected handle to return false on end of input stream");
+        assertFalse(result, "Expected handle to return false on end of input stream");
     }
 }

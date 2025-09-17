@@ -1,6 +1,9 @@
 package com.freenote.app.server;
 
 import com.freenote.app.server.factory.ClientFrameFactory;
+import com.freenote.app.server.frames.base.DataFrame;
+import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,11 +13,13 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.*;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Base64;
 
 public class SSLWebSocketClient {
@@ -47,7 +52,7 @@ public class SSLWebSocketClient {
 
 //            client.disconnect();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error connecting to WebSocket server", e);
         }
     }
 
@@ -155,7 +160,7 @@ public class SSLWebSocketClient {
         OutputStream outputStream = socket.getOutputStream();
         outputStream.flush();
 
-        IOUtils.writeOutPut(outputStream, new ClientFrameFactory().createTextFrame("Test"));
+        IOUtils.writeOutPut(outputStream, new ClientFrameFactory().createTextFrame(new String(payload, StandardCharsets.UTF_8)));
 
 //        // First byte: FIN + opcode
 //        outputStream.write(opcode);
@@ -200,79 +205,40 @@ public class SSLWebSocketClient {
         try {
             InputStream inputStream = socket.getInputStream();
 
-            // Check if data is available
-            if (inputStream.available() == 0) {
-                return null;
+            // Set a read timeout to avoid infinite blocking
+            socket.setSoTimeout(100); // 100ms timeout
+
+            // Use the same reliable reading approach as EchoHandler
+            byte[] actualFrameBytes;
+            try {
+                actualFrameBytes = getAllBytes(inputStream);
+            } catch (SocketTimeoutException e) {
+                return null; // No data available, return null
             }
 
-            // Read WebSocket frame header
-            int firstByte = inputStream.read();
-            if (firstByte == -1) {
+            if (actualFrameBytes == null) {
                 connected = false;
                 return null;
             }
 
-            boolean fin = (firstByte & 0x80) != 0;
-            int opcode = firstByte & 0x0F;
+            log.info("Received raw bytes length: {}", actualFrameBytes.length);
+            log.info("First 10 bytes: {}", Arrays.toString(Arrays.copyOf(actualFrameBytes, Math.min(10, actualFrameBytes.length))));
 
-            // Handle different opcodes
-            if (opcode == 0x8) { // Close frame
-                connected = false;
-                return null;
-            } else if (opcode == 0x9) { // Ping frame
-                // Send pong response
-                sendWebSocketFrame(0x8A, new byte[0]);
-                return null;
-            } else if (opcode != 0x1 && opcode != 0x2) { // Not text or binary
-                return null;
+            // Use DataFrame.fromRawFrameBytes to parse
+            WebSocketFrame frame = DataFrame.fromRawFrameBytes(actualFrameBytes);
+
+            log.info("Parsed frame - FIN: {}, Opcode: {}, Masked: {}, Payload Length: {}",
+                    frame.isFin(), frame.getOpcode(), frame.isMasked(), frame.getPayloadLength());
+
+            // Extract payload and convert to string
+            byte[] payload = frame.getPayloadData();
+            if (frame.isMasked()) {
+                payload = FrameUtil.maskPayload(payload, frame.getMaskingKey());
             }
 
-            int secondByte = inputStream.read();
-            if (secondByte == -1) {
-                connected = false;
-                return null;
-            }
-
-            boolean masked = (secondByte & 0x80) != 0;
-            int length = secondByte & 0x7F;
-
-            // Read extended payload length
-            if (length == 126) {
-                length = (inputStream.read() << 8) | inputStream.read();
-            } else if (length == 127) {
-                // Skip first 4 bytes (assuming length fits in int)
-                inputStream.read(); inputStream.read(); inputStream.read(); inputStream.read();
-                length = (inputStream.read() << 24) | (inputStream.read() << 16) |
-                        (inputStream.read() << 8) | inputStream.read();
-            }
-
-            // Read masking key if present
-            byte[] maskingKey = null;
-            if (masked) {
-                maskingKey = new byte[4];
-                inputStream.read(maskingKey);
-            }
-
-            // Read payload
-            byte[] payload = new byte[length];
-            int totalRead = 0;
-            while (totalRead < length) {
-                int read = inputStream.read(payload, totalRead, length - totalRead);
-                if (read == -1) {
-                    connected = false;
-                    return null;
-                }
-                totalRead += read;
-            }
-
-            // Unmask payload if masked
-            if (masked && maskingKey != null) {
-                for (int i = 0; i < payload.length; i++) {
-                    payload[i] ^= maskingKey[i % 4];
-                }
-            }
-
-            return new String(payload, StandardCharsets.UTF_8);
+            String message = new String(payload, StandardCharsets.UTF_8);
+            log.info("Decoded message: {}", message);
+            return message;
 
         } catch (IOException e) {
             connected = false;
@@ -354,5 +320,55 @@ public class SSLWebSocketClient {
 
         log.info("SSL context created successfully");
         return sslContext;
+    }
+
+    private byte[] getAllBytes(InputStream inputStream) throws IOException {
+        // Read first byte (opcode)
+        int firstByte = inputStream.read();
+        if (firstByte == -1) {
+            return null;
+        }
+
+        // Read second byte (payload length + mask)
+        int secondByte = inputStream.read();
+        if (secondByte == -1) {
+            return null;
+        }
+
+        // Calculate total frame length needed
+        int baseLength = 2; // opcode + length/mask byte
+        int payloadLength = secondByte & 0x7F;
+        boolean masked = (secondByte & 0x80) != 0;
+
+        // Handle extended payload length
+        if (payloadLength == 126) {
+            baseLength += 2; // 2 more bytes for length
+        } else if (payloadLength == 127) {
+            baseLength += 8; // 8 more bytes for length
+        }
+
+        // Add masking key length
+        if (masked) {
+            baseLength += 4;
+        }
+
+        // Add actual payload length (simplified for small frames)
+        int totalFrameLength = baseLength + (payloadLength < 126 ? payloadLength : 0);
+
+        // Read complete frame
+        byte[] frameData = new byte[totalFrameLength];
+        frameData[0] = (byte) firstByte;
+        frameData[1] = (byte) secondByte;
+
+        int totalRead = 2;
+        while (totalRead < totalFrameLength) {
+            int read = inputStream.read(frameData, totalRead, totalFrameLength - totalRead);
+            if (read == -1) {
+                return null;
+            }
+            totalRead += read;
+        }
+
+        return frameData;
     }
 }

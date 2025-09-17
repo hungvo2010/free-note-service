@@ -1,5 +1,6 @@
 package com.freenote.app.server.frames.base;
 
+import com.freenote.app.server.exceptions.InvalidFrameException;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -50,10 +51,14 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
     }
 
     protected WebSocketFrame(byte[] bytes) {
-        parseHeader(bytes);
-        parsePayloadLength(bytes);
-        parseMaskingKey(bytes);
-        parsePayload(bytes);
+        try {
+            parseHeader(bytes);
+            parsePayloadLength(bytes);
+            parseMaskingKey(bytes);
+            parsePayload(bytes);
+        } catch (Exception e) {
+            throw new InvalidFrameException("Exception when parsing raw bytes to WebSocket frame", e);
+        }
     }
 
     protected abstract void parsePayloadLength(byte[] bytes);
@@ -92,13 +97,7 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
     public abstract void writeFrameMaskHeader(ObjectOutput out) throws IOException;
 
     private void writeFrameOpcode(ObjectOutput out) throws IOException {
-        var firstByte = (byte) (
-                (boolToBit(fin) << 7) |
-                        (boolToBit(rsv1) << 6) |
-                        (boolToBit(rsv2) << 5) |
-                        (boolToBit(rsv3) << 4) |
-                        (opcode & 0x0F)
-        );
+        var firstByte = (byte) ((boolToBit(fin) << 7) | (boolToBit(rsv1) << 6) | (boolToBit(rsv2) << 5) | (boolToBit(rsv3) << 4) | (opcode & 0x0F));
         out.writeByte(firstByte);
     }
 

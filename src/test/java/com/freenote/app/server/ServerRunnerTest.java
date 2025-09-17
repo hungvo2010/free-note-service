@@ -1,6 +1,6 @@
 package com.freenote.app.server;
 
-import com.freenote.app.server.server.SimpleServer;
+import com.freenote.app.server.example.SimpleServer;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;

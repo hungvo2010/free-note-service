@@ -60,7 +60,7 @@ class EchoHandlerTest {
 
         boolean result = echoHandler.handle(inputStream, outputStream);
 
-        assertTrue(result);
+        assertFalse(result);
         assertEquals(0, outputStream.size());
     }
 
@@ -77,10 +77,12 @@ class EchoHandlerTest {
         // Make stream ready
         inputStream = new ByteArrayInputStream(new byte[]{0x01}) {
             private boolean firstCall = true;
-            
+
             @Override
-            public boolean markSupported() { return false; }
-            
+            public boolean markSupported() {
+                return false;
+            }
+
             @Override
             public int read(byte[] b) throws IOException {
                 if (firstCall) {
@@ -134,16 +136,16 @@ class EchoHandlerTest {
     void testHandle_MultipleFrames() throws IOException {
         String message1 = "First message";
         String message2 = "Second message";
-        
+
         // Create multiple frames
         byte[] frame1 = createSimpleTextFrame(message1);
         byte[] frame2 = createSimpleTextFrame(message2);
-        
+
         // Combine frames
         ByteArrayOutputStream combinedFrames = new ByteArrayOutputStream();
         combinedFrames.write(frame1);
         combinedFrames.write(frame2);
-        
+
         inputStream = new ByteArrayInputStream(combinedFrames.toByteArray());
 
         boolean result = echoHandler.handle(inputStream, outputStream);
@@ -159,7 +161,7 @@ class EchoHandlerTest {
         for (int i = 0; i < 1000; i++) {
             largeMessage.append("This is a large message test. ");
         }
-        
+
         byte[] frameData = createSimpleTextFrame(largeMessage.toString());
         inputStream = new ByteArrayInputStream(frameData);
 
@@ -212,11 +214,11 @@ class EchoHandlerTest {
     private byte[] createSimpleTextFrame(String message) {
         byte[] payload = message.getBytes(StandardCharsets.UTF_8);
         ByteArrayOutputStream frame = new ByteArrayOutputStream();
-        
+
         try {
             // FIN + TEXT opcode
             frame.write(0x81);
-            
+
             // Payload length (assuming < 126)
             if (payload.length < 126) {
                 frame.write(payload.length);
@@ -225,14 +227,14 @@ class EchoHandlerTest {
                 frame.write((payload.length >> 8) & 0xFF);
                 frame.write(payload.length & 0xFF);
             }
-            
+
             // Payload
             frame.write(payload);
-            
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        
+
         return frame.toByteArray();
     }
 
@@ -240,68 +242,68 @@ class EchoHandlerTest {
         byte[] payload = message.getBytes(StandardCharsets.UTF_8);
         byte[] maskedPayload = FrameUtil.maskPayload(payload, maskingKey);
         ByteArrayOutputStream frame = new ByteArrayOutputStream();
-        
+
         try {
             // FIN + TEXT opcode
             frame.write(0x81);
-            
+
             // Masked flag + payload length
             if (payload.length < 126) {
                 frame.write(0x80 | payload.length);
             }
-            
+
             // Masking key
             frame.write(maskingKey);
-            
+
             // Masked payload
             frame.write(maskedPayload);
-            
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        
+
         return frame.toByteArray();
     }
 
     private byte[] createFrameWithOpcode(String message, byte opcode) {
         byte[] payload = message.getBytes(StandardCharsets.UTF_8);
         ByteArrayOutputStream frame = new ByteArrayOutputStream();
-        
+
         try {
             // FIN + custom opcode
             frame.write(0x80 | opcode);
-            
+
             // Payload length
             frame.write(payload.length);
-            
+
             // Payload
             frame.write(payload);
-            
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        
+
         return frame.toByteArray();
     }
 
     private byte[] createFragmentedFrame(String message) {
         byte[] payload = message.getBytes(StandardCharsets.UTF_8);
         ByteArrayOutputStream frame = new ByteArrayOutputStream();
-        
+
         try {
             // No FIN + TEXT opcode (fragmented)
             frame.write(0x01);
-            
+
             // Payload length
             frame.write(payload.length);
-            
+
             // Payload
             frame.write(payload);
-            
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        
+
         return frame.toByteArray();
     }
 }
