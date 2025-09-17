@@ -30,7 +30,7 @@ public class SSLWebSocketClient {
             SSLWebSocketClient client = new SSLWebSocketClient();
             client.connect("localhost", 8443, "/example");
 
-            Thread.sleep(15000); // Wait for connection to stabilize
+            Thread.sleep(1500); // Wait for connection to stabilize
 
             // Send a test message
             client.sendMessage("Hello from raw SSL WebSocket client!");
