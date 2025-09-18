@@ -37,8 +37,10 @@ public class SSLWebSocketClient {
 
             Thread.sleep(1500); // Wait for connection to stabilize
 
-            // Send a test message
-            client.sendMessage("Hello from raw SSL WebSocket client!");
+            for (int i = 0; i < 10; ++i) {
+//                Thread.sleep(new Random().nextLong(1500, 10000));
+                client.sendMessage("Hello from raw SSL WebSocket client!");
+            }
 
             // Listen for messages for 10 seconds
             long endTime = System.currentTimeMillis() + 50_000;

@@ -47,6 +47,7 @@ public class SSLServer {
         log.info("SSL Server listening on port {}...", port);
 
         while (true) {
+            log.info("Waiting for connection...");
             SSLSocket socket = (SSLSocket) serverSocket.accept();
             executorService.submit(() -> {
                         try {

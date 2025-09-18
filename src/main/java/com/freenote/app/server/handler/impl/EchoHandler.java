@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
-@URIHandlerImplementation("/example")
+@URIHandlerImplementation("/echo")
 public class EchoHandler implements URIHandler {
     private static final Logger log = LogManager.getLogger(EchoHandler.class);
     private static final ServerFrameFactory serverFrameFactory = new ServerFrameFactory();
@@ -28,31 +28,31 @@ public class EchoHandler implements URIHandler {
         try {
             var reader = new BufferedReader(new InputStreamReader(inputStream));
 //            while (reader.ready()) {
-                byte[] actualData = getRawBytes(inputStream);
-                if (actualData == null) return false;
+            byte[] actualData = getRawBytes(inputStream);
+            if (actualData == null) return false;
 
-                log.info("Raw bytes length: {}", actualData.length);
-                log.info("First 10 bytes: {}", Arrays.toString(Arrays.copyOf(actualData, Math.min(10, actualData.length))));
+            log.info("Raw bytes length: {}", actualData.length);
+            log.info("First 10 bytes: {}", Arrays.toString(Arrays.copyOf(actualData, Math.min(10, actualData.length))));
 
-                // Show as unsigned values
-                for (int i = 0; i < Math.min(10, actualData.length); i++) {
-                    log.info("Byte[{}]: signed={}, unsigned={}, hex=0x{}",
-                            i, actualData[i], actualData[i] & 0xFF, Integer.toHexString(actualData[i] & 0xFF));
-                }
-                WebSocketFrame frame = clientFrameFactory.createFrameFromBytes(actualData);
+            // Show as unsigned values
+            for (int i = 0; i < Math.min(10, actualData.length); i++) {
+                log.info("Byte[{}]: signed={}, unsigned={}, hex=0x{}",
+                        i, actualData[i], actualData[i] & 0xFF, Integer.toHexString(actualData[i] & 0xFF));
+            }
+            WebSocketFrame frame = clientFrameFactory.createFrameFromBytes(actualData);
 
-                log.info("FIN: {}", frame.isFin());
-                log.info("Opcode: {} - {}", frame.getOpcode(), FrameType.fromHexValue(frame.getOpcode()));
-                log.info("Masked: {}", frame.isMasked());
-                log.info("Payload Length: {}", frame.getPayloadLength());
-                log.info("Masking Key: {}", frame.getMaskingKey());
+            log.info("FIN: {}", frame.isFin());
+            log.info("Opcode: {} - {}", frame.getOpcode(), FrameType.fromHexValue(frame.getOpcode()));
+            log.info("Masked: {}", frame.isMasked());
+            log.info("Payload Length: {}", frame.getPayloadLength());
+            log.info("Masking Key: {}", frame.getMaskingKey());
 
-                byte[] payload = frame.isMasked() ? FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
-                String content = new String(payload, StandardCharsets.UTF_8);
+            byte[] payload = frame.isMasked() ? FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
+            String content = new String(payload, StandardCharsets.UTF_8);
 
-                log.info("Writing to output stream with payload: {}", content);
-                log.info("===========================================================================");
-                IOUtils.writeOutPut(outputStream, serverFrameFactory.createTextFrame(content));
+            log.info("Writing to output stream with payload: {}", content);
+            log.info("===========================================================================");
+            IOUtils.writeOutPut(outputStream, serverFrameFactory.createTextFrame(content));
 //            }
             return true;
         } catch (IOException e) {
@@ -68,6 +68,7 @@ public class EchoHandler implements URIHandler {
 
     public byte[] getRawBytes(InputStream inputStream) throws IOException {
         // Read first byte (opcode)
+        log.info("Reading bytes when not closed: {}", System.currentTimeMillis());
         int firstByte = inputStream.read();
         if (firstByte == -1) {
             log.warn("End of stream reached");

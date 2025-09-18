@@ -34,8 +34,12 @@ public class WebSocketHandler implements ConnectionHandler {
         output.flush();
 
         while (!incomingSocket.isClosed()) {
+            log.info(incomingSocket.getClass().getName());
+            log.info("Waiting for next message...");
             BiConsumer<InputStream, OutputStream> handler = ((URIHandler) (getInstanceByURI(request.getPath())))::handle;
             handler.accept(input, output);
         }
+
+        log.info("Closing socket: {}", incomingSocket.getPort());
     }
 }
