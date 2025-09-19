@@ -45,6 +45,7 @@ class URIHandlerTest {
     void givenEndOfInputStream_whenHandled_thenReturnsFalse() throws IOException {
         InputStream in = mock(InputStream.class);
         when(in.read(any(byte[].class))).thenReturn(-1);
+        when(in.read()).thenReturn(-1);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         var result = mockURIHandler.handle(in, out);
         assertFalse(result, "Expected handle to return false on end of input stream");

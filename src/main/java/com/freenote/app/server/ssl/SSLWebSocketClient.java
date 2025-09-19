@@ -1,4 +1,4 @@
-package com.freenote.app.server;
+package com.freenote.app.server.ssl;
 
 import com.freenote.app.server.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.base.DataFrame;

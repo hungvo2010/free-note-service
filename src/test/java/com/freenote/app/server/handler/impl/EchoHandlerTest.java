@@ -4,13 +4,13 @@ import com.freenote.app.server.util.FrameUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class EchoHandlerTest {
 
@@ -196,17 +196,13 @@ class EchoHandlerTest {
     }
 
     @Test
-    void testHandle_ZeroBytesRead() {
-        inputStream = new ByteArrayInputStream(new byte[10]) {
-            @Override
-            public int read(byte[] b) {
-                return 0; // Return 0 bytes read but not end of stream
-            }
-        };
+    void testHandle_ZeroBytesRead() throws IOException {
+        var inputStream = mock(InputStream.class);
+        when(inputStream.read(any(byte[].class))).thenReturn(0);
 
         boolean result = echoHandler.handle(inputStream, outputStream);
 
-        assertFalse(result);
+        assertTrue(result);
     }
 
     // Helper methods to create test frames

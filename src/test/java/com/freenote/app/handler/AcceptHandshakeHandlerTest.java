@@ -82,21 +82,6 @@ class AcceptHandshakeHandlerTest {
     }
 
     @Test
-    void testHandle_MissingWebSocketExtensions_ShouldReturnEmptyResponse() {
-        // Arrange
-        HttpUpgradeRequest request = mock(HttpUpgradeRequest.class);
-        when(request.getOrigin()).thenReturn("http://localhost:3000"); // Valid origin
-        when(request.getSecWebSocketKey()).thenReturn("key");
-        when(request.getSecWebSocketExtensions()).thenReturn(null);    // Missing extensions
-        when(request.getSecWebSocketVersion()).thenReturn("13");
-
-        // Act
-        HttpUpgradeResponse response = acceptHandshake.handle(request);
-
-        assertSame(HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE, response);
-    }
-
-    @Test
     void testHandle_MissingWebSocketVersion_ShouldReturnEmptyResponse() {
         // Arrange
         HttpUpgradeRequest request = mock(HttpUpgradeRequest.class);

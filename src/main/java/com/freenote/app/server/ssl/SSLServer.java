@@ -1,6 +1,8 @@
-package com.freenote.app.server.example;
+package com.freenote.app.server.ssl;
 
 
+import com.freenote.app.server.example.ConnectionHandler;
+import com.freenote.app.server.example.WebSocketHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
