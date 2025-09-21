@@ -38,6 +38,7 @@ public class SimpleServer {
                 }
             }));
         }
+        log.info("Server stopped");
         return futures;
     }
 }

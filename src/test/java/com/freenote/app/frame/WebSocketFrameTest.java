@@ -1,7 +1,9 @@
 package com.freenote.app.frame;
 
+import com.freenote.app.server.exceptions.InvalidFrameException;
 import com.freenote.app.server.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.FrameType;
+import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.control.PongFrame;
 import com.freenote.app.server.util.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
@@ -10,8 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 class WebSocketFrameTest {
     private static ServerFrameFactory serverFrameFactory = null;
@@ -29,6 +30,12 @@ class WebSocketFrameTest {
         var pongFrame = new PongFrame();
         assertEquals(FrameType.PONG.getOpCode(), pongFrame.getOpcode());
         assertFalse(pingFrame.isMasked());
+    }
+
+    @Test
+    void givenInvalidBytes_whenParseToWebSocketFrame_thenMustThrowException() {
+        var bytes = new byte[]{(byte) 0x81};
+        assertThrows(InvalidFrameException.class, () -> DataFrame.fromRawFrameBytes(bytes));
     }
 
     @Test

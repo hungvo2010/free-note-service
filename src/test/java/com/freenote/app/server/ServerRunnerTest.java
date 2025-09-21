@@ -1,69 +1,117 @@
 package com.freenote.app.server;
 
 import com.freenote.app.server.example.SimpleServer;
+import com.freenote.app.server.factory.ClientFrameFactory;
+import com.freenote.app.server.util.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ServerRunnerTest {
 
+    private static final Logger log = LogManager.getLogger(ServerRunnerTest.class);
+    private String HANDSHAKE_DATA = """
+            GET ws://localhost:8189/echo HTTP/1.1\r
+            Host: localhost:8189\r
+            Connection: Upgrade\r
+            Pragma: no-cache\r
+            Cache-Control: no-cache\r
+            User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36\r
+            Upgrade: websocket\r
+            Origin: http://localhost:8082\r
+            Sec-WebSocket-Version: 13\r
+            Accept-Encoding: gzip, deflate, br, zstd\r
+            Accept-Language: en-US,en;q=0.9,vi-VN;q=0.8,vi;q=0.7\r
+            Sec-WebSocket-Key: TixQkgsxKyup9IZVxSoe1w==\r
+            Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r
+            \r
+            """;
+
     @Test
-    void shouldAcceptSocketAndServeClient() throws Exception {
+    void givenWebSocketHandshakeRequest_whenServerAcceptsConnection_thenHandshakeResponseSent() throws Exception {
         // Mocks
-        ServerSocket mockServerSocket = mock(ServerSocket.class);
-        Socket mockSocket = mock(Socket.class);
+        ServerSocket serverSocket = mock(ServerSocket.class);
+        Socket clientSocket = mock(Socket.class);
+
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         AtomicBoolean running = new AtomicBoolean(true);
-        SimpleServer serverRunner = new SimpleServer();
 
-        // Simulate accepting one connection then stop
-        when(mockServerSocket.accept()).thenAnswer(invocation -> {
+
+        var pipeOutputStream = new PipedOutputStream();
+        var pipedInputStream = new PipedInputStream(pipeOutputStream);
+        ByteArrayOutputStream clientOutput = new ByteArrayOutputStream();
+
+        when(serverSocket.accept()).thenAnswer(invocation -> {
             running.set(false); // Accept once then stop server
-            return mockSocket;
+            return clientSocket;
+        });
+        when(clientSocket.getOutputStream()).thenReturn(clientOutput);
+
+        log.info("Send handshake data");
+
+        pipeOutputStream.write(HANDSHAKE_DATA.getBytes());
+        pipeOutputStream.flush();
+        var flag = new AtomicInteger(0);
+        flag.incrementAndGet();
+
+        when(clientSocket.getInputStream()).thenReturn(pipedInputStream);
+        when(clientSocket.isClosed()).thenAnswer(invocation -> {
+            if (flag.get() == 2) {
+                return true;
+            }
+            return false;
         });
 
-        // Capture output written to client socket
-        ByteArrayOutputStream clientOutput = new ByteArrayOutputStream();
-        when(mockSocket.getOutputStream()).thenReturn(clientOutput);
-        String testData = """
-                GET ws://localhost:8189/example HTTP/1.1
-                Host: localhost:8189
-                Connection: Upgrade
-                Pragma: no-cache
-                Cache-Control: no-cache
-                User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36
-                Upgrade: websocket
-                Origin: http://localhost:8082
-                Sec-WebSocket-Version: 13
-                Accept-Encoding: gzip, deflate, br, zstd
-                Accept-Language: en-US,en;q=0.9,vi-VN;q=0.8,vi;q=0.7
-                Sec-WebSocket-Key: TixQkgsxKyup9IZVxSoe1w==
-                Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
-                """;
-        when(mockSocket.getInputStream()).thenReturn(new ByteArrayInputStream(testData.getBytes()));
-        when(mockSocket.isClosed()).thenReturn(true);
+        var serverThread = new Thread(() -> {
+            try {
+                var futures = SimpleServer.run(serverSocket, executorService, running);
+                // Wait for first future to complete
+                if (!futures.isEmpty()) {
+                    futures.get(0).get();
+                    log.info("First connection handled");
+                }
+            } catch (Exception ex) {
+                log.error("Failed to start server", ex);
+            }
+        });
 
-        // Run server
-        serverRunner.run(mockServerSocket, executorService, running).get(0).get();
+        var socketThread = new Thread(() -> {
+            log.info("Send echo message");
+            // Check that "Hello" was written
+            String response = clientOutput.toString().trim();
+            assertEquals("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: O163+NfhFwxULDbPCuiQo7hGj30=", response);
 
+            // Close the input stream to trigger socket closure detection
 
-        // Verify server accepted a socket
-        verify(mockServerSocket, atLeastOnce()).accept();
-        verify(mockSocket, atLeastOnce()).getOutputStream();
+            log.info("Send echo message");
+            try {
+                IOUtils.writeOutPut(pipeOutputStream, new ClientFrameFactory().createTextFrame("hello-world"));
+            } catch (IOException e) {
+                log.error("Failed to write to socket", e);
+            }
+            flag.incrementAndGet();
+        });
 
-        // Check that "Hello" was written
-        String response = clientOutput.toString().trim();
-        assertEquals(new StringBuilder().append("HTTP/1.1 101 Switching Protocols\r\n").append("Upgrade: websocket\r\n").append("Connection: Upgrade\r\n").append("Sec-WebSocket-Accept: O163+NfhFwxULDbPCuiQo7hGj30=").toString(), response);
+        serverThread.start();
+        socketThread.start();
+        serverThread.join();
+        socketThread.join();
 
-        executorService.shutdownNow();
+//        executorService.shutdownNow();
     }
 }

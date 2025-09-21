@@ -68,7 +68,7 @@ public class EchoHandler implements URIHandler {
 
     public byte[] getRawBytes(InputStream inputStream) throws IOException {
         // Read first byte (opcode)
-        log.info("Reading bytes when not closed: {}", System.currentTimeMillis());
+        log.info("Reading first byte...");
         int firstByte = inputStream.read();
         if (firstByte == -1) {
             log.warn("End of stream reached");
