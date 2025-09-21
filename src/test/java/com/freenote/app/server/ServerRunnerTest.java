@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 class ServerRunnerTest {
 
     private static final Logger log = LogManager.getLogger(ServerRunnerTest.class);
-    private String HANDSHAKE_DATA = """
+    private final String HANDSHAKE_DATA = """
             GET ws://localhost:8189/echo HTTP/1.1\r
             Host: localhost:8189\r
             Connection: Upgrade\r
@@ -51,24 +51,18 @@ class ServerRunnerTest {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         AtomicBoolean running = new AtomicBoolean(true);
 
-
         var pipeOutputStream = new PipedOutputStream();
         var pipedInputStream = new PipedInputStream(pipeOutputStream);
         ByteArrayOutputStream clientOutput = new ByteArrayOutputStream();
+
+        var flag = new AtomicInteger(0);
+        flag.incrementAndGet();
 
         when(serverSocket.accept()).thenAnswer(invocation -> {
             running.set(false); // Accept once then stop server
             return clientSocket;
         });
         when(clientSocket.getOutputStream()).thenReturn(clientOutput);
-
-        log.info("Send handshake data");
-
-        pipeOutputStream.write(HANDSHAKE_DATA.getBytes());
-        pipeOutputStream.flush();
-        var flag = new AtomicInteger(0);
-        flag.incrementAndGet();
-
         when(clientSocket.getInputStream()).thenReturn(pipedInputStream);
         when(clientSocket.isClosed()).thenAnswer(invocation -> {
             if (flag.get() == 2) {
@@ -77,9 +71,12 @@ class ServerRunnerTest {
             return false;
         });
 
+        pipeOutputStream.write(HANDSHAKE_DATA.getBytes());
+
         var serverThread = new Thread(() -> {
             try {
                 var futures = SimpleServer.run(serverSocket, executorService, running);
+                pipeOutputStream.flush();
                 // Wait for first future to complete
                 if (!futures.isEmpty()) {
                     futures.get(0).get();
@@ -89,13 +86,18 @@ class ServerRunnerTest {
                 log.error("Failed to start server", ex);
             }
         });
+        serverThread.start();
+
+        // Check that "Hello" was written
+        Thread.sleep(1000);
+        String response = clientOutput.toString().trim();
+        assertEquals("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: O163+NfhFwxULDbPCuiQo7hGj30=", response);
+
+
+//        serverThread.join();
 
         var socketThread = new Thread(() -> {
             log.info("Send echo message");
-            // Check that "Hello" was written
-            String response = clientOutput.toString().trim();
-            assertEquals("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: O163+NfhFwxULDbPCuiQo7hGj30=", response);
-
             // Close the input stream to trigger socket closure detection
 
             log.info("Send echo message");
@@ -107,9 +109,7 @@ class ServerRunnerTest {
             flag.incrementAndGet();
         });
 
-        serverThread.start();
         socketThread.start();
-        serverThread.join();
         socketThread.join();
 
 //        executorService.shutdownNow();
