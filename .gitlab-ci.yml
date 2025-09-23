@@ -24,6 +24,7 @@ deploy:
   script:
     - echo "Deploying to VPS..."
     - sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_IP "
+      mkdir -p ~/$PROJECT_NAME
       cd $PROJECT_NAME || exit 1
       git pull origin main
       pkill -f 'gradlew bootRun' || true
