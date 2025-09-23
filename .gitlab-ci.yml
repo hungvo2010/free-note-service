@@ -18,7 +18,7 @@ deploy:
       - echo $VPS_PASSWORD | ssh $VPS_USER@$VPS_IP "
         cd $PROJECT_NAME
         git pull origin main
-        ./gradlew bootRun
+        nohup ./gradlew bootRun > log.txt 2>&1 &
         "
     only:
         - main
