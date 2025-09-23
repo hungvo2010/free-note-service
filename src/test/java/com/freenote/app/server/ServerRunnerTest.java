@@ -19,8 +19,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 class ServerRunnerTest {
 
@@ -71,6 +72,7 @@ class ServerRunnerTest {
             return false;
         });
 
+        Thread.sleep(10000);
         pipeOutputStream.write(HANDSHAKE_DATA.getBytes());
 
         var serverThread = new Thread(() -> {

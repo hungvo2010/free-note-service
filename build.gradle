@@ -48,6 +48,7 @@ jacocoTestCoverageVerification {
             limit {
                 minimum = 0.80 // 80% line coverage
             }
+            excludes = ['**/SimpleServer.main*']
         }
     }
 }

@@ -28,12 +28,16 @@ public class WebSocketHandler implements ConnectionHandler {
         var request = new HttpParserImpl().parse(input);
 
         log.info("Received request: {}\n", request);
-
         handleHandShake(request, output);
 
         while (!incomingSocket.isClosed()) {
             log.info("Waiting for next message...");
-            BiConsumer<InputStream, OutputStream> handler = ((URIHandler) (getInstanceByURI(request.getPath())))::handle;
+            var pathHandler = (URIHandler) (getInstanceByURI(request.getPath()));
+            if (pathHandler == null) {
+                log.warn("No handler found for URI: {}", request.getPath());
+                return;
+            }
+            BiConsumer<InputStream, OutputStream> handler = (pathHandler)::handle;
             handler.accept(input, output);
         }
 
