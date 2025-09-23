@@ -1,4 +1,4 @@
-image: maven:3.8.3-openjdk-17
+image: gradle:jdk17
 
 stages:
   - build
@@ -8,7 +8,7 @@ build:
     stage: build
     script:
       - echo "Building the project..."
-      - mvn clean install
+      - ./gradlew build
 deploy:
     stage: deploy
     script:
