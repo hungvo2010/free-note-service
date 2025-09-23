@@ -27,7 +27,7 @@ deploy:
       cd $PROJECT_NAME || exit 1
       git pull origin main
       pkill -f 'gradlew bootRun' || true
-      nohup java -jar build/libs/*.jar > log.txt 2>&1 &
+      nohup ./gradlew bootRun > log.txt 2>&1 &
       "
   only:
     - main
