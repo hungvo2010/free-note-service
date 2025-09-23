@@ -1,0 +1,17 @@
+image: maven:3.8.4-jdk-17
+
+stages:
+  - build
+  - deploy
+
+build:
+    stage: build
+    script:
+      - echo "Building the project..."
+      - mvn clean install
+deploy:
+    stage: deploy
+    script:
+      - echo "Deploying the project..."
+    only:
+        - main
