@@ -18,11 +18,12 @@ build:
 
 deploy:
   stage: deploy
+  needs: ["build"]
   before_script:
-     # install sshpass since the runner image doesn't have it
     - apt-get update -qq && apt-get install -y sshpass
   script:
-    - echo "$VPS_PASSWORD" | sshpass ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_IP "
+    - echo "Deploying to VPS..."
+    - sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_IP "
       cd $PROJECT_NAME || exit 1
       git pull origin main
       pkill -f 'gradlew bootRun' || true
