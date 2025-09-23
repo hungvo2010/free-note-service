@@ -163,40 +163,6 @@ public class SSLWebSocketClient {
         outputStream.flush();
 
         IOUtils.writeOutPut(outputStream, new ClientFrameFactory().createTextFrame(new String(payload, StandardCharsets.UTF_8)));
-
-//        // First byte: FIN + opcode
-//        outputStream.write(opcode);
-//
-//        // Payload length and masking
-//        // Client frames must be masked
-//        int length = payload.length;
-//
-//        if (length < 126) {
-//            outputStream.write(0x80 | length);
-//        } else if (length < 65536) {
-//            outputStream.write(0x80 | 126);
-//            outputStream.write((length >> 8) & 0xFF);
-//            outputStream.write(length & 0xFF);
-//        } else {
-//            outputStream.write(0x80 | 127);
-//            // Write 64-bit length (simplified for int range)
-//            for (int i = 7; i >= 0; i--) {
-//                outputStream.write((int) ((long) length >> (8 * i)) & 0xFF);
-//            }
-//        }
-//
-//        // Masking key (if masked)
-//        byte[] maskingKey = null;
-//        maskingKey = new byte[4];
-//        new SecureRandom().nextBytes(maskingKey);
-//        outputStream.write(maskingKey);
-//
-//        // Payload (masked if required)
-//        for (int i = 0; i < payload.length; i++) {
-//            outputStream.write(payload[i] ^ maskingKey[i % 4]);
-//        }
-//
-//        outputStream.flush();
     }
 
     public String receiveMessage() throws IOException {

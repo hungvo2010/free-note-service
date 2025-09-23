@@ -17,6 +17,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.freenote.app.server.util.IOUtils.getRawBytes;
+
 @URIHandlerImplementation("/echo")
 public class EchoHandler implements URIHandler {
     private static final Logger log = LogManager.getLogger(EchoHandler.class);
@@ -64,59 +66,5 @@ public class EchoHandler implements URIHandler {
     @Override
     public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputStream inputStream, OutputStream outputStream) {
         return false;
-    }
-
-    public byte[] getRawBytes(InputStream inputStream) throws IOException {
-        // Read first byte (opcode)
-        log.info("Reading first byte...");
-        int firstByte = inputStream.read();
-        if (firstByte == -1) {
-            log.warn("End of stream reached");
-            return null;
-        }
-
-        // Read second byte (payload length + mask)
-        int secondByte = inputStream.read();
-        if (secondByte == -1) {
-            log.warn("Incomplete frame - missing second byte");
-            return null;
-        }
-
-        // Calculate total frame length needed
-        int baseLength = 2; // opcode + length/mask byte
-        int payloadLength = secondByte & 0x7F;
-        boolean masked = (secondByte & 0x80) != 0;
-
-        // Handle extended payload length
-        if (payloadLength == 126) {
-            baseLength += 2; // 2 more bytes for length
-        } else if (payloadLength == 127) {
-            baseLength += 8; // 8 more bytes for length
-        }
-
-        // Add masking key length
-        if (masked) {
-            baseLength += 4;
-        }
-
-        // Add actual payload length (simplified for small frames)
-        int totalFrameLength = baseLength + (payloadLength < 126 ? payloadLength : 0);
-
-        // Read complete frame
-        byte[] frameData = new byte[totalFrameLength];
-        frameData[0] = (byte) firstByte;
-        frameData[1] = (byte) secondByte;
-
-        int totalRead = 2;
-        while (totalRead < totalFrameLength) {
-            int read = inputStream.read(frameData, totalRead, totalFrameLength - totalRead);
-            if (read == -1) {
-                log.warn("Stream ended before complete frame read");
-                return null;
-            }
-            totalRead += read;
-        }
-
-        return frameData;
     }
 }
