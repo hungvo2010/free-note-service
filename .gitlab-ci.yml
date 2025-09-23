@@ -18,6 +18,9 @@ build:
 
 deploy:
   stage: deploy
+  before_script:
+     # install sshpass since the runner image doesn't have it
+    - apt-get update -qq && apt-get install -y sshpass
   script:
     - echo "$VPS_PASSWORD" | sshpass ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_IP "
       cd $PROJECT_NAME || exit 1
