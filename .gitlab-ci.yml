@@ -1,5 +1,8 @@
 image: gradle:jdk17
 
+variables:
+    PROJECT_NAME: "${CI_PROJECT_NAME}"
+
 stages:
   - build
   - deploy
@@ -12,6 +15,10 @@ build:
 deploy:
     stage: deploy
     script:
-      - echo "Deploying the project..."
+      - echo $VPS_PASSWORD | ssh $VPS_USER@$VPS_IP "
+        cd $PROJECT_NAME
+        git pull origin main
+        ./gradlew bootRun
+        "
     only:
         - main
