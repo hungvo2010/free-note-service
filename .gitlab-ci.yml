@@ -1,24 +1,29 @@
 image: gradle:jdk17
 
 variables:
-    PROJECT_NAME: "${CI_PROJECT_NAME}"
+  PROJECT_NAME: "${CI_PROJECT_NAME}"
 
 stages:
   - build
   - deploy
 
 build:
-    stage: build
-    script:
-      - echo "Building the project..."
-      - ./gradlew build -x test
+  stage: build
+  script:
+    - echo "Building the project..."
+    - ./gradlew build -x test
+  artifacts:
+    paths:
+      - build/libs/*.jar   # keep build artifact for deployment
+
 deploy:
-    stage: deploy
-    script:
-      - echo $VPS_PASSWORD | ssh $VPS_USER@$VPS_IP "
-        cd $PROJECT_NAME
-        git pull origin main
-        nohup ./gradlew bootRun > log.txt 2>&1 &
-        "
-    only:
-        - main
+  stage: deploy
+  script:
+    - echo "$VPS_PASSWORD" | sshpass ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_IP "
+      cd $PROJECT_NAME || exit 1
+      git pull origin main
+      pkill -f 'gradlew bootRun' || true
+      nohup java -jar build/libs/*.jar > log.txt 2>&1 &
+      "
+  only:
+    - main
