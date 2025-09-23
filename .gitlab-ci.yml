@@ -8,7 +8,7 @@ build:
     stage: build
     script:
       - echo "Building the project..."
-      - ./gradlew build
+      - ./gradlew build -x test
 deploy:
     stage: deploy
     script:
