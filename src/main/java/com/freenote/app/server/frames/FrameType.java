@@ -9,7 +9,8 @@ public enum FrameType {
     BINARY(true, (short) 2, (byte) 0x82),
     CLOSE(true, (short) 8, (byte) 0x88),
     PING(true, (short) 9, (byte) 0x89),
-    PONG(true, (short) 10, (byte) 0x8A);
+    PONG(true, (short) 10, (byte) 0x8A),
+    INVALID(false, (short) -1, (byte) 0xFF);
 
     private final boolean isFinal;
     private final short opCode;
@@ -29,5 +30,14 @@ public enum FrameType {
             }
         }
         return FrameType.TEXT;
+    }
+
+    public static FrameType fromOpCode(short opCode) {
+        for (FrameType type : FrameType.values()) {
+            if (type.getOpCode() == opCode) {
+                return type;
+            }
+        }
+        return INVALID;
     }
 }

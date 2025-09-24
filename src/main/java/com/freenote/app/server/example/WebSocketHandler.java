@@ -31,7 +31,6 @@ public class WebSocketHandler implements ConnectionHandler {
         handleHandShake(request, output);
 
         while (!incomingSocket.isClosed()) {
-            log.info("Waiting for next message...");
             var pathHandler = (URIHandler) (getInstanceByURI(request.getPath()));
             if (pathHandler == null) {
                 log.warn("No handler found for URI: {}", request.getPath());

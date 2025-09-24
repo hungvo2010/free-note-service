@@ -8,6 +8,8 @@ import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.util.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +20,7 @@ import static com.freenote.app.server.util.IOUtils.getRawBytes;
 
 @URIHandlerImplementation("/heartbeat")
 public class HeartBeatHandler implements URIHandler {
+    private final Logger log = LogManager.getLogger(HeartBeatHandler.class);
     private final ServerFrameFactory serverFactory = new ServerFrameFactory();
 
     @Override
@@ -29,9 +32,11 @@ public class HeartBeatHandler implements URIHandler {
 
             var rawBytes = getRawBytes(inputStream);
             var frame = DataFrame.fromRawFrameBytes(rawBytes);
+            log.info("Received frame with opcode: {}", FrameType.fromOpCode(frame.getOpcode()));
             if (frame.getOpcode() == FrameType.PING.getOpCode()) {
                 IOUtils.writeOutPut(outputStream, serverFactory.createPongFrame());
             }
+            IOUtils.writeOutPut(outputStream, serverFactory.createTextFrame("Heartbeat acknowledged"));
             return true;
         } catch (IOException e) {
             return false;

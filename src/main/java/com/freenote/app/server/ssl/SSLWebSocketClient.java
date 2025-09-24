@@ -33,12 +33,11 @@ public class SSLWebSocketClient {
     public static void main(String[] args) {
         try {
             SSLWebSocketClient client = new SSLWebSocketClient();
-            client.connect("localhost", 8443, "/echo");
+            client.connect("localhost", 8189, "/echo");
 
             Thread.sleep(1500); // Wait for connection to stabilize
 
             for (int i = 0; i < 10; ++i) {
-//                Thread.sleep(new Random().nextLong(1500, 10000));
                 client.sendMessage("Hello from raw SSL WebSocket client!");
             }
 
