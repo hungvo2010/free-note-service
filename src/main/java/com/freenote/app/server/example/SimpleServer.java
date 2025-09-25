@@ -1,9 +1,9 @@
 package com.freenote.app.server.example;
 
+import com.freenote.app.server.exceptions.AcceptConnectionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.processing.Generated;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -24,18 +24,18 @@ public class SimpleServer {
         }
     }
 
-    public static List<Future> run(ServerSocket serverSocket, ExecutorService executorService, AtomicBoolean running) throws IOException {
-        List<Future> futures = new ArrayList<>();
+    public static List<Future<Void>> run(ServerSocket serverSocket, ExecutorService executorService, AtomicBoolean running) throws IOException {
+        List<Future<Void>> futures = new ArrayList<>();
         log.info("Server started on port: {}", serverSocket.getLocalPort());
         while (running.get()) {
             var incomingSocket = serverSocket.accept();
-            futures.add(executorService.submit(() -> {
+            futures.add((Future<Void>) executorService.submit(() -> {
                 try {
                     incomingSocket.setSoTimeout(5000); // to make timeout after 5 seconds of blocking read
                     new WebSocketHandler().handle(incomingSocket);
                 } catch (Exception e) {
                     log.error("Failed to accept connection", e);
-                    throw new RuntimeException(e);
+                    throw new AcceptConnectionException(e);
                 }
             }));
         }
