@@ -18,37 +18,48 @@ public class HttpParserImpl implements HttpParser {
     public HttpUpgradeRequest parse(InputStream inputStream) {
         try {
             var reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-            var requestBuilder = HttpUpgradeRequest.builder();
+            var requestBuilder = parseRequestEndpoint(reader);
 
-            // First line: GET /path HTTP/1.1
-            var requestLine = reader.readLine();
-            if (requestLine == null) throw new IOException("Empty request");
-            var requestEndpoint = requestLine.split(" ");
-            requestBuilder.method(requestEndpoint[0]);
-            requestBuilder.uri(requestEndpoint[1]);
-            requestBuilder.version(requestEndpoint[2]);
-
-            var headers = new HashMap<String, String>();
-            String line;
-            while ((line = reader.readLine()) != null && !line.isEmpty()) {
-                int colonIndex = line.indexOf(":");
-                var name = line.substring(0, colonIndex).trim();
-                var value = line.substring(colonIndex + 1).trim();
-                headers.put(name, value);
-            }
-
-            requestBuilder.secWebSocketKey(headers.get("Sec-WebSocket-Key"));
-            requestBuilder.secWebSocketVersion(headers.get("Sec-WebSocket-Version"));
-            requestBuilder.secWebSocketExtensions(headers.get("Sec-WebSocket-Extensions"));
-            requestBuilder.upgrade(headers.get("Upgrade"));
-            requestBuilder.connection(headers.get("Connection"));
-            requestBuilder.host(headers.get("Host"));
-            requestBuilder.origin(headers.get("Origin"));
+            requestBuilder = parseHeaders(reader, requestBuilder);
 
             return requestBuilder.build();
         } catch (Exception e) {
             log.error("Failed to parse WebSocket upgrade request", e);
             return new HttpUpgradeRequest();
         }
+    }
+
+    private HttpUpgradeRequest.HttpUpgradeRequestBuilder parseHeaders(BufferedReader reader, HttpUpgradeRequest.HttpUpgradeRequestBuilder requestBuilder) throws IOException {
+        var headers = new HashMap<String, String>();
+        String line;
+        while ((line = reader.readLine()) != null && !line.isEmpty()) {
+            int colonIndex = line.indexOf(":");
+            var name = line.substring(0, colonIndex).trim();
+            var value = line.substring(colonIndex + 1).trim();
+            headers.put(name, value);
+        }
+
+        requestBuilder.secWebSocketKey(headers.get("Sec-WebSocket-Key"));
+        requestBuilder.secWebSocketVersion(headers.get("Sec-WebSocket-Version"));
+        requestBuilder.secWebSocketExtensions(headers.get("Sec-WebSocket-Extensions"));
+        requestBuilder.upgrade(headers.get("Upgrade"));
+        requestBuilder.connection(headers.get("Connection"));
+        requestBuilder.host(headers.get("Host"));
+        requestBuilder.origin(headers.get("Origin"));
+
+        return requestBuilder;
+    }
+
+    private HttpUpgradeRequest.HttpUpgradeRequestBuilder parseRequestEndpoint(BufferedReader reader) throws IOException {
+        var requestBuilder = HttpUpgradeRequest.builder();
+
+        // First line: GET /path HTTP/1.1
+        var requestLine = reader.readLine();
+        if (requestLine == null) throw new IOException("Empty request");
+        var requestEndpoint = requestLine.split(" ");
+        requestBuilder.method(requestEndpoint[0]);
+        requestBuilder.uri(requestEndpoint[1]);
+        requestBuilder.version(requestEndpoint[2]);
+        return requestBuilder;
     }
 }
