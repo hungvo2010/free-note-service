@@ -77,6 +77,11 @@ dependencies {
 
     // SSL/TLS support
     implementation 'org.glassfish.tyrus:tyrus-container-grizzly-client:1.20'
+
+    // JSON Processing
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.20.0")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
 }
 
 java {
