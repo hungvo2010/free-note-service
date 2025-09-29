@@ -10,7 +10,7 @@ import java.util.UUID;
 public class Room {
     @Getter
     private String roomId;
-    private List<Connection> connections;
+    private List<Connection> connections = new ArrayList<>();
 
     public Room() {
         this.roomId = UUID.randomUUID().toString();
@@ -19,5 +19,11 @@ public class Room {
 
     public void addMember(Connection connection) {
         connections.add(connection);
+    }
+
+    public void broadCastMessage() {
+        for (Connection connection : connections) {
+            System.out.println("Member: " + connection.getSourceIp());
+        }
     }
 }

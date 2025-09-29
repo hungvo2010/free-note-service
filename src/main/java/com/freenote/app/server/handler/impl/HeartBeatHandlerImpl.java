@@ -2,7 +2,7 @@ package com.freenote.app.server.handler.impl;
 
 
 import com.freenote.annotations.URIHandlerImplementation;
-import com.freenote.app.server.factory.ServerFrameFactory;
+import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
@@ -19,8 +19,8 @@ import java.util.List;
 import static com.freenote.app.server.util.IOUtils.getRawBytes;
 
 @URIHandlerImplementation("/heartbeat")
-public class HeartBeatHandler implements URIHandler {
-    private final Logger log = LogManager.getLogger(HeartBeatHandler.class);
+public class HeartBeatHandlerImpl implements URIHandler {
+    private final Logger log = LogManager.getLogger(HeartBeatHandlerImpl.class);
     private final ServerFrameFactory serverFactory = new ServerFrameFactory();
 
     @Override

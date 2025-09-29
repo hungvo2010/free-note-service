@@ -1,9 +1,9 @@
 package com.freenote.app.handler;
 
-import com.freenote.app.server.factory.ClientFrameFactory;
+import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.handler.URIHandler;
-import com.freenote.app.server.handler.impl.EchoHandler;
+import com.freenote.app.server.handler.impl.EchoHandlerImpl;
 import com.freenote.app.server.util.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ class URIHandlerTest {
     static void setup() {
         clientFrameFactory = new ClientFrameFactory();
     }
-    private final URIHandler mockURIHandler = new EchoHandler();
+    private final URIHandler mockURIHandler = new EchoHandlerImpl();
 
     @Test
     void givenWebSocketFrameInputStream_whenHandled_thenEchoesToOutputStream() throws IOException {

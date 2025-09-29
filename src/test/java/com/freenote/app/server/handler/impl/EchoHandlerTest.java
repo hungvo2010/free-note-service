@@ -1,5 +1,6 @@
 package com.freenote.app.server.handler.impl;
 
+import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.util.FrameUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,13 +15,13 @@ import static org.mockito.Mockito.when;
 
 class EchoHandlerTest {
 
-    private EchoHandler echoHandler;
+    private URIHandler uriHandler;
     private ByteArrayInputStream inputStream;
     private ByteArrayOutputStream outputStream;
 
     @BeforeEach
     void setUp() {
-        echoHandler = new EchoHandler();
+        uriHandler = new EchoHandlerImpl();
         outputStream = new ByteArrayOutputStream();
     }
 
@@ -30,7 +31,7 @@ class EchoHandlerTest {
         byte[] frameData = createSimpleTextFrame("Hello World");
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = echoHandler.handle(inputStream, outputStream);
+        boolean result = uriHandler.handle(inputStream, outputStream);
 
         assertTrue(result);
         assertTrue(outputStream.size() > 0);
@@ -48,7 +49,7 @@ class EchoHandlerTest {
         byte[] frameData = createMaskedTextFrame(message, maskingKey);
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = echoHandler.handle(inputStream, outputStream);
+        boolean result = uriHandler.handle(inputStream, outputStream);
 
         assertTrue(result);
         assertTrue(outputStream.size() > 0);
@@ -58,7 +59,7 @@ class EchoHandlerTest {
     void testHandle_EmptyInputStream() {
         inputStream = new ByteArrayInputStream(new byte[0]);
 
-        boolean result = echoHandler.handle(inputStream, outputStream);
+        boolean result = uriHandler.handle(inputStream, outputStream);
 
         assertFalse(result);
         assertEquals(0, outputStream.size());
@@ -93,7 +94,7 @@ class EchoHandlerTest {
             }
         };
 
-        boolean result = echoHandler.handle(inputStream, outputStream);
+        boolean result = uriHandler.handle(inputStream, outputStream);
 
         assertFalse(result);
     }
@@ -108,7 +109,7 @@ class EchoHandlerTest {
             }
         };
 
-        boolean result = echoHandler.handle(inputStream, outputStream);
+        boolean result = uriHandler.handle(inputStream, outputStream);
 
         assertFalse(result);
     }
@@ -127,7 +128,7 @@ class EchoHandlerTest {
             }
         };
 
-        boolean result = echoHandler.handle(inputStream, errorOutputStream);
+        boolean result = uriHandler.handle(inputStream, errorOutputStream);
 
         assertFalse(result);
     }
@@ -148,7 +149,7 @@ class EchoHandlerTest {
 
         inputStream = new ByteArrayInputStream(combinedFrames.toByteArray());
 
-        boolean result = echoHandler.handle(inputStream, outputStream);
+        boolean result = uriHandler.handle(inputStream, outputStream);
 
         assertTrue(result);
         assertTrue(outputStream.size() > 0);
@@ -165,7 +166,7 @@ class EchoHandlerTest {
         byte[] frameData = createSimpleTextFrame(largeMessage.toString());
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = echoHandler.handle(inputStream, outputStream);
+        boolean result = uriHandler.handle(inputStream, outputStream);
 
         assertTrue(result);
         assertTrue(outputStream.size() > 0);
@@ -179,7 +180,7 @@ class EchoHandlerTest {
         byte[] frameData = createFrameWithOpcode(message, (byte) 0x02); // Binary frame
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = echoHandler.handle(inputStream, outputStream);
+        boolean result = uriHandler.handle(inputStream, outputStream);
 
         assertTrue(result);
     }
@@ -190,7 +191,7 @@ class EchoHandlerTest {
         byte[] frameData = createFragmentedFrame(message);
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = echoHandler.handle(inputStream, outputStream);
+        boolean result = uriHandler.handle(inputStream, outputStream);
 
         assertTrue(result);
     }
@@ -198,9 +199,10 @@ class EchoHandlerTest {
     @Test
     void testHandle_ZeroBytesRead() throws IOException {
         var inputStream = mock(InputStream.class);
+        when(inputStream.available()).thenReturn(1);
         when(inputStream.read(any(byte[].class))).thenReturn(0);
 
-        boolean result = echoHandler.handle(inputStream, outputStream);
+        boolean result = uriHandler.handle(inputStream, outputStream);
 
         assertTrue(result);
     }

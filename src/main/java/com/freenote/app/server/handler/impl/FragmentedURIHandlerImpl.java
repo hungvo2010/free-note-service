@@ -1,8 +1,8 @@
 package com.freenote.app.server.handler.impl;
 
 import com.freenote.annotations.URIHandlerImplementation;
-import com.freenote.app.server.factory.FrameFactory;
-import com.freenote.app.server.factory.ServerFrameFactory;
+import com.freenote.app.server.frames.factory.FrameFactory;
+import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.LargeFrame;
 import com.freenote.app.server.frames.base.DataFrame;
@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @URIHandlerImplementation("/update")
-public class FragmentedURIHandler implements URIHandler {
-    private static final Logger log = LogManager.getLogger(FragmentedURIHandler.class);
+public class FragmentedURIHandlerImpl implements URIHandler {
+    private static final Logger log = LogManager.getLogger(FragmentedURIHandlerImpl.class);
     private final FrameFactory frameFactory = new ServerFrameFactory();
 
     @Override

@@ -1,7 +1,7 @@
 package com.freenote.app.server.frames;
 
 import com.freenote.app.server.exceptions.InvalidFrameStateException;
-import com.freenote.app.server.factory.ServerFrameFactory;
+import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.util.FrameUtil;

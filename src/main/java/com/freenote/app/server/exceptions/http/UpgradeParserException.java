@@ -1,4 +1,4 @@
-package com.freenote.app.server.http.exceptions;
+package com.freenote.app.server.exceptions.http;
 
 import lombok.AllArgsConstructor;
 

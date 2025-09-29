@@ -1,7 +1,7 @@
 package com.freenote.app.handler;
 
 import com.freenote.app.server.handler.URIHandler;
-import com.freenote.app.server.handler.impl.FragmentedURIHandler;
+import com.freenote.app.server.handler.impl.FragmentedURIHandlerImpl;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -16,7 +16,7 @@ class ExampleURIHandlerTest {
         InputStream input = new ByteArrayInputStream(new byte[0]);
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-        URIHandler handler = new FragmentedURIHandler();
+        URIHandler handler = new FragmentedURIHandlerImpl();
 
         boolean result = handler.handle(input, output);
 
@@ -26,7 +26,7 @@ class ExampleURIHandlerTest {
 
     @Test
     void shouldThrowWhenStreamsAreNull() {
-        URIHandler handler = new FragmentedURIHandler();
+        URIHandler handler = new FragmentedURIHandlerImpl();
 
         assertThrows(NullPointerException.class,
                 () -> handler.handle(null, new ByteArrayOutputStream()));

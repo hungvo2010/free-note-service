@@ -1,6 +1,6 @@
 package com.freenote.app.exceptions;
 
-import com.freenote.app.server.http.exceptions.UpgradeParserException;
+import com.freenote.app.server.exceptions.http.UpgradeParserException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

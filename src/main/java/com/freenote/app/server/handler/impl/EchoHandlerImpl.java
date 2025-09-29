@@ -2,8 +2,8 @@ package com.freenote.app.server.handler.impl;
 
 
 import com.freenote.annotations.URIHandlerImplementation;
-import com.freenote.app.server.factory.ClientFrameFactory;
-import com.freenote.app.server.factory.ServerFrameFactory;
+import com.freenote.app.server.frames.factory.ClientFrameFactory;
+import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.handler.URIHandler;
@@ -12,7 +12,9 @@ import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -20,16 +22,17 @@ import java.util.List;
 import static com.freenote.app.server.util.IOUtils.getRawBytes;
 
 @URIHandlerImplementation("/echo")
-public class EchoHandler implements URIHandler {
-    private static final Logger log = LogManager.getLogger(EchoHandler.class);
+public class EchoHandlerImpl implements URIHandler {
+    private static final Logger log = LogManager.getLogger(EchoHandlerImpl.class);
     private static final ServerFrameFactory serverFrameFactory = new ServerFrameFactory();
     private static final ClientFrameFactory clientFrameFactory = new ClientFrameFactory();
 
     @Override
     public boolean handle(InputStream inputStream, OutputStream outputStream) {
         try {
-            var reader = new BufferedReader(new InputStreamReader(inputStream));
-//            while (reader.ready()) {
+            if (inputStream.available() == 0) {
+                return false;
+            }
             byte[] actualData = getRawBytes(inputStream);
             if (actualData == null) return false;
 
@@ -55,7 +58,6 @@ public class EchoHandler implements URIHandler {
             log.info("Writing to output stream with payload: {}", content);
             log.info("===========================================================================");
             IOUtils.writeOutPut(outputStream, serverFrameFactory.createTextFrame(content));
-//            }
             return true;
         } catch (IOException e) {
             log.error("Error handling input stream", e);

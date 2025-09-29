@@ -1,6 +1,6 @@
 package com.freenote.app.frame;
 
-import com.freenote.app.server.factory.ClientFrameFactory;
+import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,7 @@
-package com.freenote.app.server.example;
+package com.freenote.app.server.handler.impl;
 
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
+import com.freenote.app.server.handler.ConnectionHandler;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
@@ -16,8 +17,8 @@ import java.util.function.BiConsumer;
 
 import static generated.URIHandlerRegistry.getInstanceByURI;
 
-public class WebSocketHandler implements ConnectionHandler {
-    private static final Logger log = LogManager.getLogger(WebSocketHandler.class);
+public class WebSocketHandlerImpl implements ConnectionHandler {
+    private static final Logger log = LogManager.getLogger(WebSocketHandlerImpl.class);
 
     @Override
     public void handle(Socket incomingSocket) throws IOException {

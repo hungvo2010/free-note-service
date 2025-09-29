@@ -1,6 +1,6 @@
 package com.freenote.app.server.ssl;
 
-import com.freenote.app.server.factory.ClientFrameFactory;
+import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.util.FrameUtil;
@@ -33,7 +33,7 @@ public class SSLWebSocketClient {
     public static void main(String[] args) {
         try {
             SSLWebSocketClient client = new SSLWebSocketClient();
-            client.connect("localhost", 8189, "/echo");
+            client.connect("localhost", 8443, "/echo");
 
             Thread.sleep(1500); // Wait for connection to stabilize
 

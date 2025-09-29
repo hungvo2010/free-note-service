@@ -1,4 +1,4 @@
-package com.freenote.app.server.factory;
+package com.freenote.app.server.frames.factory;
 
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.ControlFrame;

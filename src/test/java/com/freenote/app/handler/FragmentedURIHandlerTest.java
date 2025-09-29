@@ -1,10 +1,10 @@
 package com.freenote.app.handler;
 
-import com.freenote.app.server.factory.ClientFrameFactory;
-import com.freenote.app.server.factory.FrameFactory;
+import com.freenote.app.server.frames.factory.ClientFrameFactory;
+import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.DataFrame;
-import com.freenote.app.server.handler.impl.FragmentedURIHandler;
+import com.freenote.app.server.handler.impl.FragmentedURIHandlerImpl;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 class FragmentedURIHandlerTest {
     private static final Logger log = LogManager.getLogger(FragmentedURIHandlerTest.class);
     private final FrameFactory clientFactory = new ClientFrameFactory();
-    private final FragmentedURIHandler handler = new FragmentedURIHandler();
+    private final FragmentedURIHandlerImpl handler = new FragmentedURIHandlerImpl();
 
     @Test
     void givenMockEOFInputStream_whenParseToContinuationFrame_thenSuccess() throws IOException {

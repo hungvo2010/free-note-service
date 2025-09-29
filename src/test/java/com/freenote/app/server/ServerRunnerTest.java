@@ -1,7 +1,7 @@
 package com.freenote.app.server;
 
 import com.freenote.app.server.example.SimpleServer;
-import com.freenote.app.server.factory.ClientFrameFactory;
+import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -76,7 +76,7 @@ class ServerRunnerTest {
 
         var serverThread = new Thread(() -> {
             try {
-                var futures = SimpleServer.run(serverSocket, executorService, running);
+                var futures = SimpleServer.run(8189);
                 pipeOutputStream.flush();
                 // Wait for first future to complete
                 if (!futures.isEmpty()) {
