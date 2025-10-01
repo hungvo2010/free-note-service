@@ -20,6 +20,7 @@ class FrameFactoryTest {
     void givenFrameTypeThenCreateServerFrame() {
         FrameType frameType = FrameType.BINARY;
         var factory = new ServerFrameFactory();
-        var frame = factory.createFrameFromBytes("Hello World".getBytes());
+        var frame = factory.createBinaryFrame("Hello World".getBytes());
+        assertEquals(frame.getOpcode(), frameType.getOpCode());
     }
 }

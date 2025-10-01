@@ -7,16 +7,16 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ControlFrameTest {
+class ControlFrameTest {
     @Test
-    public void giveControlFrame_whenCallTotalLength_ThenMustReturn_2() {
+    void giveControlFrame_whenCallTotalLength_ThenMustReturn_2() {
         ControlFrame controlFrame = new ControlFrame(FrameType.BINARY.getOpCode());
         assertEquals(2, controlFrame.getTotalFrameLength());
         assertThrows(UnsupportedOperationException.class, ControlFrame::new);
     }
 
     @Test
-    public void giveRawBytes_whenParseToControlFrame_thenSuccess() {
+    void giveRawBytes_whenParseToControlFrame_thenSuccess() {
         byte[] rawBytes = new byte[]{(byte) 0x88, 0x00};
         var socketFrame = new ControlFrame(rawBytes);
         assertEquals(FrameType.CLOSE.getOpCode(), socketFrame.getOpcode());

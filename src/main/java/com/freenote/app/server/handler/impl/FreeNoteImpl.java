@@ -23,7 +23,7 @@ public class FreeNoteImpl implements URIHandler {
     private static final Logger log = LogManager.getLogger(FreeNoteImpl.class);
     private static final MessagePayload DEFAULT_MESSAGE_PAYLOAD = new MessagePayload();
     private final ObjectMapper objMapper = new ObjectMapper();
-    private CoreDraftProcessor coreDraftProcessor;
+    private CoreDraftProcessor coreDraftProcessor = new CoreDraftProcessor();
 
     @Override
     public boolean handle(InputStream inputStream, OutputStream outputStream) {

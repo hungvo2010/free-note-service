@@ -53,15 +53,15 @@ public class Draft {
         return null;
     }
 
+    public DraftAction doRequest(DraftRequest draftRequest) {
+        updateNewString(draftRequest.toString());
+        return actions.get(actions.size() - 1);
+    }
+
     public static void main(String[] args) throws JsonProcessingException {
         Draft draft = new Draft();
         DraftAction action = new DraftAction();
         draft.addAction(action);
         System.out.println(new ObjectMapper().writeValueAsString(draft));
-    }
-
-    public DraftAction doRequest(DraftRequest draftRequest) {
-        updateNewString(draftRequest.toString());
-        return actions.get(actions.size() - 1);
     }
 }

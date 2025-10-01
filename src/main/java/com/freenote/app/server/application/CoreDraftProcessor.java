@@ -5,11 +5,12 @@ import com.freenote.app.server.application.models.DraftAction;
 import com.freenote.app.server.application.models.MessagePayload;
 import com.freenote.app.server.application.models.request.DraftRequest;
 import com.freenote.app.server.application.repository.DraftRepository;
+import com.freenote.app.server.application.repository.InMemDraftRepositoryImpl;
 
 import java.util.Objects;
 
 public class CoreDraftProcessor {
-    private DraftRepository draftRepository;
+    private final DraftRepository draftRepository = new InMemDraftRepositoryImpl();
 
     public MessagePayload processDraft(DraftRequest draftRequest) {
         var draftId = draftRequest.getDraftId();

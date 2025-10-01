@@ -6,8 +6,8 @@ import java.util.BitSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class BitSetExperiment {
-    public static void main(String[] args) {
+class BitSetTest {
+    static void main(String[] args) {
         BitSet bs0 = new BitSet();
         System.out.println("created:\tLength,Size bs0: " + bs0.length() + " , " + bs0.size());
         bs0.set(15);
@@ -31,20 +31,33 @@ public class BitSetExperiment {
     @Test
     void testBitSet() {
         BitSet bs0 = new BitSet();
-        assertEquals(0, bs0.length());
-        assertEquals(64, bs0.size());
-        bs0.set(15);
-        assertEquals(16, bs0.length());
+        bitsetIndexAndSizeWhenFirstInit(bs0);
+
+        lengthUpdateAfterSetBit(bs0);
+
         bs0.set(63);
         assertEquals(64, bs0.length());
+
         bs0.set(86);
         assertEquals(87, bs0.length());
         assertEquals(128, bs0.size());
+
         bs0.clear(86);
         assertEquals(64, bs0.length());
         assertEquals(128, bs0.size());
+
         bs0.clear(63);
         assertEquals(16, bs0.length());
         assertEquals(128, bs0.size());
+    }
+
+    private void lengthUpdateAfterSetBit(BitSet bs0) {
+        bs0.set(15);
+        assertEquals(16, bs0.length());
+    }
+
+    private void bitsetIndexAndSizeWhenFirstInit(BitSet bs0) {
+        assertEquals(0, bs0.length());
+        assertEquals(64, bs0.size());
     }
 }
