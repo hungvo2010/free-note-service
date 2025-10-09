@@ -1,4 +1,4 @@
-package com.freenote.app.server;
+package com.freenote.app.server.unleak.sdk;
 
 public class SemverCondition implements SingleCondition {
     @Override
