@@ -25,17 +25,4 @@ public class CompositeCondition {
 
     // multiple strategies to combine conditions: use OR logic
     //
-
-    public static void main(String[] args) {
-        var compositeCondition = new CompositeCondition();
-        var input = new CompositeInput();
-        input.addValue("productId", "prod_123");
-        input.addValue("appVersion", 10);
-        input.addValue("releaseDate", "2023-06-01");
-        input.addValue("deviceModel", "Pixel 6");
-        input.addValue("appSemver", "1.2.3");
-
-        var result = compositeCondition.evaluate(input);
-        System.out.println("Evaluation result: " + result);
-    }
 }
