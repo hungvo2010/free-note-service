@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.freenote.annotations.URIHandlerImplementation;
 import com.freenote.app.server.application.CoreDraftProcessor;
 import com.freenote.app.server.application.factory.ServerApplicationFrameFactory;
-import com.freenote.app.server.application.models.MessagePayload;
+import com.freenote.app.server.application.models.common.MessagePayload;
 import com.freenote.app.server.application.models.request.DraftRequest;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;

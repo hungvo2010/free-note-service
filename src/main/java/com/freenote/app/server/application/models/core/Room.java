@@ -1,4 +1,4 @@
-package com.freenote.app.server.application.models;
+package com.freenote.app.server.application.models.core;
 
 import com.freenote.app.server.connections.Connection;
 import lombok.Getter;

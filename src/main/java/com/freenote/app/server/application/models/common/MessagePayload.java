@@ -1,4 +1,4 @@
-package com.freenote.app.server.application.models;
+package com.freenote.app.server.application.models.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;

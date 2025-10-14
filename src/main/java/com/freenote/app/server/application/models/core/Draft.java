@@ -1,4 +1,4 @@
-package com.freenote.app.server.application.models;
+package com.freenote.app.server.application.models.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -23,7 +23,7 @@ public class Draft {
     private JsonNode jsonNode;
 
     @JsonIgnore
-    private List<DraftAction> actions = new ArrayList<>();
+    private final List<DraftAction> actions = new ArrayList<>();
 
     public Draft() {
         this.draftId = UUID.randomUUID().toString();
@@ -33,7 +33,16 @@ public class Draft {
         actions.add(action);
     }
 
-    public void updateNewString(String newDraftContent) {
+    public DraftAction doRequest(DraftRequest draftRequest) {
+        var requestContent = draftRequest.getContent();
+        return new DraftAction(requestContent);
+    }
+
+    private DraftAction compareDiffAction(JsonNode jsonNode, JsonNode newDraftJson) {
+        return null;
+    }
+
+    private void updateNewString(String newDraftContent) {
         var newDraftJson = createJSON(newDraftContent);
         this.jsonNode = newDraftJson;
         var newInferredAction = compareDiffAction(this.jsonNode, newDraftJson);
@@ -49,19 +58,14 @@ public class Draft {
         }
     }
 
-    private DraftAction compareDiffAction(JsonNode jsonNode, JsonNode newDraftJson) {
-        return null;
-    }
-
-    public DraftAction doRequest(DraftRequest draftRequest) {
-        updateNewString(draftRequest.toString());
-        return actions.get(actions.size() - 1);
-    }
-
     public static void main(String[] args) throws JsonProcessingException {
         Draft draft = new Draft();
         DraftAction action = new DraftAction();
         draft.addAction(action);
         System.out.println(new ObjectMapper().writeValueAsString(draft));
+    }
+
+    public List<DraftAction> getActions() {
+        return this.actions;
     }
 }
