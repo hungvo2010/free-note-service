@@ -1,8 +1,8 @@
 package com.freenote.app.frame;
 
-import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.FrameFactory;
 import com.freenote.app.server.frames.FrameType;
+import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
