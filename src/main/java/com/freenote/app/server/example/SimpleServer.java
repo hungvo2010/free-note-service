@@ -20,6 +20,7 @@ public class SimpleServer {
         List<Future<Void>> futures = new ArrayList<>();
         var serverHolder = new ServerHolder(port);
         try {
+            log.info("Server started on port {}", port);
             serverHolder.start(new WebSocketHandlerImpl());
         } catch (Exception e) {
             log.error("Error starting server", e);

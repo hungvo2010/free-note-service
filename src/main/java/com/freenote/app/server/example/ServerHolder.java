@@ -33,16 +33,18 @@ public class ServerHolder {
     }
 
     public void start(ConnectionHandler handler) throws Exception {
-        var serverSocket = serverSocketFactory.createServerSocket(this.port);
-        while (!serverSocket.isClosed()) {
-            var socket = serverSocket.accept();
-            this.executorService.submit(() -> {
-                try {
-                    handler.handle(socket);
-                } catch (Exception e) {
-                    log.error("Error handling connection", e);
-                }
-            });
+        try (var serverSocket = serverSocketFactory.createServerSocket(this.port)) {
+            while (!serverSocket.isClosed()) {
+                log.info("Waiting for connection on port {}", this.port);
+                var socket = serverSocket.accept(); // block method
+                this.executorService.submit(() -> {
+                    try {
+                        handler.handle(socket);
+                    } catch (Exception e) {
+                        log.error("Error handling connection", e);
+                    }
+                });
+            }
         }
     }
 }
