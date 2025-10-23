@@ -1,7 +1,7 @@
 package com.freenote.app.server.application.repository;
 
 import com.freenote.app.server.application.models.core.Draft;
-import com.freenote.app.server.application.repository.persistence.PersistenceContext;
+import com.freenote.app.server.application.repository.persistence.disk.PersistenceContext;
 
 import java.util.ArrayList;
 import java.util.List;

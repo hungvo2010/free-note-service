@@ -3,9 +3,12 @@ package com.freenote.app.server.handler.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.freenote.annotations.URIHandlerImplementation;
 import com.freenote.app.server.application.CoreDraftProcessor;
+import com.freenote.app.server.application.factory.ApplicationFrameFactory;
 import com.freenote.app.server.application.factory.ServerApplicationFrameFactory;
 import com.freenote.app.server.application.models.common.MessagePayload;
+import com.freenote.app.server.application.models.common.WebSocketAPIResponse;
 import com.freenote.app.server.application.models.request.DraftRequest;
+import com.freenote.app.server.exceptions.MessagePayloadParsingException;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.handler.URIHandler;
@@ -23,7 +26,8 @@ public class FreeNoteImpl implements URIHandler {
     private static final Logger log = LogManager.getLogger(FreeNoteImpl.class);
     private static final MessagePayload DEFAULT_MESSAGE_PAYLOAD = new MessagePayload();
     private final ObjectMapper objMapper = new ObjectMapper();
-    private CoreDraftProcessor coreDraftProcessor = new CoreDraftProcessor();
+    private final CoreDraftProcessor coreDraftProcessor = new CoreDraftProcessor();
+    private final ApplicationFrameFactory applicationFrameFactory = new ServerApplicationFrameFactory();
 
     @Override
     public boolean handle(InputStream inputStream, OutputStream outputStream) {
@@ -34,14 +38,14 @@ public class FreeNoteImpl implements URIHandler {
             var rawBytes = IOUtils.getRawBytes(inputStream);
             doApplicationLogic(rawBytes, outputStream);
             return true;
-
-        } catch (IOException e) {
+        } catch (Exception e) {
+            IOUtils.writeOutPut(outputStream, applicationFrameFactory.createApplicationFrame(WebSocketAPIResponse.UNEXPECTED_ERROR));
             return false;
         }
     }
 
     @Override
-    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputStream inputStream, OutputStream outputStream) throws IOException {
+    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputStream inputStream, OutputStream outputStream) {
         return false;
     }
 
@@ -49,7 +53,7 @@ public class FreeNoteImpl implements URIHandler {
         var dataFrame = DataFrame.fromRawFrameBytes(rawBytes);
         var messagePayload = getMessagePayload(dataFrame);
         var response = handleClientMessage(messagePayload);
-        var appResponse = new ServerApplicationFrameFactory().createApplicationFrame(response);
+        var appResponse = applicationFrameFactory.createApplicationFrame(response);
         IOUtils.writeOutPut(outputStream, appResponse);
     }
 
@@ -73,7 +77,7 @@ public class FreeNoteImpl implements URIHandler {
         try {
             return objMapper.readValue(payloadData, MessagePayload.class);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new MessagePayloadParsingException("Error parsing MessagePayload from DataFrame", e);
         }
     }
 }

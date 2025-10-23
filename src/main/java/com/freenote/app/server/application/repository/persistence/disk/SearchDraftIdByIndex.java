@@ -1,4 +1,4 @@
-package com.freenote.app.server.application.repository.persistence;
+package com.freenote.app.server.application.repository.persistence.disk;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -10,7 +10,7 @@ public class SearchDraftIdByIndex {
 
     public static SearchDraftIdByIndex fromFile(String filePath) throws IOException {
         var instance = new SearchDraftIdByIndex();
-        try (var fileReader = new RandomAccessFile(filePath, "r")) {
+        try (var fileReader = new RandomAccessFile(filePath, "rw")) {
             long fileSize = fileReader.length();
             long itemSize = getItemSize(filePath);
             for (int i = 0; i < fileSize / itemSize; i++) {
@@ -28,7 +28,7 @@ public class SearchDraftIdByIndex {
     }
 
     private static long getItemSize(String filePath) {
-        return 0;
+        return 16; // default UUID size = 16
     }
 
     public long getIndexByDraftId(String draftId) {

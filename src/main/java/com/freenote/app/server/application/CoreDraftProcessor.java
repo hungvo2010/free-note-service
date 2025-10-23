@@ -1,8 +1,8 @@
 package com.freenote.app.server.application;
 
-import com.freenote.app.server.application.models.enums.ActionType;
-import com.freenote.app.server.application.models.core.DraftAction;
 import com.freenote.app.server.application.models.common.MessagePayload;
+import com.freenote.app.server.application.models.core.DraftAction;
+import com.freenote.app.server.application.models.enums.ActionType;
 import com.freenote.app.server.application.models.request.DraftRequest;
 import com.freenote.app.server.application.repository.DraftRepository;
 import com.freenote.app.server.application.repository.InMemDraftRepositoryImpl;
@@ -20,6 +20,8 @@ public class CoreDraftProcessor {
             var draftAction = new DraftAction(ActionType.INIT);
             draftAction.addData("draftId", newDraft.getDraftId());
             draftAction.addData("content", draftRequest.getContent());
+            newDraft.addAction(draftAction);
+            draftRepository.save(newDraft);
             return new MessagePayload(new DraftAction(ActionType.INIT));
         }
 
