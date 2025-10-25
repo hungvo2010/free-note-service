@@ -1,4 +1,4 @@
-package com.freenote.app.server.application.repository.persistence.disk;
+package com.freenote.app.server.common;
 
 import lombok.experimental.UtilityClass;
 

@@ -104,7 +104,7 @@ class ServerRunnerTest {
             log.info("Send echo message");
             try {
                 IOUtils.writeOutPut(pipeOutputStream, new ClientFrameFactory().createTextFrame("hello-world"));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.error("Failed to write to socket", e);
             }
             flag.incrementAndGet();

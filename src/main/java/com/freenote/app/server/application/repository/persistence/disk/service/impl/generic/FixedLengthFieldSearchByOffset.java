@@ -1,5 +1,8 @@
-package com.freenote.app.server.application.repository.persistence.disk;
+package com.freenote.app.server.application.repository.persistence.disk.service.impl.generic;
 
+import com.freenote.app.server.application.repository.persistence.disk.service.SearchFieldByOffset;
+import com.freenote.app.server.application.repository.persistence.disk.type.DataType;
+import com.freenote.app.server.application.repository.persistence.disk.type.DataTypeRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -9,16 +12,18 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-public class FixedLengthFieldSearchByOffset implements SearchFieldByOffset, Closeable {
+public class FixedLengthFieldSearchByOffset<T> implements SearchFieldByOffset<T>, Closeable {
     private static final Logger log = LogManager.getLogger(FixedLengthFieldSearchByOffset.class);
     private final RandomAccessFile fileReader;
+    private final DataType<T> dataType;
     private final long itemSize;
-    private String path;
+    private final String path;
 
-    public FixedLengthFieldSearchByOffset(String path) throws IOException {
-        this.fileReader = new RandomAccessFile(path, "r");
-        this.itemSize = this.getItemSize(path);
+    public FixedLengthFieldSearchByOffset(String path, Class<T> fieldType) throws IOException {
+        this.fileReader = new RandomAccessFile(path, "rw");
         this.path = path;
+        this.dataType = DataTypeRegistry.get(fieldType);
+        this.itemSize = this.dataType.getSize();
     }
 
     private long getItemSize(String filePath) {
@@ -26,17 +31,32 @@ public class FixedLengthFieldSearchByOffset implements SearchFieldByOffset, Clos
     }
 
     @Override
-    public Object find(long offset) {
+    public T getData(long offset) {
         try {
             this.fileReader.seek(offset * itemSize);
             byte[] byteValues = new byte[(int) itemSize];
-            var byteBuffer = ByteBuffer.wrap(byteValues);
             this.fileReader.read(byteValues);
-            return byteBuffer.get();
+            return dataType.fromBytes(byteValues);
         } catch (IOException e) {
             return null;
         }
     }
+
+    @Override
+    public int append(T item) {
+        try {
+            var startByte = this.fileReader.length();
+            this.fileReader.seek(startByte);
+            var byteBuffer = ByteBuffer.allocate((int) this.itemSize);
+            byteBuffer.put(dataType.toBytes(item));
+            this.fileReader.write(byteBuffer.array());
+            return (int) (startByte / this.itemSize);
+        } catch (IOException e) {
+            log.error("Error appending data to file: {}, exception: {}", this.path, e.getMessage());
+            return -1;
+        }
+    }
+
 
     @Override
     public void close() throws IOException {
@@ -44,17 +64,9 @@ public class FixedLengthFieldSearchByOffset implements SearchFieldByOffset, Clos
     }
 
 
-    public void append(List<?> newData) {
-        try {
-            var startByte = this.fileReader.length();
-            this.fileReader.seek(startByte);
-            for (Object data : newData) {
-                var byteBuffer = ByteBuffer.allocate((int) this.itemSize);
-                byteBuffer.put((byte) data);
-                this.fileReader.write(byteBuffer.array());
-            }
-        } catch (IOException e) {
-            log.error("Error appending data to file: {}, exception: {}", this.path, e.getMessage());
+    public void append(List<T> newData) {
+        for (var data : newData) {
+            this.append(data);
         }
     }
 

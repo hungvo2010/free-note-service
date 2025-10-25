@@ -1,4 +1,6 @@
-package com.freenote.app.server.application.repository.persistence.disk;
+package com.freenote.app.server.application.repository.persistence.disk.service.impl;
+
+import com.freenote.app.server.application.repository.persistence.disk.service.SearchOffset;
 
 import java.io.Closeable;
 import java.io.IOException;

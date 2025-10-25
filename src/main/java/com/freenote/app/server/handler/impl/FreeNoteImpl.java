@@ -9,9 +9,11 @@ import com.freenote.app.server.application.models.common.MessagePayload;
 import com.freenote.app.server.application.models.common.WebSocketAPIResponse;
 import com.freenote.app.server.application.models.request.DraftRequest;
 import com.freenote.app.server.exceptions.MessagePayloadParsingException;
+import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.handler.URIHandler;
+import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +41,7 @@ public class FreeNoteImpl implements URIHandler {
             doApplicationLogic(rawBytes, outputStream);
             return true;
         } catch (Exception e) {
+            log.error("Error handling input stream", e);
             IOUtils.writeOutPut(outputStream, applicationFrameFactory.createApplicationFrame(WebSocketAPIResponse.UNEXPECTED_ERROR));
             return false;
         }
@@ -49,8 +52,12 @@ public class FreeNoteImpl implements URIHandler {
         return false;
     }
 
-    private void doApplicationLogic(byte[] rawBytes, OutputStream outputStream) throws IOException {
+    private void doApplicationLogic(byte[] rawBytes, OutputStream outputStream) {
         var dataFrame = DataFrame.fromRawFrameBytes(rawBytes);
+        log.info("Received DataFrame opcode: {}", FrameType.fromOpCode(dataFrame.getOpcode()));
+        log.info("Received DataFrame masking key length: {}", dataFrame.getMaskingKey().length);
+        var rawPayload = FrameUtil.maskPayload(dataFrame.getPayloadData(), dataFrame.getMaskingKey());
+        log.info("Received DataFrame content: {}", new String(rawPayload));
         var messagePayload = getMessagePayload(dataFrame);
         var response = handleClientMessage(messagePayload);
         var appResponse = applicationFrameFactory.createApplicationFrame(response);
@@ -73,10 +80,11 @@ public class FreeNoteImpl implements URIHandler {
     }
 
     private MessagePayload getMessagePayload(DataFrame dataFrame) {
-        var payloadData = dataFrame.getPayloadData();
+        var rawPayload = FrameUtil.maskPayload(dataFrame.getPayloadData(), dataFrame.getMaskingKey());
         try {
-            return objMapper.readValue(payloadData, MessagePayload.class);
+            return objMapper.readValue(rawPayload, MessagePayload.class);
         } catch (IOException e) {
+            log.error("Error parsing MessagePayload from DataFrame", e.getCause());
             throw new MessagePayloadParsingException("Error parsing MessagePayload from DataFrame", e);
         }
     }
