@@ -31,7 +31,7 @@ public class SearchDraftIdByIndex implements AutoCloseable {
     }
 
     private static long getItemSize() {
-        return 16;
+        return 36;
     } // default UUID size = 16
 
     public long getIndexByDraftId(String draftId) {

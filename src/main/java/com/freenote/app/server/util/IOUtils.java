@@ -6,10 +6,11 @@ import lombok.experimental.UtilityClass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 
 @UtilityClass
 public class IOUtils {
@@ -26,76 +27,80 @@ public class IOUtils {
     private static final Logger log = LogManager.getLogger(IOUtils.class);
 
     public static byte[] getRawBytes(InputStream inputStream) throws IOException {
-        // Read first byte (opcode)
-        log.info("Reading first byte...");
-        int firstByte = inputStream.read();
-        if (firstByte == -1) {
-            log.warn("End of stream reached");
-            return null;
+        DataInputStream dis = (inputStream instanceof DataInputStream)
+                ? (DataInputStream) inputStream
+                : new DataInputStream(inputStream);
+
+        // Read first two bytes of the frame header
+        int b0 = dis.read();
+        if (b0 == -1) {
+            throw new EOFException("End of stream while reading first byte");
+        }
+        int b1 = dis.read();
+        if (b1 == -1) {
+            throw new EOFException("End of stream while reading second byte");
         }
 
-        // Read second byte (payload length + mask)
-        int secondByte = inputStream.read();
-        if (secondByte == -1) {
-            log.warn("Incomplete frame - missing second byte");
-            return null;
-        }
+        boolean masked = (b1 & 0x80) != 0;
+        int payloadLen7 = b1 & 0x7F;
 
-        boolean masked = (secondByte & 0x80) != 0;
-        int payloadLen7 = secondByte & 0x7F;
-
-        // Determine payload length
+        // Extended payload length (if any)
+        int extLen = (payloadLen7 == 126) ? 2 : (payloadLen7 == 127 ? 8 : 0);
+        byte[] ext = null;
         long payloadLength;
-        if (payloadLen7 == 126) {
-            byte[] ext = inputStream.readNBytes(2);
-            if (ext.length < 2) return null;
+        if (extLen == 2) {
+            ext = new byte[2];
+            dis.readFully(ext);
             payloadLength = ((ext[0] & 0xFF) << 8) | (ext[1] & 0xFF);
-        } else if (payloadLen7 == 127) {
-            byte[] ext = inputStream.readNBytes(8);
-            if (ext.length < 8) return null;
-            payloadLength = ByteBuffer.wrap(ext).getLong();
+        } else if (extLen == 8) {
+            ext = new byte[8];
+            dis.readFully(ext);
+            // Per RFC 6455, the most significant bit must be 0 for 64-bit length
+            if ((ext[0] & 0x80) != 0) {
+                throw new IOException("Invalid 64-bit payload length (MSB set)");
+            }
+            long len = 0L;
+            for (int i = 0; i < 8; i++) {
+                len = (len << 8) | (ext[i] & 0xFF);
+            }
+            payloadLength = len;
         } else {
             payloadLength = payloadLen7;
         }
 
-        // Read mask if present
-        byte[] mask = null;
-        if (masked) {
-            mask = inputStream.readNBytes(4);
-            if (mask.length < 4) return null;
-        }
+        // Compute header and total lengths
+        int headerLen = 2 + extLen + (masked ? 4 : 0);
+        long totalFrameLength = (long) headerLen + payloadLength;
 
-        // Compute total bytes to read
-        long totalFrameLength = 2
-                + (payloadLen7 == 126 ? 2 : (payloadLen7 == 127 ? 8 : 0))
-                + (masked ? 4 : 0)
-                + payloadLength;
-
-        log.info("Total frame length: {}", totalFrameLength);
-
-        if (totalFrameLength > Integer.MAX_VALUE || totalFrameLength < 2) {
-            log.warn("Invalid total frame length: {}", totalFrameLength);
-            return null;
+        if (totalFrameLength > Integer.MAX_VALUE) {
+            throw new IOException("Frame too large: " + totalFrameLength);
         }
 
         byte[] frameData = new byte[(int) totalFrameLength];
-        frameData[0] = (byte) firstByte;
-        frameData[1] = (byte) secondByte;
+        int offset = 0;
+        frameData[offset++] = (byte) b0;
+        frameData[offset++] = (byte) b1;
 
-        int totalRead = 2;
-        while (totalRead < totalFrameLength) {
-            int read = inputStream.read(frameData, totalRead, (int) (totalFrameLength - totalRead));
-            if (read == -1) {
-                log.warn("Stream ended before complete frame read ({} of {})", totalRead, totalFrameLength);
-                return null;
-            }
-            totalRead += read;
+        if (extLen > 0) {
+            System.arraycopy(ext, 0, frameData, offset, extLen);
+            offset += extLen;
         }
 
-        if (totalRead != totalFrameLength) {
-            log.warn("Frame truncated: expected {}, got {}", totalFrameLength, totalRead);
-            return null;
+        byte[] mask = null;
+        if (masked) {
+            mask = new byte[4];
+            dis.readFully(mask);
+            System.arraycopy(mask, 0, frameData, offset, 4);
+            offset += 4;
         }
+
+        // Read payload bytes fully
+        if (payloadLength > 0) {
+            dis.readFully(frameData, offset, (int) payloadLength);
+        }
+
+        log.info("Read websocket frame: headerLen={}, payloadLen={}, total={}",
+                headerLen, payloadLength, totalFrameLength);
 
         return frameData;
     }
