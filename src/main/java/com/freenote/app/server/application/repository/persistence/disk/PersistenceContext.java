@@ -1,24 +1,31 @@
 package com.freenote.app.server.application.repository.persistence.disk;
 
 import com.freenote.app.server.application.models.core.Draft;
+import com.freenote.app.server.application.models.core.DraftAction;
 import com.freenote.app.server.application.repository.persistence.disk.service.SearchFieldByOffset;
+import com.freenote.app.server.application.repository.persistence.disk.service.SearchIx;
 import com.freenote.app.server.application.repository.persistence.disk.service.SearchOffset;
 import com.freenote.app.server.application.repository.persistence.disk.service.impl.SearchDraftActionsByOffset;
-import com.freenote.app.server.application.repository.persistence.disk.service.impl.SearchDraftIdByIndex;
 import com.freenote.app.server.application.repository.persistence.disk.service.impl.generic.FixedLengthFieldSearchByOffset;
+import com.freenote.app.server.application.repository.persistence.disk.service.impl.generic.SearchIxImpl;
 import com.freenote.app.server.application.repository.persistence.disk.service.impl.generic.VariableLengthFieldSearchByOffset;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import static com.freenote.app.server.application.repository.persistence.disk.JSONUtility.convertToType;
 
 @Getter
 public class PersistenceContext {
     private static final Logger log = LogManager.getLogger(PersistenceContext.class);
-    private SearchDraftIdByIndex searchDraftByIndex;
+    private SearchIx<String> searchDraftIx;
+    private SearchIx<Integer> searchActionType;
     private SearchOffset searchOffset;
     private final Map<String, SearchFieldByOffset> searchOffsetMap = new HashMap<>();
 
@@ -38,25 +45,28 @@ public class PersistenceContext {
     }
 
     private void initOrLoadFileIndex() throws IOException {
-        var fileIndex = FileUtility.findFile("draftId.idx");
-        this.searchDraftByIndex = new SearchDraftIdByIndex(fileIndex.getPath());
+        var draftIdIdx = FileUtility.findFile("draftId.idx");
+        var actionTypeIdx = FileUtility.findFile("draftId.idx");
+        this.searchDraftIx = new SearchIxImpl<>(draftIdIdx.getPath(), String.class);
+        this.searchActionType = new SearchIxImpl<>(actionTypeIdx.getPath(), Integer.class);
     }
 
     private void initOrLoadSingleFieldData() throws IOException {
-        var fileDraftActionType = FileUtility.findFile("draftAction.type,4");
-        var fileActionOffsets = FileUtility.findFile("actions.offsets,8");
+        var fileDraftActionType = FileUtility.findFile("draftAction.type");
+        var fileActionOffsets = FileUtility.findFile("actions.offsets");
         this.searchOffsetMap.put("draftAction.type", new FixedLengthFieldSearchByOffset<>(fileDraftActionType.getPath(), Integer.class));
         this.searchOffsetMap.put("actions.offsets", new FixedLengthFieldSearchByOffset<>(fileActionOffsets.getPath(), Integer[].class));
         this.searchOffsetMap.put("actions", new VariableLengthFieldSearchByOffset<>(fileActionOffsets.getPath(), String.class));
     }
 
     public void persist(Draft draft) {
-        var draftPosition = this.searchDraftByIndex.insertDraftId(draft.getDraftId());
+        var draftPosition = this.searchDraftIx.insert(draft.getDraftId());
         log.info("Persisting draftId: {}, position: {}", draft.getDraftId(), draftPosition);
 
-        var actionsOffsets = (FixedLengthFieldSearchByOffset<Integer[]>) this.searchOffsetMap.get("actions.offsets");
         var actionsVector = (VariableLengthFieldSearchByOffset<String>) this.searchOffsetMap.get("actions");
-        var startLength = actionsOffsets.getData(draftPosition);
+        var actionsOffsets = (FixedLengthFieldSearchByOffset<Integer[]>) this.searchOffsetMap.get("actions.offsets");
+
+        var startLength = getStartLength(draftPosition);
         var start = startLength[0];
         var length = startLength[1];
 
@@ -69,7 +79,45 @@ public class PersistenceContext {
         actionsOffsets.update(draftPosition, new int[]{start, newLength});
         for (var action : draft.getActions()) {
             actionsVector.append(action.toString());
+            var idx = this.searchActionType.insert(action.getActionType().getCode());
         }
     }
+
+    public List<Draft> getAllDrafts() {
+        var allDraftIds = this.searchDraftIx.getAll();
+        var result = new ArrayList<Draft>();
+        for (int i = 0; i < allDraftIds.size(); i++) {
+            var draftId = allDraftIds.get(i);
+            log.info("DraftId: {}", draftId);
+            result.add(buildDraftById(draftId, i));
+        }
+        return result;
+    }
+
+    private Draft buildDraftById(String draftId, int i) {
+        var draft = new Draft(draftId);
+        draft.setActions(getDraftActionsStartLength(i));
+        return draft;
+    }
+
+    private List<DraftAction> getDraftActionsStartLength(int draftPosition) {
+        var startLength = getStartLength(draftPosition);
+        var start = startLength[0];
+        var length = startLength[1];
+        var actionsVector = (VariableLengthFieldSearchByOffset<String>) this.searchOffsetMap.get("actions");
+        var result = new ArrayList<DraftAction>();
+        for (int j = 0; j < length; j++) {
+            var actionData = actionsVector.getData(start + j);
+            result.add(convertToType(actionData));
+        }
+        return result;
+    }
+
+    private Integer[] getStartLength(int draftPosition) {
+        var actionsOffsets = (FixedLengthFieldSearchByOffset<Integer[]>) this.searchOffsetMap.get("actions.offsets");
+        return actionsOffsets.getData(draftPosition);
+
+    }
+
 }
 

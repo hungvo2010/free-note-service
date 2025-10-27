@@ -70,8 +70,8 @@ public class FixedLengthFieldSearchByOffset<T> implements SearchFieldByOffset<T>
         }
     }
 
-    public void update(long draftPosition, int[] newStartLength) {
-        var startByte = this.itemSize * draftPosition;
+    public void update(long startPosition, int[] newStartLength) {
+        var startByte = this.itemSize * startPosition;
         try {
             this.fileReader.seek(startByte);
             var byteBuffer = ByteBuffer.allocate((int) this.itemSize);

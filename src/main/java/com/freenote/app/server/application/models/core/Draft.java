@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.freenote.app.server.application.models.request.DraftRequest;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,11 +25,21 @@ public class Draft {
     private JsonNode jsonNode;
 
     @Getter
+    @Setter
     @JsonIgnore
-    private final List<DraftAction> actions = new ArrayList<>();
+    private List<DraftAction> actions = new ArrayList<>();
 
     public Draft() {
         this.draftId = UUID.randomUUID().toString();
+    }
+
+    public Draft(String draftId, String draftName) {
+        this.draftId = draftId;
+        this.draftName = draftName;
+    }
+
+    public Draft(String draftId) {
+        this.draftId = draftId;
     }
 
     public void addAction(DraftAction action) {

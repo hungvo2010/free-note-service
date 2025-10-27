@@ -11,6 +11,7 @@ import java.util.Map;
 
 @NoArgsConstructor
 public class DraftAction {
+    public static final DraftAction INVALID = new DraftAction(ActionType.INVALID);
     @Getter
     private ActionType actionType = ActionType.INIT;
     private Map<String, Object> data = new HashMap<>();
