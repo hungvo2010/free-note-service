@@ -5,5 +5,5 @@ public class WebSocketAPIResponse extends MessagePayload {
         super(message);
     }
 
-    public static WebSocketAPIResponse UNEXPECTED_ERROR = new WebSocketAPIResponse("An unexpected error occurred.");
+    public static final WebSocketAPIResponse UNEXPECTED_ERROR = new WebSocketAPIResponse("An unexpected error occurred.");
 }
