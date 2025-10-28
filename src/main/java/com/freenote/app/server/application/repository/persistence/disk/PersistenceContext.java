@@ -46,7 +46,7 @@ public class PersistenceContext {
 
     private void initOrLoadFileIndex() throws IOException {
         var draftIdIdx = FileUtility.findFile("draftId.idx");
-        var actionTypeIdx = FileUtility.findFile("draftId.idx");
+        var actionTypeIdx = FileUtility.findFile("draft.actionType.idx");
         this.searchDraftIx = new SearchIxImpl<>(draftIdIdx.getPath(), String.class);
         this.searchActionType = new SearchIxImpl<>(actionTypeIdx.getPath(), Integer.class);
     }

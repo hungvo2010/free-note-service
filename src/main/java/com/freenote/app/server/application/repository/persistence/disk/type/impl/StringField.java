@@ -6,7 +6,7 @@ public class StringField implements DataType<String> {
 
     @Override
     public int getSize() {
-        return 0;
+        return 36;
     }
 
     @Override
