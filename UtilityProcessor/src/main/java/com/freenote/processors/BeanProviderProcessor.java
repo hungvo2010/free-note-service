@@ -8,7 +8,6 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -17,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 
 import static com.freenote.utils.LogUtils.error;
-import static com.freenote.utils.LogUtils.info;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
@@ -57,8 +55,8 @@ public class BeanProviderProcessor extends AbstractProcessor {
 
             annotatedClasses.add(new AnnotatedClass(className, qualifiedName, value));
 
-            info(this.messager, classElement, 
-                    "Processing @URIHandlerImplementation on " + qualifiedName);
+//            info(this.messager, classElement,
+//                    "Processing @URIHandlerImplementation on " + qualifiedName);
         }
 
         // Generate the registry class
