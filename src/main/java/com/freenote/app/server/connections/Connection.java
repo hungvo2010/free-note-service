@@ -11,4 +11,10 @@ public class Connection {
     private Socket socket;
     private String path;
     private String sourceIp;
+
+    public Connection(String sourceIp) {
+        this.sourceIp = sourceIp;
+    }
+
+
 }
