@@ -32,7 +32,7 @@ deploy:
       else
         echo 'No existing process found.';
       fi && \
-      nohup ./gradlew bootRun > log.txt 2>&1 &
+      nohup ./gradlew bootRun > log.txt 2>&1 & disown
       "
     - echo "Deploying to VPS..."
   only:
