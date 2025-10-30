@@ -25,10 +25,13 @@ deploy:
     - sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_IP "
       cd $PROJECT_NAME;
       git pull origin main;
-      pid = $(ps aux | grep SimpleServer | awk -F'\t' '{print $2}');
-      if [ -n \"$pid\" ]; then
-        kill -9 $pid;
-      fi;
+      echo 'Stopping existing SimpleServer process...' && \
+      pid=\$(ps aux | grep SimpleServer | grep -v grep | awk '{print \$2}') && \
+      if [ -n \"\$pid\" ]; then
+        kill -9 \$pid && echo 'Process stopped.';
+      else
+        echo 'No existing process found.';
+      fi && \
       nohup ./gradlew bootRun > log.txt 2>&1 &
       "
     - echo "Deploying to VPS..."
