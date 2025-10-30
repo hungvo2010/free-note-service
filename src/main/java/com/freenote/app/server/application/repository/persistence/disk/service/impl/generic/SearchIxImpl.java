@@ -55,7 +55,7 @@ public class SearchIxImpl<T> implements SearchIx<T>, AutoCloseable {
         var newIndex = valueIndexMap.size();
         valueIndexMap.put(item, newIndex);
         log.info("Inserting value: {}, index: {}", item, newIndex);
-        FileUtility.writeAt(this.fileReader, dataType.toBytes((T) item), newIndex * getItemSize(), getItemSize());
+        FileUtility.writeAt(this.fileReader, dataType.toBytes(item), newIndex * getItemSize(), getItemSize());
         return newIndex;
     }
 

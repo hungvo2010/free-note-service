@@ -52,9 +52,7 @@ public class PersistenceContext {
     }
 
     private void initOrLoadSingleFieldData() throws IOException {
-        var fileDraftActionType = FileUtility.findFile("draftAction.type");
         var fileActionOffsets = FileUtility.findFile("actions.offsets");
-        this.searchOffsetMap.put("draftAction.type", new FixedLengthFieldSearchByOffset<>(fileDraftActionType.getPath(), Integer.class));
         this.searchOffsetMap.put("actions.offsets", new FixedLengthFieldSearchByOffset<>(fileActionOffsets.getPath(), Integer[].class));
         this.searchOffsetMap.put("actions", new VariableLengthFieldSearchByOffset<>(fileActionOffsets.getPath(), String.class));
     }
@@ -80,6 +78,7 @@ public class PersistenceContext {
         for (var action : draft.getActions()) {
             actionsVector.append(action.toString());
             var idx = this.searchActionType.insert(action.getActionType().getCode());
+            log.info("Persisting actionType: {}, idx: {}", action.getActionType().getCode(), idx);
         }
     }
 

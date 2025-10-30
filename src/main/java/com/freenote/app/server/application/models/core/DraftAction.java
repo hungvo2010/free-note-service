@@ -32,5 +32,4 @@ public class DraftAction {
     public Map<String, Object> getData() {
         return Collections.unmodifiableMap(this.data);
     }
-
 }
