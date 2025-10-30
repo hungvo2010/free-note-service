@@ -41,6 +41,7 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
             var socketAccept = Base64.getEncoder().encodeToString(
                     MessageDigest.getInstance("SHA-1")
                             .digest((request.getSecWebSocketKey() + UNIVERSAL_WEBSOCKET_GUID).getBytes(StandardCharsets.UTF_8)));
+            log.info("WebSocket handshake accepted with Sec-WebSocket-Accept: {}", socketAccept);
             return HttpUpgradeResponse.builder()
                     .statusCode("101")
                     .statusText("Switching Protocols")
