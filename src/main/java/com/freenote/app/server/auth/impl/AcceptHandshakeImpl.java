@@ -55,9 +55,6 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
     }
 
     private boolean checkHandshakeApproval(HttpUpgradeRequest request) {
-        if (!ALLOWED_ORIGINS.contains(request.getOrigin())) {
-            return false;
-        }
         return !(Objects.isNull(request.getSecWebSocketKey())
                 || Objects.isNull(request.getSecWebSocketVersion()));
     }
