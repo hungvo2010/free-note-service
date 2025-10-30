@@ -31,7 +31,7 @@ deploy:
         kill -9 \$pid && echo 'Process stopped.';
       else
         echo 'No existing process found.';
-      fi && \
+      fi
       nohup ./gradlew bootRun > log.txt 2>&1 &
       "
     - echo "Deploying to VPS..."
