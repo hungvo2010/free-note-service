@@ -20,7 +20,7 @@ public class CoreDraftProcessor {
 
         if (Objects.isNull(draftId)) {
             log.info("Received new draft request: {}", draftRequest);
-            var newDraft = draftRepository.addNewDraft();
+            var newDraft = draftRepository.createNew();
             var draftAction = new DraftAction(ActionType.INIT);
             draftAction.addData("draftId", newDraft.getDraftId());
             draftAction.addData("content", draftRequest.getContent());

@@ -26,7 +26,7 @@ public class InMemDraftRepositoryImpl implements DraftRepository {
     }
 
     @Override
-    public Draft addNewDraft() {
+    public Draft createNew() {
         var newDraft = new Draft();
         allDrafts.add(newDraft);
         return newDraft;
