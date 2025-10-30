@@ -22,11 +22,15 @@ deploy:
   before_script:
     - apt-get update -qq && apt-get install -y sshpass
   script:
-    - echo "Deploying to VPS..."
     - sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_IP "
       cd $PROJECT_NAME;
       git pull origin main;
+      pid = $(ps aux | grep SimpleServer | awk -F'\t' '{print $2}');
+      if [ -n \"$pid\" ]; then
+        kill -9 $pid;
+      fi;
       nohup ./gradlew bootRun > log.txt 2>&1 &
       "
+    - echo "Deploying to VPS..."
   only:
     - main
