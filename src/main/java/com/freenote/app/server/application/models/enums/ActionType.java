@@ -4,9 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum ActionType {
-    UPDATE(1),
     INIT(0),
     INVALID(-1),
+    UPDATE(1),
     NOOP(2);
     final int code;
 

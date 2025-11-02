@@ -52,8 +52,7 @@ public class Draft {
         if (draftRequest.getRequestType() == RequestType.CONNECT) {
             return connectAction(draftRequest);
         }
-        var requestContent = draftRequest.getContent();
-        var returnAction =  new DraftAction(requestContent);
+        var returnAction = new DraftAction(draftRequest.getContent());
         RoomManager.getInstance().broadcastToRoom(draftRequest.getDraftId(), returnAction);
         return returnAction;
 

@@ -9,8 +9,8 @@ import java.util.Map;
 
 @Singleton
 public class RoomManager {
-    private Map<String, Room> rooms;
-    private static RoomManager instance;
+    private final Map<String, Room> rooms;
+    private static volatile RoomManager instance;
 
     private RoomManager() {
         rooms = new HashMap<>();
@@ -19,7 +19,9 @@ public class RoomManager {
     public static RoomManager getInstance() {
         if (instance == null) {
             synchronized (RoomManager.class) {
-                instance = new RoomManager();
+                if (instance == null) {
+                    instance = new RoomManager();
+                }
             }
         }
         return instance;
