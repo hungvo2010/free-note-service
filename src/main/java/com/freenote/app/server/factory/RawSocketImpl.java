@@ -2,7 +2,7 @@ package com.freenote.app.server.factory;
 
 import java.net.ServerSocket;
 
-public class RawSocketFactoryImpl implements ServerSocketFactory {
+public class RawSocketImpl implements ServerSocketFactory {
     @Override
     public ServerSocket createServerSocket(int port) throws Exception {
         return new ServerSocket(port);

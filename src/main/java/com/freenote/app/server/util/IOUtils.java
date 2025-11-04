@@ -14,13 +14,14 @@ import java.io.OutputStream;
 
 @UtilityClass
 public class IOUtils {
-    public static void writeOutPut(OutputStream outputStream, WebSocketFrame mergedFrame) {
+    public static void writeOutPut(OutputStream outputStream, WebSocketFrame mergedFrame) throws IOException {
         try {
             var objectOutputStream = new NoHeaderObjectOutputStream(outputStream);
             objectOutputStream.writeObject(mergedFrame);
             objectOutputStream.flush();
         } catch (IOException e) {
             log.error("Error writing output stream", e);
+            throw e;
         }
     }
 

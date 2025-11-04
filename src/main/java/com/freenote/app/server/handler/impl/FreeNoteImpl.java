@@ -6,8 +6,8 @@ import com.freenote.app.server.application.CoreDraftProcessor;
 import com.freenote.app.server.application.factory.ApplicationFrameFactory;
 import com.freenote.app.server.application.factory.ServerApplicationFrameFactory;
 import com.freenote.app.server.application.models.common.MessagePayload;
-import com.freenote.app.server.application.models.common.WebSocketAPIResponse;
 import com.freenote.app.server.application.models.request.DraftRequest;
+import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.MessagePayloadParsingException;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.DataFrame;
@@ -43,8 +43,7 @@ public class FreeNoteImpl implements URIHandler {
             return true;
         } catch (Exception e) {
             log.error("Error handling input stream: {}", e.getMessage());
-            IOUtils.writeOutPut(outputStream, applicationFrameFactory.createApplicationFrame(WebSocketAPIResponse.UNEXPECTED_ERROR));
-            return false;
+            throw new ClientDisconnectException("Client disconnected or error occurred", e);
         }
     }
 
@@ -53,16 +52,29 @@ public class FreeNoteImpl implements URIHandler {
         return false;
     }
 
-    private void doApplicationLogic(byte[] rawBytes, OutputStream outputStream) {
-        var dataFrame = DataFrame.fromRawFrameBytes(rawBytes);
-        log.info("Received DataFrame opcode: {}", FrameType.fromOpCode(dataFrame.getOpcode()));
-        log.info("Received DataFrame masking key length: {}", dataFrame.getMaskingKey().length);
-        var rawPayload = FrameUtil.maskPayload(dataFrame.getPayloadData(), dataFrame.getMaskingKey());
-        log.info("Received DataFrame content: {}", new String(rawPayload));
-        var messagePayload = getMessagePayload(dataFrame);
-        var response = handleClientMessage(messagePayload);
-        var appResponse = applicationFrameFactory.createApplicationFrame(response);
-        IOUtils.writeOutPut(outputStream, appResponse);
+    private void doApplicationLogic(byte[] rawBytes, OutputStream outputStream) throws IOException {
+        try {
+            var dataFrame = DataFrame.fromRawFrameBytes(rawBytes);
+            log.info("Received DataFrame opcode: {}", FrameType.fromOpCode(dataFrame.getOpcode()));
+            if (dataFrame.getOpcode() == FrameType.CLOSE.getOpCode()) {
+                log.info("Received CLOSE frame. No further processing.");
+                throw new ClientDisconnectException("Client sent CLOSE frame");
+            }
+            log.info("Received DataFrame masking key length: {}", dataFrame.getMaskingKey().length);
+            var rawPayload = FrameUtil.maskPayload(dataFrame.getPayloadData(), dataFrame.getMaskingKey());
+            log.info("Received DataFrame content: {}", new String(rawPayload));
+            var messagePayload = getMessagePayload(dataFrame);
+            var response = handleClientMessage(messagePayload);
+            var appResponse = applicationFrameFactory.createApplicationFrame(response);
+            IOUtils.writeOutPut(outputStream, appResponse);
+        } catch (MessagePayloadParsingException ex) {
+            log.error("Failed to parse MessagePayload: {}", ex.getMessage());
+            var errorResponse = applicationFrameFactory.createApplicationFrame(DEFAULT_MESSAGE_PAYLOAD);
+            IOUtils.writeOutPut(outputStream, errorResponse);
+        } catch (Exception ex) {
+            log.error("Error in application logic: {}", ex.getMessage());
+            throw ex;
+        }
     }
 
     private MessagePayload handleClientMessage(MessagePayload messagePayload) {

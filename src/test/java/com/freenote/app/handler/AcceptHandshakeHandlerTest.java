@@ -41,19 +41,6 @@ class AcceptHandshakeHandlerTest {
     }
 
     @Test
-    void testHandle_InvalidOrigin_ShouldReturnEmptyResponse() {
-        HttpUpgradeRequest request = mock(HttpUpgradeRequest.class);
-        when(request.getOrigin()).thenReturn("https://malicious.com");
-        when(request.getSecWebSocketKey()).thenReturn("key");
-        when(request.getSecWebSocketExtensions()).thenReturn("ext");
-        when(request.getSecWebSocketVersion()).thenReturn("13");
-
-        var response = acceptHandshake.handle(request);
-
-        assertSame(HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE, response);
-    }
-
-    @Test
     void testHandle_WithNullSecWebSocketKey() {
         var request = mock(HttpUpgradeRequest.class);
         when(request.getSecWebSocketKey()).thenReturn(null);

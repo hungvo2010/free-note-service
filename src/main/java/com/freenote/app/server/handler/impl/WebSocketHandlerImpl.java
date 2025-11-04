@@ -22,26 +22,33 @@ public class WebSocketHandlerImpl implements ConnectionHandler {
 
     @Override
     public void handle(Socket incomingSocket) throws IOException {
-        log.info("Serving incoming socket: {}", incomingSocket.getPort());
+        try {
+            log.info("Serving incoming socket: {}", incomingSocket.getPort());
 
-        var input = incomingSocket.getInputStream();
-        var output = incomingSocket.getOutputStream();
-        var request = new HttpParserImpl().parse(input);
+            var input = incomingSocket.getInputStream();
+            var output = incomingSocket.getOutputStream();
+            var request = new HttpParserImpl().parse(input);
 
-        log.info("Received request: {}\n", request);
-        handleHandShake(request, output);
+            log.info("Received request: {}\n", request);
+            handleHandShake(request, output);
 
-        while (!incomingSocket.isClosed()) {
-            var pathHandler = (URIHandler) (getInstanceByURI(request.getPath()));
-            if (pathHandler == null) {
-                log.warn("No handler found for URI: {}", request.getPath());
-                return;
+            while (!incomingSocket.isClosed()) { // todo: not correct due to incoming socket will not be closed after client disconnects
+                var pathHandler = (URIHandler) (getInstanceByURI(request.getPath()));
+                if (pathHandler == null) {
+                    log.warn("No handler found for URI: {}", request.getPath());
+                    return;
+                }
+                BiConsumer<InputStream, OutputStream> handler = (pathHandler)::handle;
+                handler.accept(input, output);
             }
-            BiConsumer<InputStream, OutputStream> handler = (pathHandler)::handle;
-            handler.accept(input, output);
-        }
+        } catch (Exception e) {
+            log.error("Error handling socket: {}", e.getMessage());
 
-        log.info("Closing socket: {}", incomingSocket.getPort());
+        } finally {
+
+            log.info("Closing socket: {}", incomingSocket.getPort());
+            incomingSocket.close();
+        }
     }
 
     private static void handleHandShake(HttpUpgradeRequest request, OutputStream output) throws IOException {

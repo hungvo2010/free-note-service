@@ -7,11 +7,11 @@ import java.io.FileInputStream;
 import java.net.ServerSocket;
 import java.security.KeyStore;
 
-public class SSLSocketFactoryImpl implements ServerSocketFactory {
+public class SSLSocketImpl implements ServerSocketFactory {
     private final String keystorePath;
     private final String password;
 
-    public SSLSocketFactoryImpl(String keystorePath, String password) {
+    public SSLSocketImpl(String keystorePath, String password) {
         this.keystorePath = keystorePath;
         this.password = password;
     }

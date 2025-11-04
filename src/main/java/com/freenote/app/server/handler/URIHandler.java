@@ -8,7 +8,7 @@ import java.io.OutputStream;
 import java.util.List;
 
 public interface URIHandler {
-    boolean handle(InputStream inputStream, OutputStream outputStream);
+    boolean handle(InputStream inputStream, OutputStream outputStream); // todo: check why boolean return type
 
     boolean continuationHandler(List<WebSocketFrame> clientFrame, InputStream inputStream, OutputStream outputStream) throws IOException;
 }
