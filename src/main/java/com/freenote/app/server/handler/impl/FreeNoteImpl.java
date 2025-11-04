@@ -37,11 +37,12 @@ public class FreeNoteImpl implements URIHandler {
             if (inputStream.available() == 0) {
                 return true; // No data, don't block
             }
+            log.info("FreeNoteImpl.handle() called");
             var rawBytes = IOUtils.getRawBytes(inputStream);
             doApplicationLogic(rawBytes, outputStream);
             return true;
         } catch (Exception e) {
-            log.error("Error handling input stream", e);
+            log.error("Error handling input stream: {}", e.getMessage());
             IOUtils.writeOutPut(outputStream, applicationFrameFactory.createApplicationFrame(WebSocketAPIResponse.UNEXPECTED_ERROR));
             return false;
         }
@@ -70,7 +71,7 @@ public class FreeNoteImpl implements URIHandler {
             var draftRequest = convertToDraftRequest(actualPayload);
             return coreDraftProcessor.processDraft(draftRequest);
         } catch (Exception ex) {
-            log.error("Error handling client message", ex);
+            log.error("Error handling client message: {}", ex.getMessage());
             return DEFAULT_MESSAGE_PAYLOAD;
         }
     }

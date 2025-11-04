@@ -2,10 +2,10 @@ package com.freenote.app.server.handler.impl;
 
 
 import com.freenote.annotations.URIHandlerImplementation;
-import com.freenote.app.server.frames.factory.ClientFrameFactory;
-import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.frames.factory.ClientFrameFactory;
+import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
@@ -33,6 +33,7 @@ public class EchoHandlerImpl implements URIHandler {
             if (inputStream.available() == 0) {
                 return false;
             }
+            log.info("EchoHandlerImpl: Received actual data");
             byte[] actualData = getRawBytes(inputStream);
             if (actualData == null) return false;
 

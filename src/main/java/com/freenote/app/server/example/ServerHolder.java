@@ -37,6 +37,7 @@ public class ServerHolder {
             while (!serverSocket.isClosed()) {
                 log.info("Waiting for connection on port {}", this.port);
                 var socket = serverSocket.accept(); // block method
+                log.info("Accepted connection from {}", socket.getRemoteSocketAddress());
                 this.executorService.submit(() -> {
                     try {
                         handler.handle(socket);
