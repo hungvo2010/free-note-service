@@ -1,5 +1,6 @@
 package com.freenote.app.server.example;
 
+import com.freenote.app.server.core.ServerHolder;
 import com.freenote.app.server.handler.impl.WebSocketHandlerImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
