@@ -12,21 +12,21 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @AllArgsConstructor
-public class ServerHolder {
+public class ServerBootStart {
     private final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-    private static final Logger log = LogManager.getLogger(ServerHolder.class);
+    private static final Logger log = LogManager.getLogger(ServerBootStart.class);
     private ServerSocketFactory serverSocketFactory = new RawSocketFactoryImpl();
     @Setter
     private int port = 8189;
 
-    public ServerHolder() {
+    public ServerBootStart() {
     }
 
-    public ServerHolder(int port) {
+    public ServerBootStart(int port) {
         this.port = port;
     }
 
-    public ServerHolder(ServerSocketFactory serverSocketFactory) {
+    public ServerBootStart(ServerSocketFactory serverSocketFactory) {
         this.serverSocketFactory = serverSocketFactory;
     }
 
