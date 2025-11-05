@@ -3,18 +3,10 @@ package com.freenote.app.server.connections;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.net.Socket;
+import java.io.OutputStream;
 
 @AllArgsConstructor
 @Getter
 public class Connection {
-    private Socket socket;
-    private String path;
-    private String sourceIp;
-
-    public Connection(String sourceIp) {
-        this.sourceIp = sourceIp;
-    }
-
-
+    private OutputStream outputStream;
 }

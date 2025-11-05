@@ -26,7 +26,7 @@ public class ConnectionPool {
     public void broadcastMessage(WebSocketFrame webSocketFrame) throws IOException {
         synchronized (lock) {
             for (Connection connection : connections) {
-                IOUtils.writeOutPut(connection.getSocket().getOutputStream(), webSocketFrame);
+                IOUtils.writeOutPut(connection.getOutputStream(), webSocketFrame);
             }
         }
     }

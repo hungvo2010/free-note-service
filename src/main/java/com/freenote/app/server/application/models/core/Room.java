@@ -32,7 +32,6 @@ public class Room {
 
     public void broadCastMessage(Object data) {
         for (Connection connection : connections) {
-            log.info("Member: {}", connection.getSourceIp());
             broadcastToMember(connection, createFrame(data));
         }
     }
@@ -44,9 +43,9 @@ public class Room {
 
     private void broadcastToMember(Connection connection, WebSocketFrame data) {
         try {
-            IOUtils.writeOutPut(connection.getSocket().getOutputStream(), data);
+            IOUtils.writeOutPut(connection.getOutputStream(), data);
         } catch (IOException e) {
-            log.error("Error broadcasting to member: {}", connection.getSourceIp(), e);
+            log.error("Error broadcasting to member: {}", e.getMessage());
         }
     }
 }

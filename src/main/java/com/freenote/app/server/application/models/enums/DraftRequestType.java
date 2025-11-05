@@ -2,19 +2,20 @@ package com.freenote.app.server.application.models.enums;
 
 import lombok.Getter;
 
-public enum RequestType {
+public enum DraftRequestType {
     CONNECT(1),
+    DATA(2),
     INVALID(-1);
 
     @Getter
     final int code;
 
-    RequestType(int code) {
+    DraftRequestType(int code) {
         this.code = code;
     }
 
-    public static RequestType fromCode(int code) {
-        for (RequestType actionType : RequestType.values()) {
+    public static DraftRequestType fromCode(int code) {
+        for (DraftRequestType actionType : DraftRequestType.values()) {
             if (actionType.code == code) {
                 return actionType;
             }

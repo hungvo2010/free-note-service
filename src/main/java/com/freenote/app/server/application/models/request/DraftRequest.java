@@ -1,7 +1,7 @@
 package com.freenote.app.server.application.models.request;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.freenote.app.server.application.models.enums.RequestType;
+import com.freenote.app.server.application.models.enums.DraftRequestType;
 import lombok.Data;
 import lombok.Getter;
 
@@ -11,7 +11,7 @@ import java.net.Socket;
 public class DraftRequest {
     private String draftId;
     private String draftName;
-    private RequestType requestType;
+    private DraftRequestType draftRequestType;
     private DraftContent content;
 
     public DraftRequestMedata getMetaData() {
@@ -26,7 +26,7 @@ public class DraftRequest {
     }
 
     @JsonSetter("requestType")
-    public void setRequestType(int value) {
-        this.requestType = RequestType.fromCode(value);
+    public void setDraftRequestType(int value) {
+        this.draftRequestType = DraftRequestType.fromCode(value);
     }
 }

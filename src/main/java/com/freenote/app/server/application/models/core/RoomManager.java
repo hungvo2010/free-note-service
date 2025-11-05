@@ -1,9 +1,9 @@
 package com.freenote.app.server.application.models.core;
 
 import com.freenote.annotations.Singleton;
-import com.freenote.app.server.application.models.request.DraftRequest;
 import com.freenote.app.server.connections.Connection;
 
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,13 +27,8 @@ public class RoomManager {
         return instance;
     }
 
-    public void addConnection(String draftId, DraftRequest draftRequest) {
-        var requestMeta = draftRequest.getMetaData();
-        var connection = new Connection(
-                requestMeta.getSocket(),
-                requestMeta.getIpAddress(),
-                requestMeta.getPort()
-        );
+    public void addConnection(String draftId, OutputStream outputStream) {
+        var connection = new Connection(outputStream);
         var draftRoom = this.rooms.putIfAbsent(draftId, new Room());
         if (draftRoom != null) {
             draftRoom.addMember(connection);

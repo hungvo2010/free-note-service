@@ -6,6 +6,7 @@ import com.freenote.app.server.application.CoreDraftProcessor;
 import com.freenote.app.server.application.factory.ApplicationFrameFactory;
 import com.freenote.app.server.application.factory.ServerApplicationFrameFactory;
 import com.freenote.app.server.application.models.common.MessagePayload;
+import com.freenote.app.server.application.models.core.RoomManager;
 import com.freenote.app.server.application.models.request.DraftRequest;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.MessagePayloadParsingException;
@@ -64,6 +65,8 @@ public class FreeNoteImpl implements URIHandler {
             var rawPayload = FrameUtil.maskPayload(dataFrame.getPayloadData(), dataFrame.getMaskingKey());
             log.info("Received DataFrame content: {}", new String(rawPayload));
             var messagePayload = getMessagePayload(dataFrame);
+            var draftRequest = convertToDraftRequest(messagePayload);
+            RoomManager.getInstance().addConnection(draftRequest.getDraftId(), outputStream);
             var response = handleClientMessage(messagePayload);
             var appResponse = applicationFrameFactory.createApplicationFrame(response);
             IOUtils.writeOutPut(outputStream, appResponse);
@@ -79,16 +82,18 @@ public class FreeNoteImpl implements URIHandler {
 
     private MessagePayload handleClientMessage(MessagePayload messagePayload) {
         try {
-            var actualPayload = messagePayload.getPayload();
-            var draftRequest = convertToDraftRequest(actualPayload);
-            return coreDraftProcessor.processDraft(draftRequest);
+            return coreDraftProcessor.processDraft(convertToDraftRequest(messagePayload));
         } catch (Exception ex) {
             log.error("Error handling client message: {}", ex.getMessage());
             return DEFAULT_MESSAGE_PAYLOAD;
         }
     }
 
-    private DraftRequest convertToDraftRequest(Object actualPayload) {
+    private void attachRequestMetaData(DraftRequest draftRequest) {
+    }
+
+    private DraftRequest convertToDraftRequest(MessagePayload messagePayload) {
+        var actualPayload = messagePayload.getPayload();
         return objMapper.convertValue(actualPayload, DraftRequest.class);
     }
 

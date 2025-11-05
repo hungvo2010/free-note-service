@@ -7,7 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.freenote.app.server.application.models.enums.ActionType;
-import com.freenote.app.server.application.models.enums.RequestType;
+import com.freenote.app.server.application.models.enums.DraftRequestType;
 import com.freenote.app.server.application.models.request.DraftRequest;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,7 +49,7 @@ public class Draft {
     }
 
     public DraftAction doRequest(DraftRequest draftRequest) {
-        if (draftRequest.getRequestType() == RequestType.CONNECT) {
+        if (draftRequest.getDraftRequestType() == DraftRequestType.CONNECT) {
             return connectAction(draftRequest);
         }
         var returnAction = new DraftAction(draftRequest.getContent());
@@ -60,7 +60,6 @@ public class Draft {
 
     private DraftAction connectAction(DraftRequest draftRequest) {
         var requestDraftId = draftRequest.getDraftId();
-        RoomManager.getInstance().addConnection(requestDraftId, draftRequest);
         return new DraftAction(ActionType.NOOP);
     }
 
