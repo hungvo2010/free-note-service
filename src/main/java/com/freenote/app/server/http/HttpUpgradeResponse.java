@@ -17,6 +17,7 @@ public class HttpUpgradeResponse {
     private String upgrade;
     private String connection;
     private String secWebSocketAccept;
+    private HttpUpgradeRequest httpUpgradeRequest;
     public static final HttpUpgradeResponse EMPTY_UPGRADE_RESPONSE = new HttpUpgradeResponse();
 
     @Override

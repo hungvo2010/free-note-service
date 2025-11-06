@@ -1,20 +1,20 @@
 package com.freenote.app.server.handler.impl;
 
 import com.freenote.annotations.URIHandlerImplementation;
-import com.freenote.app.server.frames.factory.FrameFactory;
-import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.LargeFrame;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.frames.factory.FrameFactory;
+import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.handler.URIHandler;
+import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -27,7 +27,8 @@ public class FragmentedURIHandlerImpl implements URIHandler {
     private final FrameFactory frameFactory = new ServerFrameFactory();
 
     @Override
-    public boolean handle(InputStream inputStream, OutputStream outputStream) {
+    public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) {
+        var inputStream = inputWrapper.getInputStream();
         if (inputStream == null || outputStream == null) throw new NullPointerException();
 
         try {
@@ -41,7 +42,7 @@ public class FragmentedURIHandlerImpl implements URIHandler {
             var clientFrame = clientFrames.get(0);
             if (!clientFrame.isFin() && clientFrame.getOpcode() != FrameType.CONTINUATION.getOpCode()) {
                 log.info("Received non-final frame. Continuation expected.");
-                return continuationHandler(clientFrames, inputStream, outputStream);
+                return continuationHandler(clientFrames, inputWrapper, outputStream);
             } else if (clientFrame.getOpcode() == FrameType.CONTINUATION.getOpCode()) {
                 log.info("Received continuation frame without initial fragmented frame. Ignoring.");
                 return false;
@@ -66,8 +67,9 @@ public class FragmentedURIHandlerImpl implements URIHandler {
     }
 
     @Override
-    public boolean continuationHandler(List<WebSocketFrame> clientFrames, InputStream inputStream, OutputStream outputStream) throws IOException {
+    public boolean continuationHandler(List<WebSocketFrame> clientFrames, InputWrapper inputWrapper, OutputStream outputStream) throws IOException {
         LargeFrame largeFrame = new LargeFrame();
+        var inputStream = inputWrapper.getInputStream();
         try {
             int read = 0;
             for (var clientFrame : clientFrames) {

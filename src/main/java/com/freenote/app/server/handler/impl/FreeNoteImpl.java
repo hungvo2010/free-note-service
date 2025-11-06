@@ -8,19 +8,20 @@ import com.freenote.app.server.application.factory.ServerApplicationFrameFactory
 import com.freenote.app.server.application.models.common.MessagePayload;
 import com.freenote.app.server.application.models.core.RoomManager;
 import com.freenote.app.server.application.models.request.DraftRequest;
+import com.freenote.app.server.connections.Connection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.MessagePayloadParsingException;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.handler.URIHandler;
+import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -31,60 +32,72 @@ public class FreeNoteImpl implements URIHandler {
     private final ObjectMapper objMapper = new ObjectMapper();
     private final CoreDraftProcessor coreDraftProcessor = new CoreDraftProcessor();
     private final ApplicationFrameFactory applicationFrameFactory = new ServerApplicationFrameFactory();
+    private final RoomManager roomManager = RoomManager.getInstance();
 
     @Override
-    public boolean handle(InputStream inputStream, OutputStream outputStream) {
+    public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) {
         try {
+            var inputStream = inputWrapper.getInputStream();
             if (inputStream.available() == 0) {
                 return true; // No data, don't block
             }
             log.info("FreeNoteImpl.handle() called");
+
             var rawBytes = IOUtils.getRawBytes(inputStream);
-            doApplicationLogic(rawBytes, outputStream);
+            var draftRequest = extractDraftRequest(rawBytes);
+
+            var clientResponse = doApplicationLogic(draftRequest);
+
+            IOUtils.writeOutPut(outputStream, clientResponse);
+            broadcastMessage(draftRequest.getDraftId(), new Connection(outputStream));
+
             return true;
         } catch (Exception e) {
             log.error("Error handling input stream: {}", e.getMessage());
+            this.roomManager.removeConnectionByOutputStream(outputStream);
             throw new ClientDisconnectException("Client disconnected or error occurred", e);
         }
+
     }
 
-    @Override
-    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputStream inputStream, OutputStream outputStream) {
-        return false;
-    }
-
-    private void doApplicationLogic(byte[] rawBytes, OutputStream outputStream) throws IOException {
+    private WebSocketFrame doApplicationLogic(DraftRequest draftRequest) {
         try {
-            var dataFrame = DataFrame.fromRawFrameBytes(rawBytes);
-            log.info("Received DataFrame opcode: {}", FrameType.fromOpCode(dataFrame.getOpcode()));
-            if (dataFrame.getOpcode() == FrameType.CLOSE.getOpCode()) {
-                log.info("Received CLOSE frame. No further processing.");
-                throw new ClientDisconnectException("Client sent CLOSE frame");
-            }
-            log.info("Received DataFrame masking key length: {}", dataFrame.getMaskingKey().length);
-            var rawPayload = FrameUtil.maskPayload(dataFrame.getPayloadData(), dataFrame.getMaskingKey());
-            log.info("Received DataFrame content: {}", new String(rawPayload));
-            var messagePayload = getMessagePayload(dataFrame);
-            var draftRequest = convertToDraftRequest(messagePayload);
-            var connection = RoomManager.getInstance().addConnection(draftRequest.getDraftId(), outputStream);
-            var response = handleClientMessage(messagePayload);
-            var appResponse = applicationFrameFactory.createApplicationFrame(response);
-
-            RoomManager.getInstance().broadcastToRoom(draftRequest.getDraftId(), response.getPayload(), connection);
-            IOUtils.writeOutPut(outputStream, appResponse);
+            var responsePayload = handleClientMessage(draftRequest);
+            return applicationFrameFactory.createApplicationFrame(responsePayload);
         } catch (MessagePayloadParsingException ex) {
             log.error("Failed to parse MessagePayload: {}", ex.getMessage());
-            var errorResponse = applicationFrameFactory.createApplicationFrame(DEFAULT_MESSAGE_PAYLOAD);
-            IOUtils.writeOutPut(outputStream, errorResponse);
+            return applicationFrameFactory.createApplicationFrame(DEFAULT_MESSAGE_PAYLOAD);
         } catch (Exception ex) {
             log.error("Error in application logic: {}", ex.getMessage());
             throw ex;
         }
     }
 
-    private MessagePayload handleClientMessage(MessagePayload messagePayload) {
+    private DraftRequest extractDraftRequest(byte[] rawBytes) {
+        var dataFrame = DataFrame.fromRawFrameBytes(rawBytes);
+        log.info("Received DataFrame opcode: {}", FrameType.fromOpCode(dataFrame.getOpcode()));
+        if (dataFrame.getOpcode() == FrameType.CLOSE.getOpCode()) {
+            log.info("Received CLOSE frame. No further processing.");
+            throw new ClientDisconnectException("Client sent CLOSE frame");
+        }
+
+        log.info("Received DataFrame masking key length: {}", dataFrame.getMaskingKey().length);
+        var rawPayload = FrameUtil.maskPayload(dataFrame.getPayloadData(), dataFrame.getMaskingKey());
+        log.info("Received DataFrame content: {}", new String(rawPayload));
+        var messagePayload = getMessagePayload(new String(rawPayload));
+        return convertToDraftRequest(messagePayload);
+    }
+
+    private void broadcastMessage(String roomId, Connection newConnection) {
+        var targetRoom = roomManager.getRoomById(roomId);
+        targetRoom.addConnection(newConnection);
+        var connectionsToBroadcast = targetRoom.getConnectionsInRoomToBroadcast(roomId, List.of(newConnection));
+        targetRoom.broadCastMessage(connectionsToBroadcast, new MessagePayload("Update in room: " + roomId));
+    }
+
+    private MessagePayload handleClientMessage(DraftRequest draftRequest) {
         try {
-            return coreDraftProcessor.processDraft(convertToDraftRequest(messagePayload));
+            return coreDraftProcessor.processDraft(draftRequest);
         } catch (Exception ex) {
             log.error("Error handling client message: ", ex);
             return DEFAULT_MESSAGE_PAYLOAD;
@@ -96,13 +109,17 @@ public class FreeNoteImpl implements URIHandler {
         return objMapper.convertValue(actualPayload, DraftRequest.class);
     }
 
-    private MessagePayload getMessagePayload(DataFrame dataFrame) {
-        var rawPayload = FrameUtil.maskPayload(dataFrame.getPayloadData(), dataFrame.getMaskingKey());
+    private MessagePayload getMessagePayload(String rawPayload) {
         try {
             return objMapper.readValue(rawPayload, MessagePayload.class);
         } catch (IOException e) {
             log.error("Error parsing MessagePayload from DataFrame", e.getCause());
             throw new MessagePayloadParsingException("Error parsing MessagePayload from DataFrame", e);
         }
+    }
+
+    @Override
+    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputWrapper inputStream, OutputStream outputStream) {
+        return false;
     }
 }

@@ -4,17 +4,15 @@ import com.freenote.annotations.Singleton;
 import com.freenote.app.server.connections.Connection;
 
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Singleton
 public class RoomManager {
-    private final Map<String, Room> rooms;
+    private final ConcurrentHashMap<String, Room> rooms;
     private static volatile RoomManager instance;
 
     private RoomManager() {
-        rooms = new HashMap<>();
+        rooms = new ConcurrentHashMap<>();
     }
 
     public static RoomManager getInstance() {
@@ -28,26 +26,17 @@ public class RoomManager {
         return instance;
     }
 
-    public Connection addConnection(String draftId, OutputStream outputStream) {
+
+        public Room getRoomById(String roomId) {
+            var draftRoom = this.rooms.putIfAbsent(roomId, new Room());
+            if (draftRoom == null) {
+                draftRoom = new Room();
+                this.rooms.put(roomId, draftRoom);
+            }
+            return draftRoom;
+    }
+
+    public void removeConnectionByOutputStream(OutputStream outputStream) {
         var connection = new Connection(outputStream);
-        var draftRoom = this.rooms.putIfAbsent(draftId, new Room());
-        if (draftRoom != null) {
-            draftRoom.addMember(connection);
-        }
-        return connection;
-    }
-
-    public void broadcastToRoom(String roomId, Object returnAction, Connection excludeConnection) {
-        var room = this.rooms.get(roomId);
-        room.broadCastMessage(getConnectionsInRoomToBroadcast(roomId, excludeConnection), returnAction);
-    }
-
-    public List<Connection> getConnectionsInRoomToBroadcast(String roomId, Connection excludeConnection) {
-        var room = this.rooms.get(roomId);
-        return room
-                .getConnections()
-                .stream()
-                .filter(connection -> connection != excludeConnection)
-                .toList();
     }
 }

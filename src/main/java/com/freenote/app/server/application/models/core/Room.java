@@ -28,6 +28,12 @@ public class Room {
         log.info("Room created with Room ID: {}", roomId);
     }
 
+
+    public void addConnection(Connection connection) {
+        this.addMember(connection);
+    }
+
+
     public void addMember(Connection connection) {
         connections.add(connection);
     }
@@ -51,5 +57,14 @@ public class Room {
         } catch (IOException e) {
             log.error("Error broadcasting to member: {}", e.getMessage());
         }
+    }
+
+
+    public List<Connection> getConnectionsInRoomToBroadcast(String roomId, List<Connection> excludeConnections) {
+        return this
+                .getConnections()
+                .stream()
+                .filter(connection -> !excludeConnections.contains(connection) && connection.isOpen())
+                .toList();
     }
 }

@@ -2,7 +2,7 @@ package com.freenote.app.server.core;
 
 import com.freenote.app.server.factory.RawSocketImpl;
 import com.freenote.app.server.factory.ServerSocketFactory;
-import com.freenote.app.server.handler.ConnectionHandler;
+import com.freenote.app.server.handler.IncomingConnectionHandler;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
@@ -31,7 +31,7 @@ public class ServerBootStart {
         this.serverSocketFactory = serverSocketFactory;
     }
 
-    public void start(ConnectionHandler handler) throws Exception {
+    public void start(IncomingConnectionHandler handler) throws Exception {
         try (var serverSocket = serverSocketFactory.createServerSocket(this.port)) {
             while (!serverSocket.isClosed()) {
                 log.info("Waiting for connection on port {}", this.port);

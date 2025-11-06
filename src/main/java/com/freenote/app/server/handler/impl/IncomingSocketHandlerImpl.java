@@ -1,15 +1,16 @@
 package com.freenote.app.server.handler.impl;
 
+import com.freenote.app.server.application.models.request.core.RequestObject;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
-import com.freenote.app.server.handler.ConnectionHandler;
+import com.freenote.app.server.handler.IncomingConnectionHandler;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
+import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -17,8 +18,8 @@ import java.util.function.BiConsumer;
 
 import static generated.URIHandlerRegistry.getInstanceByURI;
 
-public class WebSocketHandlerImpl implements ConnectionHandler {
-    private static final Logger log = LogManager.getLogger(WebSocketHandlerImpl.class);
+public class IncomingSocketHandlerImpl implements IncomingConnectionHandler {
+    private static final Logger log = LogManager.getLogger(IncomingSocketHandlerImpl.class);
 
     @Override
     public void handle(Socket incomingSocket) throws IOException {
@@ -30,7 +31,10 @@ public class WebSocketHandlerImpl implements ConnectionHandler {
             var request = new HttpParserImpl().parse(input);
 
             log.info("Received request: {}\n", request);
-            handleHandShake(request, output);
+            var requestObject = handleHandShake(request, output);
+            var inputWrapper = new InputWrapper(input, incomingSocket);
+            requestObject.setSocket(incomingSocket);
+            inputWrapper.setRequestObject(requestObject);
 
             while (!incomingSocket.isClosed()) { // todo: not correct due to incoming socket will not be closed after client disconnects
                 var pathHandler = (URIHandler) (getInstanceByURI(request.getPath()));
@@ -38,8 +42,8 @@ public class WebSocketHandlerImpl implements ConnectionHandler {
                     log.warn("No handler found for URI: {}", request.getPath());
                     return;
                 }
-                BiConsumer<InputStream, OutputStream> handler = (pathHandler)::handle;
-                handler.accept(input, output);
+                BiConsumer<InputWrapper, OutputStream> handler = (pathHandler)::handle;
+                handler.accept(inputWrapper, output);
             }
         } catch (Exception e) {
             log.error("Error handling socket: {}", e.getMessage());
@@ -51,10 +55,14 @@ public class WebSocketHandlerImpl implements ConnectionHandler {
         }
     }
 
-    private static void handleHandShake(HttpUpgradeRequest request, OutputStream output) throws IOException {
+    private RequestObject handleHandShake(HttpUpgradeRequest request, OutputStream output) throws IOException {
         var response = new AcceptHandshakeImpl().handle(request);
         var responseBytes = response.toString().getBytes(StandardCharsets.UTF_8);
         output.write(responseBytes);
         output.flush();
+        var requestObject = RequestObject.builder()
+                .origin(request.getOrigin())
+                .build();
+        return requestObject;
     }
 }

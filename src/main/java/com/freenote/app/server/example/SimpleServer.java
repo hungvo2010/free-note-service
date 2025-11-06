@@ -1,7 +1,7 @@
 package com.freenote.app.server.example;
 
 import com.freenote.app.server.core.ServerBootStart;
-import com.freenote.app.server.handler.impl.WebSocketHandlerImpl;
+import com.freenote.app.server.handler.impl.IncomingSocketHandlerImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,7 +22,7 @@ public class SimpleServer {
         var serverHolder = new ServerBootStart(port);
         try {
             log.info("Server started on port {}", port);
-            serverHolder.start(new WebSocketHandlerImpl());
+            serverHolder.start(new IncomingSocketHandlerImpl());
         } catch (Exception e) {
             log.error("Error starting server", e);
         }

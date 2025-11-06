@@ -2,17 +2,17 @@ package com.freenote.app.server.handler.impl;
 
 
 import com.freenote.annotations.URIHandlerImplementation;
-import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.handler.URIHandler;
+import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -24,8 +24,9 @@ public class HeartBeatHandlerImpl implements URIHandler {
     private final ServerFrameFactory serverFactory = new ServerFrameFactory();
 
     @Override
-    public boolean handle(InputStream inputStream, OutputStream outputStream) {
+    public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) {
         try {
+            var inputStream = inputWrapper.getInputStream();
             if (inputStream.available() == 0) {
                 return true; // No data, don't block
             }
@@ -44,7 +45,7 @@ public class HeartBeatHandlerImpl implements URIHandler {
     }
 
     @Override
-    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputStream inputStream, OutputStream outputStream) {
+    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputWrapper inputStream, OutputStream outputStream) {
         return false;
     }
 }

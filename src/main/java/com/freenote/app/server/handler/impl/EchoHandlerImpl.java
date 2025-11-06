@@ -7,13 +7,13 @@ import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.handler.URIHandler;
+import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -28,8 +28,9 @@ public class EchoHandlerImpl implements URIHandler {
     private static final ClientFrameFactory clientFrameFactory = new ClientFrameFactory();
 
     @Override
-    public boolean handle(InputStream inputStream, OutputStream outputStream) {
+    public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) {
         try {
+            var inputStream = inputWrapper.getInputStream();
             if (inputStream.available() == 0) {
                 return false;
             }
@@ -67,7 +68,7 @@ public class EchoHandlerImpl implements URIHandler {
     }
 
     @Override
-    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputStream inputStream, OutputStream outputStream) {
+    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputWrapper inputWrapper, OutputStream outputStream) {
         return false;
     }
 }

@@ -49,6 +49,7 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
                     .upgrade("websocket")
                     .connection("Upgrade")
                     .secWebSocketAccept(socketAccept)
+                    .httpUpgradeRequest(request)
                     .build();
         } catch (Exception e) {
             return new HttpUpgradeResponse();
