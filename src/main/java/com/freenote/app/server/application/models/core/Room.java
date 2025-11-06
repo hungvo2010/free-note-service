@@ -10,19 +10,21 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class Room {
     private static final Logger log = LogManager.getLogger(Room.class);
     @Getter
     private final String roomId;
-    private final List<Connection> connections;
+    @Getter
+    private final Set<Connection> connections;
 
     public Room() {
         this.roomId = UUID.randomUUID().toString();
-        connections = new ArrayList<>();
+        connections = new HashSet<>();
         log.info("Room created with Room ID: {}", roomId);
     }
 
@@ -49,9 +51,5 @@ public class Room {
         } catch (IOException e) {
             log.error("Error broadcasting to member: {}", e.getMessage());
         }
-    }
-
-    public List<Connection> getConnections() {
-        return this.connections;
     }
 }
