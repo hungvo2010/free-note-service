@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 public class Room {
     private static final Logger log = LogManager.getLogger(Room.class);
@@ -22,10 +21,10 @@ public class Room {
     @Getter
     private final Set<Connection> connections;
 
-    public Room() {
-        this.roomId = UUID.randomUUID().toString();
+    public Room(String roomId) {
+        this.roomId = roomId;
         connections = new HashSet<>();
-        log.info("Room created with Room ID: {}", roomId);
+        log.info("Room created with Room ID: {}", this.roomId);
     }
 
 
