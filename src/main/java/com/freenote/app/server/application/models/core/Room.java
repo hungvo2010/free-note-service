@@ -30,11 +30,13 @@ public class Room {
         connections.add(connection);
     }
 
-    public void broadCastMessage(Object data) {
+    public void broadCastMessage(List<Connection> connections, Object data) {
+        log.info("Broadcasting message to {} members", connections.size());
         for (Connection connection : connections) {
             broadcastToMember(connection, createFrame(data));
         }
     }
+
 
     private WebSocketFrame createFrame(Object data) {
         return new ServerApplicationFrameFactory().createApplicationFrame(new MessagePayload(data));
@@ -47,5 +49,9 @@ public class Room {
         } catch (IOException e) {
             log.error("Error broadcasting to member: {}", e.getMessage());
         }
+    }
+
+    public List<Connection> getConnections() {
+        return this.connections;
     }
 }

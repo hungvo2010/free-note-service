@@ -52,10 +52,7 @@ public class Draft {
         if (draftRequest.getDraftRequestType() == DraftRequestType.CONNECT) {
             return connectAction(draftRequest);
         }
-        var returnAction = new DraftAction(draftRequest.getContent());
-        RoomManager.getInstance().broadcastToRoom(draftRequest.getDraftId(), returnAction);
-        return returnAction;
-
+        return new DraftAction(draftRequest.getContent());
     }
 
     private DraftAction connectAction(DraftRequest draftRequest) {

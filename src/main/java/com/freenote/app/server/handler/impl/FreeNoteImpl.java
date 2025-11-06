@@ -66,9 +66,11 @@ public class FreeNoteImpl implements URIHandler {
             log.info("Received DataFrame content: {}", new String(rawPayload));
             var messagePayload = getMessagePayload(dataFrame);
             var draftRequest = convertToDraftRequest(messagePayload);
-            RoomManager.getInstance().addConnection(draftRequest.getDraftId(), outputStream);
+            var connection = RoomManager.getInstance().addConnection(draftRequest.getDraftId(), outputStream);
             var response = handleClientMessage(messagePayload);
             var appResponse = applicationFrameFactory.createApplicationFrame(response);
+
+            RoomManager.getInstance().broadcastToRoom(draftRequest.getDraftId(), response.getPayload(), connection);
             IOUtils.writeOutPut(outputStream, appResponse);
         } catch (MessagePayloadParsingException ex) {
             log.error("Failed to parse MessagePayload: {}", ex.getMessage());
@@ -84,12 +86,9 @@ public class FreeNoteImpl implements URIHandler {
         try {
             return coreDraftProcessor.processDraft(convertToDraftRequest(messagePayload));
         } catch (Exception ex) {
-            log.error("Error handling client message: {}", ex.getMessage());
+            log.error("Error handling client message: ", ex);
             return DEFAULT_MESSAGE_PAYLOAD;
         }
-    }
-
-    private void attachRequestMetaData(DraftRequest draftRequest) {
     }
 
     private DraftRequest convertToDraftRequest(MessagePayload messagePayload) {

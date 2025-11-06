@@ -21,7 +21,7 @@ public class DraftAction {
     }
 
     public DraftAction(DraftContent requestContent) {
-        this.actionType = ActionType.valueOf(requestContent.getAttribute("type"));
+        this.actionType = ActionType.fromCode(Integer.parseInt(requestContent.getAttribute("type").toString()));
         this.data.putAll(requestContent.getAttributes());
     }
 

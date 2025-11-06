@@ -11,8 +11,8 @@ import java.util.Map;
 public class DraftContent {
     private final HashMap<String, Object> data = new HashMap<>();
 
-    public String getAttribute(String key) {
-        return (String) data.get(key);
+    public Object getAttribute(String key) {
+        return data.get(key);
     }
 
     public Map<String, ?> getAttributes() {
