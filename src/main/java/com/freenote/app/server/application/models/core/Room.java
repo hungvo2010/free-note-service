@@ -1,7 +1,5 @@
 package com.freenote.app.server.application.models.core;
 
-import com.freenote.app.server.application.factory.ServerApplicationFrameFactory;
-import com.freenote.app.server.application.models.common.MessagePayload;
 import com.freenote.app.server.connections.Connection;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.util.IOUtils;
@@ -28,37 +26,18 @@ public class Room {
         log.info("Room created with Room ID: {}", this.roomId);
     }
 
-
-    public void addConnection(Connection connection) {
-        this.addMember(connection);
-    }
-
-
     public void addMember(Connection connection) {
         connections.add(connection);
-    }
-
-    public void broadCastMessage(List<Connection> connections, Object data) {
-        log.info("Broadcasting message to {} members", connections.size());
-        for (Connection connection : connections) {
-            broadcastToMember(connection, createFrame(data));
-        }
     }
 
     public void broadCastMessage(List<Connection> connections, WebSocketFrame data) {
         log.info("Broadcasting message to {} members", connections.size());
         for (Connection connection : connections) {
-            broadcastToMember(connection, data);
+            sendMember(connection, data);
         }
     }
 
-
-    private WebSocketFrame createFrame(Object data) {
-        return new ServerApplicationFrameFactory().createApplicationFrame(new MessagePayload(data));
-    }
-
-
-    private void broadcastToMember(Connection connection, WebSocketFrame data) {
+    private void sendMember(Connection connection, WebSocketFrame data) {
         try {
             IOUtils.writeOutPut(connection.getOutputStream(), data);
         } catch (IOException e) {
@@ -67,7 +46,7 @@ public class Room {
     }
 
 
-    public List<Connection> getConnectionsInRoomToBroadcast(String roomId, List<Connection> excludeConnections) {
+    public List<Connection> getConnectionsInRoomToBroadcast(List<Connection> excludeConnections) {
         return this
                 .getConnections()
                 .stream()

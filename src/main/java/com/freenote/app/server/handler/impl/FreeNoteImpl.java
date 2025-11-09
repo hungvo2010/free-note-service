@@ -95,8 +95,8 @@ public class FreeNoteImpl implements URIHandler {
     private void broadcastMessage(String roomId, Connection newConnection, WebSocketFrame clientResponse) {
         var targetRoom = roomManager.getRoomById(roomId);
         try {
-            targetRoom.addConnection(newConnection);
-            var connectionsToBroadcast = targetRoom.getConnectionsInRoomToBroadcast(roomId, List.of(newConnection));
+            targetRoom.addMember(newConnection);
+            var connectionsToBroadcast = targetRoom.getConnectionsInRoomToBroadcast(List.of(newConnection));
             targetRoom.broadCastMessage(connectionsToBroadcast, clientResponse);
         } catch (Exception e) {
             removeConnection(targetRoom, newConnection);

@@ -47,7 +47,14 @@ public class FragmentedURIHandlerImpl implements URIHandler {
                 log.info("Received continuation frame without initial fragmented frame. Ignoring.");
                 return false;
             }
-            IOUtils.writeOutPut(outputStream, frameFactory.createTextFrame(new String(FrameUtil.maskPayload(clientFrame.getPayloadData(), clientFrame.getMaskingKey()), "UTF-8")));
+            IOUtils.writeOutPut(outputStream, frameFactory.createTextFrame(
+                    new String(
+                            FrameUtil.maskPayload(
+                                    clientFrame.getPayloadData(),
+                                    clientFrame.getMaskingKey()
+                            ),
+                            StandardCharsets.UTF_8)
+            ));
             return true;
         } catch (IOException e) {
             log.error("Error handling input stream", e);
@@ -71,7 +78,7 @@ public class FragmentedURIHandlerImpl implements URIHandler {
         LargeFrame largeFrame = new LargeFrame();
         var inputStream = inputWrapper.getInputStream();
         try {
-            int read = 0;
+            int read;
             for (var clientFrame : clientFrames) {
                 largeFrame.addFragmentMessage((DataFrame) clientFrame);
                 log.info("Frame content: {}", new String(FrameUtil.maskPayload(clientFrame.getPayloadData(), clientFrame.getMaskingKey()), StandardCharsets.UTF_8));

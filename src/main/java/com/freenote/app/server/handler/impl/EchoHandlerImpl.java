@@ -36,7 +36,6 @@ public class EchoHandlerImpl implements URIHandler {
             }
             log.info("EchoHandlerImpl: Received actual data");
             byte[] actualData = getRawBytes(inputStream);
-            if (actualData == null) return false;
 
             log.info("Raw bytes length: {}", actualData.length);
             log.info("First 10 bytes: {}", Arrays.toString(Arrays.copyOf(actualData, Math.min(10, actualData.length))));
