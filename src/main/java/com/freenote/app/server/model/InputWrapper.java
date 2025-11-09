@@ -20,4 +20,8 @@ public class InputWrapper {
         this.inputStream = input;
         this.socket = incomingSocket;
     }
+
+    public InputWrapper(InputStream input) {
+        this.inputStream = input;
+    }
 }

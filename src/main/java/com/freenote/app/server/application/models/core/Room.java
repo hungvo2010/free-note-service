@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -44,6 +45,13 @@ public class Room {
         }
     }
 
+    public void broadCastMessage(List<Connection> connections, WebSocketFrame data) {
+        log.info("Broadcasting message to {} members", connections.size());
+        for (Connection connection : connections) {
+            broadcastToMember(connection, data);
+        }
+    }
+
 
     private WebSocketFrame createFrame(Object data) {
         return new ServerApplicationFrameFactory().createApplicationFrame(new MessagePayload(data));
@@ -65,5 +73,17 @@ public class Room {
                 .stream()
                 .filter(connection -> !excludeConnections.contains(connection) && connection.isOpen())
                 .toList();
+    }
+
+    public void remove(Connection newConnection) {
+        for (Iterator<Connection> iterator = connections.iterator(); iterator.hasNext(); ) {
+            Connection connection = iterator.next();
+            if (connection.equals(newConnection)) {
+                iterator.remove();
+                connection.close();
+                log.info("Connection removed from room: {}", roomId);
+                break;
+            }
+        }
     }
 }

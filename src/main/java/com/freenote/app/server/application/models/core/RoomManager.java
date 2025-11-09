@@ -31,12 +31,8 @@ public class RoomManager {
 
 
     public Room getRoomById(String roomId) {
-        var draftRoom = this.rooms.computeIfAbsent(roomId, id -> new Room(id));
+        var draftRoom = this.rooms.computeIfAbsent(roomId, Room::new);
         log.info("Getting room with ID: {} - {}", roomId, draftRoom);
         return draftRoom;
-    }
-
-    public void removeConnectionByOutputStream(OutputStream outputStream) {
-        var connection = new Connection(outputStream);
     }
 }

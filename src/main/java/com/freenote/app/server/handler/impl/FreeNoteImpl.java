@@ -6,6 +6,7 @@ import com.freenote.app.server.application.CoreDraftProcessor;
 import com.freenote.app.server.application.factory.ApplicationFrameFactory;
 import com.freenote.app.server.application.factory.ServerApplicationFrameFactory;
 import com.freenote.app.server.application.models.common.MessagePayload;
+import com.freenote.app.server.application.models.core.Room;
 import com.freenote.app.server.application.models.core.RoomManager;
 import com.freenote.app.server.application.models.request.DraftRequest;
 import com.freenote.app.server.connections.Connection;
@@ -49,15 +50,18 @@ public class FreeNoteImpl implements URIHandler {
             var clientResponse = doApplicationLogic(draftRequest);
 
             IOUtils.writeOutPut(outputStream, clientResponse);
-            broadcastMessage(draftRequest.getDraftId(), new Connection(outputStream));
+            broadcastMessage(draftRequest.getDraftId(), new Connection(outputStream), clientResponse);
 
             return true;
         } catch (Exception e) {
             log.error("Error handling input stream: {}", e.getMessage());
-            this.roomManager.removeConnectionByOutputStream(outputStream);
             throw new ClientDisconnectException("Client disconnected or error occurred", e);
         }
 
+    }
+
+    private void removeConnection(Room targetRoom, Connection newConnection) {
+        targetRoom.remove(newConnection);
     }
 
     private WebSocketFrame doApplicationLogic(DraftRequest draftRequest) {
@@ -88,11 +92,15 @@ public class FreeNoteImpl implements URIHandler {
         return convertToDraftRequest(messagePayload);
     }
 
-    private void broadcastMessage(String roomId, Connection newConnection) {
+    private void broadcastMessage(String roomId, Connection newConnection, WebSocketFrame clientResponse) {
         var targetRoom = roomManager.getRoomById(roomId);
-        targetRoom.addConnection(newConnection);
-        var connectionsToBroadcast = targetRoom.getConnectionsInRoomToBroadcast(roomId, List.of(newConnection));
-        targetRoom.broadCastMessage(connectionsToBroadcast, new MessagePayload("Update in room: " + roomId));
+        try {
+            targetRoom.addConnection(newConnection);
+            var connectionsToBroadcast = targetRoom.getConnectionsInRoomToBroadcast(roomId, List.of(newConnection));
+            targetRoom.broadCastMessage(connectionsToBroadcast, clientResponse);
+        } catch (Exception e) {
+            removeConnection(targetRoom, newConnection);
+        }
     }
 
     private MessagePayload handleClientMessage(DraftRequest draftRequest) {

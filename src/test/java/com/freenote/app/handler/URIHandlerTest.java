@@ -1,9 +1,10 @@
 package com.freenote.app.handler;
 
-import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.handler.impl.EchoHandlerImpl;
+import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.util.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -26,6 +28,7 @@ class URIHandlerTest {
     static void setup() {
         clientFrameFactory = new ClientFrameFactory();
     }
+
     private final URIHandler mockURIHandler = new EchoHandlerImpl();
 
     @Test
@@ -36,7 +39,7 @@ class URIHandlerTest {
         var bytes = byteArrayOutputStream.toByteArray();
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        mockURIHandler.handle(in, out);
+        mockURIHandler.handle(new InputWrapper(in), out);
         String result = new String(Arrays.copyOfRange(out.toByteArray(), 2, 2 + "Hello World".length())); // Skip the first two bytes which are the frame type and length
         assertEquals("Hello World", result);
     }
@@ -47,7 +50,7 @@ class URIHandlerTest {
         when(in.read(any(byte[].class))).thenReturn(-1);
         when(in.read()).thenReturn(-1);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        var result = mockURIHandler.handle(in, out);
+        var result = mockURIHandler.handle(new InputWrapper(in), out);
         assertFalse(result, "Expected handle to return false on end of input stream");
     }
 }
