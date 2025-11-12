@@ -53,11 +53,21 @@ public class FreeNoteImpl implements URIHandler {
             broadcastMessage(draftRequest.getDraftId(), new Connection(outputStream), clientResponse);
 
             return true;
+
+        } catch (ClientDisconnectException e) {
+            log.error("Client disconnected: {}", e.getMessage());
+            removeConnectionByInputStream(outputStream);
+            throw e;
         } catch (Exception e) {
             log.error("Error handling input stream: {}", e.getMessage());
-            throw new ClientDisconnectException("Client disconnected or error occurred", e);
+            return false;
+//            throw new ClientDisconnectException("Client disconnected or error occurred", e);
         }
 
+    }
+
+    private void removeConnectionByInputStream(OutputStream outputStream) {
+        roomManager.removeConnectionByInputStream(outputStream);
     }
 
     private void removeConnection(Room targetRoom, Connection newConnection) {
@@ -81,7 +91,7 @@ public class FreeNoteImpl implements URIHandler {
         var dataFrame = DataFrame.fromRawFrameBytes(rawBytes);
         log.info("Received DataFrame opcode: {}", FrameType.fromOpCode(dataFrame.getOpcode()));
         if (dataFrame.getOpcode() == FrameType.CLOSE.getOpCode()) {
-            log.info("Received CLOSE frame. No further processing.");
+            log.warn("Received CLOSE frame. No further processing.");
             throw new ClientDisconnectException("Client sent CLOSE frame");
         }
 
