@@ -2,6 +2,10 @@ image: gradle:jdk17
 
 variables:
   PROJECT_NAME: "${CI_PROJECT_NAME}"
+  JFROG_BASE_URL: "${JFROG_BASE_URL}"
+  JFROG_REPOSITORY: "${JFROG_REPOSITORY}"
+  JFROG_PUSH_URL: "${JFROG_BASE_URL}/${JFROG_REPOSITORY}"
+  ARTIFACT_PATH: "build/libs/${CI_PROJECT_NAME}*.jar"
 
 stages:
   - build
@@ -12,6 +16,7 @@ build:
   script:
     - echo "Building the project..."
     - ./gradlew build -x test
+    - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -T $ARTIFACT_PATH $JFROG_PUSH_URL
   artifacts:
     paths:
       - build/libs/*.jar   # keep build artifact for deployment
