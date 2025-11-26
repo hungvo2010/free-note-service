@@ -18,9 +18,9 @@ build:
     - ./gradlew build -x test
     - JAR_FILE=$(ls build/libs/*.jar)
     - echo "$JAR_FILE"
-    - export JFROG_PUSH_URL="$JFROG_BASE_URL/$JFROG_REPOSITORY"
+    - export JFROG_PUSH_URL="${JFROG_BASE_URL}/${JFROG_REPOSITORY}"
     - echo "$JFROG_PUSH_URL"
-    - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -T "$JAR_FILE" $JFROG_PUSH_URL"
+    - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -T "$JAR_FILE" "$JFROG_PUSH_URL"
   artifacts:
     paths:
       - build/libs/*.jar   # keep build artifact for deployment
