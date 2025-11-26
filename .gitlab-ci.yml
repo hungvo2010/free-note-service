@@ -18,7 +18,8 @@ build:
     - ./gradlew build -x test
     - JAR_FILE=$(ls build/libs/*.jar)
     - echo "$JAR_FILE"
-    - echo "$JFROG_PUSH_URL"
+    - eval "echo $JFROG_PUSH_URL"
+    - eval "JFROG_PUSH_URL=$JFROG_PUSH_URL"
     - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -T "$JAR_FILE" $JFROG_PUSH_URL"
   artifacts:
     paths:
