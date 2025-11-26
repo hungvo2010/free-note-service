@@ -29,7 +29,6 @@ public class RoomManager {
         return instance;
     }
 
-
     public Room getRoomById(String roomId) {
         var draftRoom = this.rooms.computeIfAbsent(roomId, Room::new);
         log.info("Getting room with ID: {}", roomId);
