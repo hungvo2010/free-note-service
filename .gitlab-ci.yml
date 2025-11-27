@@ -43,6 +43,7 @@ deploy:
       else
         echo 'No existing process found.';
       fi && \
+      whoami
       curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -O "$JFROG_PUSH_URL/$ARTIFACT_NAME"
       ls -l $ARTIFACT_NAME
       java -jar $ARTIFACT_NAME
