@@ -23,7 +23,7 @@ build:
     - echo $JFROG_PUSH_URL
     - echo $ARTIFACT_NAME
     - ls -l $ARTIFACT_NAME
-    - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -H $SHA256_HEADER -T "$ARTIFACT_NAME" "$JFROG_PUSH_URL/$ARTIFACT_NAME"
+    - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -H "$SHA256_HEADER" -T "$ARTIFACT_NAME" "$JFROG_PUSH_URL/$ARTIFACT_NAME"
   artifacts:
     paths:
       - build/libs/*.jar
