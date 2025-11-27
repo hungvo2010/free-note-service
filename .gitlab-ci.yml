@@ -22,6 +22,7 @@ build:
     - echo "Uploading to JFROG..."
     - echo $JFROG_PUSH_URL
     - echo $ARTIFACT_NAME
+    - ll $ARTIFACT_NAME
     - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -H $SHA256_HEADER -T "$ARTIFACT_NAME" "$JFROG_PUSH_URL/$ARTIFACT_NAME"
   artifacts:
     paths:
