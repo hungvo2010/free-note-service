@@ -43,8 +43,8 @@ deploy:
       else
         echo 'No existing process found.';
       fi && \
-      apt-get update -y;
-      apt-get install -y curl;
+      apk update;
+      apk add curl;
       curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -O "$JFROG_PUSH_URL/$ARTIFACT_NAME"
       java -jar $ARTIFACT_NAME
       "
