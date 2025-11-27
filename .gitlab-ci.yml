@@ -3,7 +3,7 @@ image: gradle:jdk17
 variables:
   PROJECT_NAME: "${CI_PROJECT_NAME}"
   JFROG_PUSH_URL: ${JFROG_BASE_URL}/${JFROG_REPOSITORY}
-  ARTIFACT_PATH: "websocket-servers/build/libs/"
+  ARTIFACT_NAME: ${CI_PROJECT_NAME}_${CI_COMMIT_SHORT_SHA}
 
 stages:
   - build
@@ -16,9 +16,9 @@ build:
     - ./gradlew build -x test
     - JAR_FILE="$(ls build/libs/*.jar)"
     - echo "$JAR_FILE"
+    - mv $JAR_FILE $ARTIFACT_NAME
     - SHA256=$(sha256sum "$JAR_FILE" | awk '{print $1}')
-    - echo $JFROG_PUSH_URL
-    - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -H "X-Checksum-Sha256: $SHA256" -T "$JAR_FILE" "$JFROG_PUSH_URL/$ARTIFACT_PATH"
+    - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -H "X-Checksum-Sha256: $SHA256" -T "$ARTIFACT_NAME" "$JFROG_PUSH_URL"
   artifacts:
     paths:
       - build/libs/*.jar
@@ -33,14 +33,13 @@ deploy:
       cd $PROJECT_NAME;
       git pull origin main;
       echo 'Stopping existing SimpleServer process...';
-      pid=\$(ps aux | grep SimpleServer | grep -v grep | awk '{print \$2}');
+      pid=\$(ps aux | grep $PROJECT_NAME | grep -v grep | awk '{print \$2}');
       if [ -n \"\$pid\" ]; then
         kill -9 \$pid && echo 'Process stopped.';
       else
         echo 'No existing process found.';
       fi && \
-      nohup ./gradlew bootRun > log.txt 2>&1 & disown
+      curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -O "$JFROG_PUSH_URL/$ARTIFACT_NAME"
+      java -jar $ARTIFACT_NAME
       "
     - echo "Deploying to VPS..."
-  only:
-    - main
