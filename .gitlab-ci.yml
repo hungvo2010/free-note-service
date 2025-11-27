@@ -13,7 +13,7 @@ build:
   stage: build
   script:
     - echo "Building the project..."
-    - ./gradlew build -x test
+    - ./gradlew shadowJar
     - JAR_FILE="$(ls build/libs/*.jar)"
     - echo "$JAR_FILE"
     - mv $JAR_FILE $ARTIFACT_NAME
