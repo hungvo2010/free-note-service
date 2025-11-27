@@ -35,7 +35,7 @@ deploy:
     - apt-get update -qq && apt-get install -y sshpass
   script:
     - sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_IP "
-      cd $PROJECT_NAME;
+      mkdir -p $PROJECT_NAME && cd $PROJECT_NAME;
       git pull origin main;
       echo 'Stopping existing SimpleServer process...';
       pid=\$(ps aux | grep $PROJECT_NAME | grep -v grep | awk '{print \$2}');
