@@ -46,6 +46,6 @@ deploy:
       fi;
       curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -O "$JFROG_PUSH_URL/$ARTIFACT_NAME";
       ls -l $ARTIFACT_NAME;
-      java -jar $ARTIFACT_NAME;
+      nohup java -jar $ARTIFACT_NAME > file.txt 2>&1
       "
     - echo "Deploying to VPS..."
