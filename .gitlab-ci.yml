@@ -18,7 +18,9 @@ build:
     - echo "$JAR_FILE"
     - mv $JAR_FILE $ARTIFACT_NAME
     - SHA256=$(sha256sum "$ARTIFACT_NAME" | awk '{print $1}')
-    - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -H "X-Checksum-Sha256: $SHA256" -T "$ARTIFACT_NAME" "$JFROG_PUSH_URL/$ARTIFACT_NAME"
+    - SHA256_HEADER="X-Checksum-Sha256":" ${SHA256}"
+    - echo "Uploading to JFROG..."
+    - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -H $SHA256_HEADER -T "$ARTIFACT_NAME" "$JFROG_PUSH_URL/$ARTIFACT_NAME"
   artifacts:
     paths:
       - build/libs/*.jar
