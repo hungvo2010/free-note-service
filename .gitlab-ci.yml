@@ -17,7 +17,7 @@ build:
     - JAR_FILE="$ARTIFACT_PATH/$(ls build/libs/*.jar)"
     - echo "$JAR_FILE"
     - echo $JFROG_PUSH_URL
-    - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -T "$JAR_FILE" "$JFROG_PUSH_URL"
+    - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -T "$JAR_FILE" "$ARTIFACT_PATH/$JFROG_PUSH_URL"
   artifacts:
     paths:
       - build/libs/*.jar
