@@ -16,8 +16,9 @@ build:
     - ./gradlew build -x test
     - JAR_FILE="$(ls build/libs/*.jar)"
     - echo "$JAR_FILE"
+    - SHA256=$(sha256sum "$JAR_FILE" | awk '{print $1}')
     - echo $JFROG_PUSH_URL
-    - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -T "$JAR_FILE" "$JFROG_PUSH_URL/$ARTIFACT_PATH"
+    - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -H "X-Checksum-Sha256: $SHA256" -T "$JAR_FILE" "$JFROG_PUSH_URL/$ARTIFACT_PATH"
   artifacts:
     paths:
       - build/libs/*.jar
