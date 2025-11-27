@@ -3,7 +3,7 @@ image: gradle:jdk17
 variables:
   PROJECT_NAME: "${CI_PROJECT_NAME}"
   JFROG_PUSH_URL: ${JFROG_BASE_URL}/${JFROG_REPOSITORY}
-  ARTIFACT_PATH: "build/libs/${CI_PROJECT_NAME}*.jar"
+  ARTIFACT_PATH: "websocket-servers/build/libs/"
 
 stages:
   - build
@@ -14,7 +14,7 @@ build:
   script:
     - echo "Building the project..."
     - ./gradlew build -x test
-    - JAR_FILE=$(ls build/libs/*.jar)
+    - JAR_FILE="$ARTIFACT_PATH/$(ls build/libs/*.jar)"
     - echo "$JAR_FILE"
     - echo $JFROG_PUSH_URL
     - curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -T "$JAR_FILE" "$JFROG_PUSH_URL"
