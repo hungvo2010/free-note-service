@@ -36,7 +36,6 @@ deploy:
   script:
     - sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_IP "
       mkdir -p $PROJECT_NAME && cd $PROJECT_NAME;
-      git pull origin main;
       echo 'Stopping existing SimpleServer process...';
       pid=\$(ps aux | grep $PROJECT_NAME | grep -v grep | awk '{print \$2}');
       if [ -n \"\$pid\" ]; then
