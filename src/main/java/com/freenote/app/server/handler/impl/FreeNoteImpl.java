@@ -36,7 +36,7 @@ public class FreeNoteImpl implements URIHandler {
     private final RoomManager roomManager = RoomManager.getInstance();
 
     @Override
-    public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) {
+    public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) throws IOException {
         try {
             var inputStream = inputWrapper.getInputStream();
             if (inputStream.available() == 0) {
@@ -60,7 +60,8 @@ public class FreeNoteImpl implements URIHandler {
             throw e;
         } catch (Exception e) {
             log.error("Error handling input stream: {}", e.getMessage());
-            return false;
+            throw e;
+//            return false;
 //            throw new ClientDisconnectException("Client disconnected or error occurred", e);
         }
 
