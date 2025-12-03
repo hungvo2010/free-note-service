@@ -1,7 +1,7 @@
 package com.freenote.app.server.example;
 
 import com.freenote.app.server.core.ServerBootStart;
-import com.freenote.app.server.handler.impl.IncomingSocketHandlerImpl;
+import com.freenote.app.server.connections.IncomingSocketHandlerImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

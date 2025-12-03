@@ -1,8 +1,8 @@
-package com.freenote.app.server.handler.impl;
+package com.freenote.app.server.connections;
 
 import com.freenote.app.server.application.models.request.core.RequestObject;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
-import com.freenote.app.server.handler.IncomingConnectionHandler;
+import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.InputWrapper;
@@ -45,13 +45,12 @@ public class IncomingSocketHandlerImpl implements IncomingConnectionHandler {
                 BiConsumer<InputWrapper, OutputStream> handler = (pathHandler)::handle;
                 handler.accept(inputWrapper, output);
             }
+        } catch (ClientDisconnectException ex) {
+            log.error("Client disconnected: {}", ex.getMessage());
+            incomingSocket.close();
         } catch (Exception e) {
             log.error("Error handling socket: {}", e.getMessage());
 
-        } finally {
-
-            log.info("Closing socket: {}", incomingSocket.getPort());
-            incomingSocket.close();
         }
     }
 
