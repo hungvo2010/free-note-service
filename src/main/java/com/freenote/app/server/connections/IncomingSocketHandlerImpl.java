@@ -1,11 +1,10 @@
-package com.freenote.app.server.handler.impl;
+package com.freenote.app.server.connections;
 
 import com.freenote.app.server.application.factory.ApplicationFrameFactory;
 import com.freenote.app.server.application.models.request.core.RequestObject;
 import com.freenote.app.server.application.responses.InternalServerError;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
-import com.freenote.app.server.handler.IncomingConnectionHandler;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.InputWrapper;
