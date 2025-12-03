@@ -1,12 +1,16 @@
-package com.freenote.app.server.connections;
+package com.freenote.app.server.handler.impl;
 
+import com.freenote.app.server.application.factory.ApplicationFrameFactory;
 import com.freenote.app.server.application.models.request.core.RequestObject;
+import com.freenote.app.server.application.responses.InternalServerError;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
+import com.freenote.app.server.handler.IncomingConnectionHandler;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
+import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,7 +18,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.function.BiConsumer;
 
 import static generated.URIHandlerRegistry.getInstanceByURI;
 
@@ -23,11 +26,12 @@ public class IncomingSocketHandlerImpl implements IncomingConnectionHandler {
 
     @Override
     public void handle(Socket incomingSocket) throws IOException {
+        var input = incomingSocket.getInputStream();
+        var output = incomingSocket.getOutputStream();
         try {
             log.info("Serving incoming socket: {}", incomingSocket.getPort());
 
-            var input = incomingSocket.getInputStream();
-            var output = incomingSocket.getOutputStream();
+
             var request = new HttpParserImpl().parse(input);
 
             log.info("Received request: {}\n", request);
@@ -42,15 +46,17 @@ public class IncomingSocketHandlerImpl implements IncomingConnectionHandler {
                     log.warn("No handler found for URI: {}", request.getPath());
                     return;
                 }
-                BiConsumer<InputWrapper, OutputStream> handler = (pathHandler)::handle;
-                handler.accept(inputWrapper, output);
+                URIHandler handler = pathHandler;
+                handler.handle(inputWrapper, output);
             }
-        } catch (ClientDisconnectException ex) {
-            log.error("Client disconnected: {}", ex.getMessage());
+        } catch (ClientDisconnectException disconnectException) {
             incomingSocket.close();
         } catch (Exception e) {
             log.error("Error handling socket: {}", e.getMessage());
-
+            IOUtils.writeOutPut(
+                    output,
+                    ApplicationFrameFactory.SERVER.createApplicationFrame(new InternalServerError("Internal Server Error"))
+            );
         }
     }
 
@@ -59,9 +65,8 @@ public class IncomingSocketHandlerImpl implements IncomingConnectionHandler {
         var responseBytes = response.toString().getBytes(StandardCharsets.UTF_8);
         output.write(responseBytes);
         output.flush();
-        var requestObject = RequestObject.builder()
+        return RequestObject.builder()
                 .origin(request.getOrigin())
                 .build();
-        return requestObject;
     }
 }

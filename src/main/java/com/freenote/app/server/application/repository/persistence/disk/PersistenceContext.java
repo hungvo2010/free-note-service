@@ -9,6 +9,7 @@ import com.freenote.app.server.application.repository.persistence.disk.service.i
 import com.freenote.app.server.application.repository.persistence.disk.service.impl.generic.FixedLengthFieldSearchByOffset;
 import com.freenote.app.server.application.repository.persistence.disk.service.impl.generic.SearchIxImpl;
 import com.freenote.app.server.application.repository.persistence.disk.service.impl.generic.VariableLengthFieldSearchByOffset;
+import com.freenote.app.server.util.JSONUtils;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,8 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.freenote.app.server.application.repository.persistence.disk.JSONUtility.convertToType;
 
 @Getter
 public class PersistenceContext {
@@ -107,7 +106,7 @@ public class PersistenceContext {
         var result = new ArrayList<DraftAction>();
         for (int j = 0; j < length; j++) {
             var actionData = actionsVector.getData(start + j);
-            result.add(convertToType(actionData));
+            result.add(JSONUtils.fromJSON(actionData, DraftAction.class));
         }
         return result;
     }
