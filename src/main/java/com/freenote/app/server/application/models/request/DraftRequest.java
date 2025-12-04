@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.freenote.app.server.application.models.enums.DraftRequestType;
 import com.freenote.app.server.application.models.request.core.RequestData;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString
 public class DraftRequest extends RequestData {
     private String draftId;
     private String draftName;

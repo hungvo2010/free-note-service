@@ -6,6 +6,7 @@ import com.freenote.app.server.application.CoreDraftProcessor;
 import com.freenote.app.server.application.factory.ApplicationFrameFactory;
 import com.freenote.app.server.application.factory.ServerApplicationFrameFactory;
 import com.freenote.app.server.application.models.common.MessagePayload;
+import com.freenote.app.server.application.models.core.Draft;
 import com.freenote.app.server.application.models.core.Room;
 import com.freenote.app.server.application.models.core.RoomManager;
 import com.freenote.app.server.application.models.request.DraftRequest;
@@ -25,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Objects;
 
 @URIHandlerImplementation("/freeNote")
 public class FreeNoteImpl implements URIHandler {
@@ -47,10 +49,13 @@ public class FreeNoteImpl implements URIHandler {
             var rawBytes = IOUtils.getRawBytes(inputStream);
 
             var draftRequest = extractDraftRequest(rawBytes);
-            var clientResponse = doApplicationLogic(draftRequest);
+            var messagePayload = doApplicationLogic(draftRequest);
+            var clientResponse = applicationFrameFactory.createApplicationFrame(messagePayload);
+
 
             IOUtils.writeOutPut(outputStream, clientResponse);
-            broadcastMessage(draftRequest.getDraftId(), new Connection(outputStream), clientResponse);
+            var roomId = Objects.isNull(draftRequest.getDraftId()) ? ((Draft) messagePayload.getPayload()).getDraftId() : draftRequest.getDraftId();
+            broadcastMessage(roomId, new Connection(outputStream), clientResponse);
 
             return true;
 
@@ -59,10 +64,8 @@ public class FreeNoteImpl implements URIHandler {
             removeConnectionByInputStream(outputStream);
             throw e;
         } catch (Exception e) {
-            log.error("Error handling input stream: {}", e.getMessage());
+            log.error("Error handling input stream: {}", e);
             throw e;
-//            return false;
-//            throw new ClientDisconnectException("Client disconnected or error occurred", e);
         }
 
     }
@@ -75,13 +78,12 @@ public class FreeNoteImpl implements URIHandler {
         targetRoom.remove(newConnection);
     }
 
-    private WebSocketFrame doApplicationLogic(DraftRequest draftRequest) {
+    private MessagePayload doApplicationLogic(DraftRequest draftRequest) {
         try {
-            var responsePayload = handleClientMessage(draftRequest);
-            return applicationFrameFactory.createApplicationFrame(responsePayload);
+            return handleClientMessage(draftRequest);
         } catch (MessagePayloadParsingException ex) {
             log.error("Failed to parse MessagePayload: {}", ex.getMessage());
-            return applicationFrameFactory.createApplicationFrame(DEFAULT_MESSAGE_PAYLOAD);
+            return DEFAULT_MESSAGE_PAYLOAD;
         } catch (Exception ex) {
             log.error("Error in application logic: {}", ex.getMessage());
             throw ex;
