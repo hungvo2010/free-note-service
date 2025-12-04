@@ -45,8 +45,8 @@ public class FreeNoteImpl implements URIHandler {
             log.info("FreeNoteImpl.handle() called");
 
             var rawBytes = IOUtils.getRawBytes(inputStream);
-            var draftRequest = extractDraftRequest(rawBytes);
 
+            var draftRequest = extractDraftRequest(rawBytes);
             var clientResponse = doApplicationLogic(draftRequest);
 
             IOUtils.writeOutPut(outputStream, clientResponse);

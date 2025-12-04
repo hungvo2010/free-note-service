@@ -2,7 +2,7 @@ package com.freenote.app.server.core;
 
 import com.freenote.app.server.factory.RawSocketImpl;
 import com.freenote.app.server.factory.ServerSocketFactory;
-import com.freenote.app.server.handler.IncomingConnectionHandler;
+import com.freenote.app.server.connections.IncomingConnectionHandler;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;

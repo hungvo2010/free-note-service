@@ -1,6 +1,6 @@
 package com.freenote.app.handler;
 
-import com.freenote.app.server.handler.impl.IncomingSocketHandlerImpl;
+import com.freenote.app.server.connections.IncomingSocketHandlerImpl;
 import org.junit.jupiter.api.Test;
 
 import java.net.Socket;
