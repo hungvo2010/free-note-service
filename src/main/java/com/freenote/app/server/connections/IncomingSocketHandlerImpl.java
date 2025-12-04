@@ -49,7 +49,8 @@ public class IncomingSocketHandlerImpl implements IncomingConnectionHandler {
                 handler.handle(inputWrapper, output);
             }
         } catch (ClientDisconnectException disconnectException) {
-            incomingSocket.close();
+            log.error("Client disconnected => self closed ");
+//            incomingSocket.close();
         } catch (Exception e) {
             log.error("Error handling socket: {}", e.getMessage());
             IOUtils.writeOutPut(

@@ -18,4 +18,7 @@ public interface FrameFactory {
     WebSocketFrame createFrameFromBytes(byte[] frameBytes);
 
     WebSocketFrame createNonFinalFrame(short opCode, byte[] data);
+
+    public static FrameFactory SERVER = new ServerFrameFactory();
+    public static FrameFactory CLIENT = new ClientFrameFactory();
 }

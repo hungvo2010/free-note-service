@@ -1,15 +1,28 @@
 package com.freenote.app.server.handler;
 
+import com.freenote.app.server.connections.WebSocketConnection;
+import com.freenote.app.server.handler.impl.NewEchoHandlerImpl;
+import com.freenote.app.server.http.HttpUpgradeRequest;
+
+import java.nio.ByteBuffer;
+import java.util.Map;
+
 public interface WebSocketHandler {
-    void onClose();
+    void onMessage(WebSocketConnection webSocketConnection, String message);
 
-    void onPing(byte[] payload);
+    void onMessage(WebSocketConnection webSocketConnection, ByteBuffer message);
 
-    void onPong(byte[] payload);
+    void onOpen(WebSocketConnection webSocketConnection, HttpUpgradeRequest handshake);
 
-    void onContinue(byte[] data);
+    void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote);
 
-    void onText(String message);
+    void onError(WebSocketConnection webSocketConnection, Throwable throwable);
 
-    void onBinary(byte[] data);
+    void onPing(WebSocketConnection webSocketConnection, ByteBuffer payload);
+
+    void onPong(WebSocketConnection webSocketConnection, ByteBuffer payload);
+
+    void onContinue(WebSocketConnection webSocketConnection, ByteBuffer payload);
+
+    public static Map<String, WebSocketHandler> allHandlers = Map.of("/v2/echo", new NewEchoHandlerImpl());
 }
