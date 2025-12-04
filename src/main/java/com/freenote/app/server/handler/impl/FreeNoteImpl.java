@@ -59,10 +59,8 @@ public class FreeNoteImpl implements URIHandler {
             removeConnectionByInputStream(outputStream);
             throw e;
         } catch (Exception e) {
-            log.error("Error handling input stream: {}", e.getMessage());
+            log.error("Error handling input stream: {}", e);
             throw e;
-//            return false;
-//            throw new ClientDisconnectException("Client disconnected or error occurred", e);
         }
 
     }
