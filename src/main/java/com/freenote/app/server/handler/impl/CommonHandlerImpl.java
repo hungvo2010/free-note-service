@@ -1,8 +1,8 @@
 package com.freenote.app.server.handler.impl;
 
 
-import com.freenote.annotations.URIHandlerImplementation;
 import com.freenote.app.server.connections.WebSocketConnection;
+import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
@@ -60,8 +60,7 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
                     .inputStream(inputStream)
                     .outputStream(outputStream)
                     .build();
-            URIHandlerImplementation annotation =
-                    this.getClass().getAnnotation(URIHandlerImplementation.class);
+
             byte[] payload = frame.isMasked() ? FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
             String content = new String(payload, StandardCharsets.UTF_8);
 
@@ -120,11 +119,12 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
 
     @Override
     public void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote) {
-
+        log.warn("Received CLOSE frame. No further processing.");
+        throw new ClientDisconnectException("Client sent CLOSE frame");
     }
 
     @Override
-    public void onError(WebSocketConnection webSocketConnection, Throwable throwable) {
+    public void onError(WebSocketConnection webSocketConnection, Exception throwable) {
 
     }
 

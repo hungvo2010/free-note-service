@@ -36,7 +36,7 @@ public class NewEchoHandlerImpl implements WebSocketHandler {
     }
 
     @Override
-    public void onError(WebSocketConnection webSocketConnection, Throwable throwable) {
+    public void onError(WebSocketConnection webSocketConnection, Exception throwable) {
 
     }
 

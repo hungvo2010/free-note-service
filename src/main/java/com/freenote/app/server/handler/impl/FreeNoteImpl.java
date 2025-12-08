@@ -10,12 +10,12 @@ import com.freenote.app.server.application.models.core.Room;
 import com.freenote.app.server.application.models.core.RoomManager;
 import com.freenote.app.server.application.models.request.DraftRequest;
 import com.freenote.app.server.connections.Connection;
+import com.freenote.app.server.connections.WebSocketConnection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.MessagePayloadParsingException;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
-import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
@@ -27,7 +27,7 @@ import java.io.OutputStream;
 import java.util.List;
 
 @URIHandlerImplementation("/freeNote")
-public class FreeNoteImpl implements URIHandler {
+public class FreeNoteImpl extends CommonHandlerImpl {
     private static final Logger log = LogManager.getLogger(FreeNoteImpl.class);
     private static final MessagePayload DEFAULT_MESSAGE_PAYLOAD = new MessagePayload();
     private final ObjectMapper objMapper = new ObjectMapper();
@@ -138,5 +138,18 @@ public class FreeNoteImpl implements URIHandler {
     @Override
     public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputWrapper inputStream, OutputStream outputStream) {
         return false;
+    }
+
+    @Override
+    public void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote) {
+        removeConnectionByInputStream(webSocketConnection.getOutputStream());
+        throw new ClientDisconnectException("Client sent CLOSE frame");
+
+    }
+
+    @Override
+    public void onError(WebSocketConnection webSocketConnection, Exception throwable) {
+        log.error("Error handling input stream: {}", e);
+        throw throwable;
     }
 }
