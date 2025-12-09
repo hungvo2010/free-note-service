@@ -2,50 +2,26 @@ package com.freenote.app.server.handler.impl;
 
 
 import com.freenote.annotations.URIHandlerImplementation;
-import com.freenote.app.server.frames.FrameType;
-import com.freenote.app.server.frames.base.DataFrame;
-import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.connections.WebSocketConnection;
 import com.freenote.app.server.frames.factory.ServerFrameFactory;
-import com.freenote.app.server.handler.URIHandler;
-import com.freenote.app.server.model.InputWrapper;
-import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
-
-import static com.freenote.app.server.util.IOUtils.getRawBytes;
+import java.nio.ByteBuffer;
 
 @URIHandlerImplementation("/heartbeat")
-public class HeartBeatHandlerImpl implements URIHandler {
+public class HeartBeatHandlerImpl extends CommonHandlerImpl {
     private final Logger log = LogManager.getLogger(HeartBeatHandlerImpl.class);
     private final ServerFrameFactory serverFactory = new ServerFrameFactory();
 
-    @Override
-    public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) {
-        try {
-            var inputStream = inputWrapper.getInputStream();
-            if (inputStream.available() == 0) {
-                return true; // No data, don't block
-            }
 
-            var rawBytes = getRawBytes(inputStream);
-            var frame = DataFrame.fromRawFrameBytes(rawBytes);
-            log.info("Received frame with opcode: {}", FrameType.fromOpCode(frame.getOpcode()));
-            if (frame.getOpcode() == FrameType.PING.getOpCode()) {
-                IOUtils.writeOutPut(outputStream, serverFactory.createPongFrame());
-            }
-            IOUtils.writeOutPut(outputStream, serverFactory.createTextFrame("Heartbeat acknowledged"));
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
+    @Override
+    public void onMessage(WebSocketConnection webSocketConnection, String message) {
+        webSocketConnection.setResponse("heartbeat acknowledged");
     }
 
     @Override
-    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputWrapper inputStream, OutputStream outputStream) {
-        return false;
+    public void onPing(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+        webSocketConnection.setFrame(serverFactory.createPongFrame());
     }
 }

@@ -7,7 +7,6 @@ import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.factory.FrameFactory;
-import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.handler.WebSocketHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
@@ -23,12 +22,12 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static com.freenote.app.server.util.IOUtils.getRawBytes;
 
 public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
     private static final Logger log = LogManager.getLogger(CommonHandlerImpl.class);
-    private static final ServerFrameFactory serverFrameFactory = new ServerFrameFactory();
     private static final ClientFrameFactory clientFrameFactory = new ClientFrameFactory();
 
     @Override
@@ -89,12 +88,24 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
 
             }
 
-            IOUtils.writeOutPut(outputStream, FrameFactory.CLIENT.createBinaryFrame(webSocketConnection.getResponse().toString().getBytes(StandardCharsets.UTF_8)));
+            sendResponse(webSocketConnection);
+
             return true;
         } catch (IOException e) {
             log.error("Error handling input stream", e);
             return false;
         }
+    }
+
+    private void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
+        if (!Objects.isNull(webSocketConnection.getResponseFrame()))
+        {
+            IOUtils.writeOutPut(webSocketConnection.getOutputStream(), webSocketConnection.getResponseFrame());
+        }
+        else if (!Objects.isNull(webSocketConnection.getResponse())){
+            IOUtils.writeOutPut(webSocketConnection.getOutputStream(), FrameFactory.CLIENT.createBinaryFrame(webSocketConnection.getResponse().toString().getBytes(StandardCharsets.UTF_8)));
+        }
+
     }
 
     @Override
@@ -104,12 +115,15 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
 
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, String message) {
+        onData(webSocketConnection, message);
+    }
 
+    public void onData(WebSocketConnection webSocketConnection, String message) {
     }
 
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, ByteBuffer message) {
-
+        onData(webSocketConnection, message);
     }
 
     @Override
@@ -130,16 +144,22 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
 
     @Override
     public void onPing(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+        onControl(webSocketConnection, payload);
+    }
 
+    public void onControl(WebSocketConnection webSocketConnection, ByteBuffer payload) {
     }
 
     @Override
     public void onPong(WebSocketConnection webSocketConnection, ByteBuffer payload) {
-
+        onControl(webSocketConnection, payload);
     }
 
     @Override
     public void onContinue(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+        onData(webSocketConnection, payload);
+    }
 
+    public void onData(WebSocketConnection webSocketConnection, ByteBuffer payload) {
     }
 }

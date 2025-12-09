@@ -13,11 +13,7 @@ import com.freenote.app.server.connections.Connection;
 import com.freenote.app.server.connections.WebSocketConnection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.MessagePayloadParsingException;
-import com.freenote.app.server.frames.FrameType;
-import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
-import com.freenote.app.server.model.InputWrapper;
-import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,36 +30,6 @@ public class FreeNoteImpl extends CommonHandlerImpl {
     private final CoreDraftProcessor coreDraftProcessor = new CoreDraftProcessor();
     private final ApplicationFrameFactory applicationFrameFactory = new ServerApplicationFrameFactory();
     private final RoomManager roomManager = RoomManager.getInstance();
-
-    @Override
-    public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) throws IOException {
-        try {
-            var inputStream = inputWrapper.getInputStream();
-            if (inputStream.available() == 0) {
-                return true; // No data, don't block
-            }
-            log.info("FreeNoteImpl.handle() called");
-
-            var rawBytes = IOUtils.getRawBytes(inputStream);
-
-            var draftRequest = extractDraftRequest(rawBytes);
-            var clientResponse = doApplicationLogic(draftRequest);
-
-            IOUtils.writeOutPut(outputStream, clientResponse);
-            broadcastMessage(draftRequest.getDraftId(), new Connection(outputStream), clientResponse);
-
-            return true;
-
-        } catch (ClientDisconnectException e) {
-            log.error("Client disconnected: {}", e.getMessage());
-            removeConnectionByInputStream(outputStream);
-            throw e;
-        } catch (Exception e) {
-            log.error("Error handling input stream: {}", e);
-            throw e;
-        }
-
-    }
 
     private void removeConnectionByInputStream(OutputStream outputStream) {
         roomManager.removeConnectionByInputStream(outputStream);
@@ -84,21 +50,6 @@ public class FreeNoteImpl extends CommonHandlerImpl {
             log.error("Error in application logic: {}", ex.getMessage());
             throw ex;
         }
-    }
-
-    private DraftRequest extractDraftRequest(byte[] rawBytes) {
-        var dataFrame = DataFrame.fromRawFrameBytes(rawBytes);
-        log.info("Received DataFrame opcode: {}", FrameType.fromOpCode(dataFrame.getOpcode()));
-        if (dataFrame.getOpcode() == FrameType.CLOSE.getOpCode()) {
-            log.warn("Received CLOSE frame. No further processing.");
-            throw new ClientDisconnectException("Client sent CLOSE frame");
-        }
-
-        log.info("Received DataFrame masking key length: {}", dataFrame.getMaskingKey().length);
-        var rawPayload = FrameUtil.maskPayload(dataFrame.getPayloadData(), dataFrame.getMaskingKey());
-        log.info("Received DataFrame content: {}", new String(rawPayload));
-        var messagePayload = getMessagePayload(new String(rawPayload));
-        return convertToDraftRequest(messagePayload);
     }
 
     private void broadcastMessage(String roomId, Connection newConnection, WebSocketFrame clientResponse) {
@@ -136,11 +87,6 @@ public class FreeNoteImpl extends CommonHandlerImpl {
     }
 
     @Override
-    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputWrapper inputStream, OutputStream outputStream) {
-        return false;
-    }
-
-    @Override
     public void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote) {
         removeConnectionByInputStream(webSocketConnection.getOutputStream());
         throw new ClientDisconnectException("Client sent CLOSE frame");
@@ -148,8 +94,24 @@ public class FreeNoteImpl extends CommonHandlerImpl {
     }
 
     @Override
-    public void onError(WebSocketConnection webSocketConnection, Exception throwable) {
-        log.error("Error handling input stream: {}", e);
-        throw throwable;
+    public void onError(WebSocketConnection webSocketConnection, Exception exception) {
+        log.error("Error handling input stream: ", exception);
+
+    }
+
+    @Override
+    public void onMessage(WebSocketConnection webSocketConnection, String message) {
+        try {
+            var messagePayload = getMessagePayload(message);
+            var draftRequest = convertToDraftRequest(messagePayload);
+            var clientResponse = doApplicationLogic(draftRequest);
+
+            IOUtils.writeOutPut(webSocketConnection.getOutputStream(), clientResponse);
+            broadcastMessage(draftRequest.getDraftId(), new Connection(webSocketConnection.getOutputStream()), clientResponse);
+        } catch (Exception ex) {
+            log.error("Error in application onMessage logic: {}", ex);
+        }
+
+
     }
 }

@@ -1,6 +1,7 @@
 package com.freenote.app.server.connections;
 
 import com.freenote.app.server.application.models.request.core.RequestObject;
+import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.util.IOUtils;
 import lombok.Builder;
@@ -19,6 +20,7 @@ public class WebSocketConnection<T> {
     private Socket socket;
     private RequestObject requestObject;
     private T response;
+    private WebSocketFrame responseFrame;
 
     public void send(String message) {
         try {
@@ -30,5 +32,9 @@ public class WebSocketConnection<T> {
 
     public T getResponse() {
         return this.response;
+    }
+
+    public void setFrame(WebSocketFrame pongFrame) {
+        this.responseFrame = pongFrame;
     }
 }
