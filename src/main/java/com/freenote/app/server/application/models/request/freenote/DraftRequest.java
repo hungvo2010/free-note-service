@@ -1,4 +1,4 @@
-package com.freenote.app.server.application.models.request;
+package com.freenote.app.server.application.models.request.freenote;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.freenote.app.server.application.models.enums.DraftRequestType;

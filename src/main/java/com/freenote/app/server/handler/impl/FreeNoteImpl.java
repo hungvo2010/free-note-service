@@ -9,7 +9,7 @@ import com.freenote.app.server.application.models.common.MessagePayload;
 import com.freenote.app.server.application.models.core.Draft;
 import com.freenote.app.server.application.models.core.Room;
 import com.freenote.app.server.application.models.core.RoomManager;
-import com.freenote.app.server.application.models.request.DraftRequest;
+import com.freenote.app.server.application.models.request.freenote.DraftRequest;
 import com.freenote.app.server.connections.Connection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.MessagePayloadParsingException;

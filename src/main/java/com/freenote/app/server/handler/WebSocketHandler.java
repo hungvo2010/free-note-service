@@ -4,11 +4,12 @@ import com.freenote.app.server.connections.WebSocketConnection;
 import com.freenote.app.server.handler.impl.NewEchoHandlerImpl;
 import com.freenote.app.server.http.HttpUpgradeRequest;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
 public interface WebSocketHandler {
-    void onMessage(WebSocketConnection webSocketConnection, String message);
+    void onMessage(WebSocketConnection webSocketConnection, String message) throws IOException;
 
     void onMessage(WebSocketConnection webSocketConnection, ByteBuffer message);
 

@@ -1,4 +1,4 @@
-package com.freenote.app.server.application.models.request;
+package com.freenote.app.server.application.models.request.freenote;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

@@ -1,7 +1,7 @@
 package com.freenote.app.server.application.models.core;
 
 import com.freenote.app.server.application.models.enums.ActionType;
-import com.freenote.app.server.application.models.request.DraftContent;
+import com.freenote.app.server.application.models.request.freenote.DraftContent;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

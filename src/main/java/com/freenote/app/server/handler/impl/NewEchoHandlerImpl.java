@@ -1,57 +1,44 @@
 package com.freenote.app.server.handler.impl;
 
+import com.freenote.annotations.URIHandlerImplementation;
+import com.freenote.app.server.application.models.request.core.ResponseData;
+import com.freenote.app.server.application.models.request.core.ResponseObject;
 import com.freenote.app.server.connections.WebSocketConnection;
-import com.freenote.app.server.exceptions.ClientDisconnectException;
-import com.freenote.app.server.handler.WebSocketHandler;
-import com.freenote.app.server.http.HttpUpgradeRequest;
+import com.freenote.app.server.frames.factory.FrameFactory;
+import com.freenote.app.server.util.IOUtils;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.ByteBuffer;
+import java.io.IOException;
 
-public class NewEchoHandlerImpl implements WebSocketHandler {
+@URIHandlerImplementation("/echo")
+public class NewEchoHandlerImpl extends CommonHandlerImpl {
     private static final Logger log = LogManager.getLogger(NewEchoHandlerImpl.class);
 
     @Override
-    public void onMessage(WebSocketConnection webSocketConnection, String message) {
+    public void onMessage(WebSocketConnection webSocketConnection, String message) throws IOException {
         log.info("Writing to output stream with message: {}", message);
         log.info("===========================================================================");
-        webSocketConnection.send(message);
+        webSocketConnection.setResponse(new ResponseObject<>(1, new EchoResponseData(message)));
     }
 
     @Override
-    public void onMessage(WebSocketConnection webSocketConnection, ByteBuffer message) {
-
+    public void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
+        var message = ((EchoResponseData) (webSocketConnection.getResponse()
+                .getResponseData(EchoResponseData.class))).getEchoMessage();
+        IOUtils.writeOutPut(webSocketConnection.getOutputStream(), FrameFactory.SERVER.createTextFrame(message));
     }
 
-    @Override
-    public void onOpen(WebSocketConnection webSocketConnection, HttpUpgradeRequest upgradeRequest) {
+    @Setter
+    @Getter
+    public static class EchoResponseData extends ResponseData {
+        private String echoMessage;
 
-    }
-
-    @Override
-    public void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote) {
-        log.warn("Received CLOSE frame. No further processing.");
-        throw new ClientDisconnectException("Client sent CLOSE frame");
-    }
-
-    @Override
-    public void onError(WebSocketConnection webSocketConnection, Throwable throwable) {
-
-    }
-
-    @Override
-    public void onPing(WebSocketConnection webSocketConnection, ByteBuffer payload) {
-
-    }
-
-    @Override
-    public void onPong(WebSocketConnection webSocketConnection, ByteBuffer payload) {
-
-    }
-
-    @Override
-    public void onContinue(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+        public EchoResponseData(String echoMessage) {
+            this.echoMessage = echoMessage;
+        }
 
     }
 }

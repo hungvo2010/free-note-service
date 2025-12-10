@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.freenote.app.server.application.models.enums.ActionType;
 import com.freenote.app.server.application.models.enums.DraftRequestType;
-import com.freenote.app.server.application.models.request.DraftRequest;
+import com.freenote.app.server.application.models.request.freenote.DraftRequest;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;

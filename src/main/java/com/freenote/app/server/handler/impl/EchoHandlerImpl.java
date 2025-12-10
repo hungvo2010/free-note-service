@@ -21,7 +21,7 @@ import java.util.List;
 
 import static com.freenote.app.server.util.IOUtils.getRawBytes;
 
-@URIHandlerImplementation("/echo")
+//@URIHandlerImplementation("/echo")
 public class EchoHandlerImpl implements URIHandler {
     private static final Logger log = LogManager.getLogger(EchoHandlerImpl.class);
     private static final ServerFrameFactory serverFrameFactory = new ServerFrameFactory();

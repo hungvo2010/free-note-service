@@ -4,7 +4,7 @@ import com.freenote.app.server.application.models.common.MessagePayload;
 import com.freenote.app.server.application.models.core.Draft;
 import com.freenote.app.server.application.models.core.DraftAction;
 import com.freenote.app.server.application.models.enums.ActionType;
-import com.freenote.app.server.application.models.request.DraftRequest;
+import com.freenote.app.server.application.models.request.freenote.DraftRequest;
 import com.freenote.app.server.application.repository.DraftRepository;
 import com.freenote.app.server.application.repository.InMemDraftRepositoryImpl;
 import org.apache.logging.log4j.LogManager;

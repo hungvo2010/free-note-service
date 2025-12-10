@@ -1,13 +1,10 @@
 package com.freenote.app.server.handler.impl;
 
 
-import com.freenote.annotations.URIHandlerImplementation;
 import com.freenote.app.server.connections.WebSocketConnection;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.WebSocketFrame;
-import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.factory.FrameFactory;
-import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.handler.WebSocketHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
@@ -21,15 +18,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.freenote.app.server.util.IOUtils.getRawBytes;
 
 public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
     private static final Logger log = LogManager.getLogger(CommonHandlerImpl.class);
-    private static final ServerFrameFactory serverFrameFactory = new ServerFrameFactory();
-    private static final ClientFrameFactory clientFrameFactory = new ClientFrameFactory();
 
     @Override
     public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) {
@@ -38,30 +32,18 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
             if (inputStream.available() == 0) {
                 return false;
             }
-            log.info("EchoHandlerImpl: Received actual data");
             byte[] actualData = getRawBytes(inputStream);
+            WebSocketFrame frame = FrameFactory.CLIENT.createFrameFromBytes(actualData);
 
-            log.info("Raw bytes length: {}", actualData.length);
-            log.info("First 10 bytes: {}", Arrays.toString(Arrays.copyOf(actualData, Math.min(10, actualData.length))));
-
-            // Show as unsigned values
-            for (int i = 0; i < Math.min(10, actualData.length); i++) {
-                log.info("Byte[{}]: signed={}, unsigned={}, hex=0x{}",
-                        i, actualData[i], actualData[i] & 0xFF, Integer.toHexString(actualData[i] & 0xFF));
-            }
-            WebSocketFrame frame = clientFrameFactory.createFrameFromBytes(actualData);
-
-            log.info("FIN: {}", frame.isFin());
-            log.info("Opcode: {} - {}", frame.getOpcode(), FrameType.fromHexValue(frame.getOpcode()));
-            log.info("Masked: {}", frame.isMasked());
-            log.info("Payload Length: {}", frame.getPayloadLength());
-            log.info("Masking Key: {}", frame.getMaskingKey());
+            log.debug("FIN: {}", frame.isFin());
+            log.debug("Opcode: {} - {}", frame.getOpcode(), FrameType.fromHexValue(frame.getOpcode()));
+            log.debug("Masked: {}", frame.isMasked());
+            log.debug("Payload Length: {}", frame.getPayloadLength());
+            log.debug("Masking Key: {}", frame.getMaskingKey());
             WebSocketConnection webSocketConnection = WebSocketConnection.builder()
                     .inputStream(inputStream)
                     .outputStream(outputStream)
                     .build();
-            URIHandlerImplementation annotation =
-                    this.getClass().getAnnotation(URIHandlerImplementation.class);
             byte[] payload = frame.isMasked() ? FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
             String content = new String(payload, StandardCharsets.UTF_8);
 
@@ -90,12 +72,17 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
 
             }
 
-            IOUtils.writeOutPut(outputStream, FrameFactory.CLIENT.createBinaryFrame(webSocketConnection.getResponse().toString().getBytes(StandardCharsets.UTF_8)));
+            sendResponse(webSocketConnection);
             return true;
         } catch (IOException e) {
             log.error("Error handling input stream", e);
             return false;
         }
+    }
+
+    public void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
+        IOUtils.writeOutPut(webSocketConnection.getOutputStream(), FrameFactory.SERVER.createTextFrame(
+                webSocketConnection.getResponse().toString()));
     }
 
     @Override
@@ -104,7 +91,7 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
     }
 
     @Override
-    public void onMessage(WebSocketConnection webSocketConnection, String message) {
+    public void onMessage(WebSocketConnection webSocketConnection, String message) throws IOException {
 
     }
 
