@@ -1,10 +1,13 @@
 package com.freenote.app.server.handler.impl;
 
 
+import com.freenote.annotations.URIHandlerImplementation;
 import com.freenote.app.server.connections.WebSocketConnection;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.factory.FrameFactory;
+import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.handler.WebSocketHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
@@ -18,12 +21,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static com.freenote.app.server.util.IOUtils.getRawBytes;
 
 public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
     private static final Logger log = LogManager.getLogger(CommonHandlerImpl.class);
+    private static final ClientFrameFactory clientFrameFactory = new ClientFrameFactory();
 
     @Override
     public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) {
@@ -44,6 +50,8 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
                     .inputStream(inputStream)
                     .outputStream(outputStream)
                     .build();
+            URIHandlerImplementation annotation =
+                    this.getClass().getAnnotation(URIHandlerImplementation.class);
             byte[] payload = frame.isMasked() ? FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
             String content = new String(payload, StandardCharsets.UTF_8);
 
@@ -80,9 +88,15 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
         }
     }
 
-    public void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
-        IOUtils.writeOutPut(webSocketConnection.getOutputStream(), FrameFactory.SERVER.createTextFrame(
-                webSocketConnection.getResponse().toString()));
+    private void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
+        if (!Objects.isNull(webSocketConnection.getResponseFrame()))
+        {
+            IOUtils.writeOutPut(webSocketConnection.getOutputStream(), webSocketConnection.getResponseFrame());
+        }
+        else if (!Objects.isNull(webSocketConnection.getResponse())){
+            IOUtils.writeOutPut(webSocketConnection.getOutputStream(), FrameFactory.CLIENT.createBinaryFrame(webSocketConnection.getResponse().toString().getBytes(StandardCharsets.UTF_8)));
+        }
+
     }
 
     @Override
@@ -91,13 +105,16 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
     }
 
     @Override
-    public void onMessage(WebSocketConnection webSocketConnection, String message) throws IOException {
+    public void onMessage(WebSocketConnection webSocketConnection, String message) {
+        onData(webSocketConnection, message);
+    }
 
+    public void onData(WebSocketConnection webSocketConnection, String message) {
     }
 
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, ByteBuffer message) {
-
+        onData(webSocketConnection, message);
     }
 
     @Override
@@ -107,26 +124,33 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
 
     @Override
     public void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote) {
-
+        log.warn("Received CLOSE frame. No further processing.");
+        throw new ClientDisconnectException("Client sent CLOSE frame");
     }
 
     @Override
-    public void onError(WebSocketConnection webSocketConnection, Throwable throwable) {
+    public void onError(WebSocketConnection webSocketConnection, Exception throwable) {
 
     }
 
     @Override
     public void onPing(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+        onControl(webSocketConnection, payload);
+    }
 
+    public void onControl(WebSocketConnection webSocketConnection, ByteBuffer payload) {
     }
 
     @Override
     public void onPong(WebSocketConnection webSocketConnection, ByteBuffer payload) {
-
+        onControl(webSocketConnection, payload);
     }
 
     @Override
     public void onContinue(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+        onData(webSocketConnection, payload);
+    }
 
+    public void onData(WebSocketConnection webSocketConnection, ByteBuffer payload) {
     }
 }

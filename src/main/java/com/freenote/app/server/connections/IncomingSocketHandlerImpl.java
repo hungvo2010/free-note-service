@@ -50,9 +50,9 @@ public class IncomingSocketHandlerImpl implements IncomingConnectionHandler {
             }
         } catch (ClientDisconnectException disconnectException) {
             log.error("Client disconnected => self closed ");
-//            incomingSocket.close();
+            incomingSocket.close();
         } catch (Exception e) {
-            log.error("Error handling socket: {}", e.getMessage());
+            log.error("Error handling socket: {}", e);
             IOUtils.writeOutPut(
                     output,
                     ApplicationFrameFactory.SERVER.createApplicationFrame(new InternalServerError("Internal Server Error"))

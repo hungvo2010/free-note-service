@@ -7,18 +7,17 @@ import com.freenote.app.server.application.factory.ApplicationFrameFactory;
 import com.freenote.app.server.application.factory.ServerApplicationFrameFactory;
 import com.freenote.app.server.application.models.common.MessagePayload;
 import com.freenote.app.server.application.models.core.Draft;
+import com.freenote.app.server.application.models.core.Draft;
 import com.freenote.app.server.application.models.core.Room;
 import com.freenote.app.server.application.models.core.RoomManager;
 import com.freenote.app.server.application.models.request.freenote.DraftRequest;
 import com.freenote.app.server.connections.Connection;
+import com.freenote.app.server.connections.WebSocketConnection;
+import com.freenote.app.server.connections.WebSocketConnection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.MessagePayloadParsingException;
-import com.freenote.app.server.frames.FrameType;
-import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
-import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.model.InputWrapper;
-import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,46 +28,13 @@ import java.util.List;
 import java.util.Objects;
 
 @URIHandlerImplementation("/freeNote")
-public class FreeNoteImpl implements URIHandler {
+public class FreeNoteImpl extends CommonHandlerImpl {
     private static final Logger log = LogManager.getLogger(FreeNoteImpl.class);
     private static final MessagePayload DEFAULT_MESSAGE_PAYLOAD = new MessagePayload();
     private final ObjectMapper objMapper = new ObjectMapper();
     private final CoreDraftProcessor coreDraftProcessor = new CoreDraftProcessor();
     private final ApplicationFrameFactory applicationFrameFactory = new ServerApplicationFrameFactory();
     private final RoomManager roomManager = RoomManager.getInstance();
-
-    @Override
-    public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) throws IOException {
-        try {
-            var inputStream = inputWrapper.getInputStream();
-            if (inputStream.available() == 0) {
-                return true; // No data, don't block
-            }
-            log.info("FreeNoteImpl.handle() called");
-
-            var rawBytes = IOUtils.getRawBytes(inputStream);
-
-            var draftRequest = extractDraftRequest(rawBytes);
-            var messagePayload = doApplicationLogic(draftRequest);
-            var clientResponse = applicationFrameFactory.createApplicationFrame(messagePayload);
-
-
-            IOUtils.writeOutPut(outputStream, clientResponse);
-            var roomId = Objects.isNull(draftRequest.getDraftId()) ? ((Draft) messagePayload.getPayload()).getDraftId() : draftRequest.getDraftId();
-            broadcastMessage(roomId, new Connection(outputStream), clientResponse);
-
-            return true;
-
-        } catch (ClientDisconnectException e) {
-            log.error("Client disconnected: {}", e.getMessage());
-            removeConnectionByInputStream(outputStream);
-            throw e;
-        } catch (Exception e) {
-            log.error("Error handling input stream: {}", e);
-            throw e;
-        }
-
-    }
 
     private void removeConnectionByInputStream(OutputStream outputStream) {
         roomManager.removeConnectionByInputStream(outputStream);
@@ -78,31 +44,17 @@ public class FreeNoteImpl implements URIHandler {
         targetRoom.remove(newConnection);
     }
 
-    private MessagePayload doApplicationLogic(DraftRequest draftRequest) {
+    private WebSocketFrame doApplicationLogic(DraftRequest draftRequest) {
         try {
-            return handleClientMessage(draftRequest);
+            var responsePayload = handleClientMessage(draftRequest);
+            return applicationFrameFactory.createApplicationFrame(responsePayload);
         } catch (MessagePayloadParsingException ex) {
             log.error("Failed to parse MessagePayload: {}", ex.getMessage());
-            return DEFAULT_MESSAGE_PAYLOAD;
+            return applicationFrameFactory.createApplicationFrame(DEFAULT_MESSAGE_PAYLOAD);
         } catch (Exception ex) {
             log.error("Error in application logic: {}", ex.getMessage());
             throw ex;
         }
-    }
-
-    private DraftRequest extractDraftRequest(byte[] rawBytes) {
-        var dataFrame = DataFrame.fromRawFrameBytes(rawBytes);
-        log.info("Received DataFrame opcode: {}", FrameType.fromOpCode(dataFrame.getOpcode()));
-        if (dataFrame.getOpcode() == FrameType.CLOSE.getOpCode()) {
-            log.warn("Received CLOSE frame. No further processing.");
-            throw new ClientDisconnectException("Client sent CLOSE frame");
-        }
-
-        log.info("Received DataFrame masking key length: {}", dataFrame.getMaskingKey().length);
-        var rawPayload = FrameUtil.maskPayload(dataFrame.getPayloadData(), dataFrame.getMaskingKey());
-        log.info("Received DataFrame content: {}", new String(rawPayload));
-        var messagePayload = getMessagePayload(new String(rawPayload));
-        return convertToDraftRequest(messagePayload);
     }
 
     private void broadcastMessage(String roomId, Connection newConnection, WebSocketFrame clientResponse) {
@@ -140,7 +92,31 @@ public class FreeNoteImpl implements URIHandler {
     }
 
     @Override
-    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputWrapper inputStream, OutputStream outputStream) {
-        return false;
+    public void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote) {
+        removeConnectionByInputStream(webSocketConnection.getOutputStream());
+        throw new ClientDisconnectException("Client sent CLOSE frame");
+
+    }
+
+    @Override
+    public void onError(WebSocketConnection webSocketConnection, Exception exception) {
+        log.error("Error handling input stream: ", exception);
+
+    }
+
+    @Override
+    public void onMessage(WebSocketConnection webSocketConnection, String message) {
+        try {
+            var messagePayload = getMessagePayload(message);
+            var draftRequest = convertToDraftRequest(messagePayload);
+            var clientResponse = doApplicationLogic(draftRequest);
+
+            IOUtils.writeOutPut(webSocketConnection.getOutputStream(), clientResponse);
+            broadcastMessage(draftRequest.getDraftId(), new Connection(webSocketConnection.getOutputStream()), clientResponse);
+        } catch (Exception ex) {
+            log.error("Error in application onMessage logic: {}", ex);
+        }
+
+
     }
 }

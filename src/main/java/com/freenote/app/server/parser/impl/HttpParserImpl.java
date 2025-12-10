@@ -20,7 +20,7 @@ public class HttpParserImpl implements HttpParser {
             var reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             var requestBuilder = parseRequestEndpoint(reader);
 
-            requestBuilder = parseHeaders(reader, requestBuilder);
+            parseHeaders(reader, requestBuilder);
 
             return requestBuilder.build();
         } catch (Exception e) {
@@ -29,7 +29,7 @@ public class HttpParserImpl implements HttpParser {
         }
     }
 
-    private HttpUpgradeRequest.HttpUpgradeRequestBuilder parseHeaders(BufferedReader reader, HttpUpgradeRequest.HttpUpgradeRequestBuilder requestBuilder) throws IOException {
+    private void parseHeaders(BufferedReader reader, HttpUpgradeRequest.HttpUpgradeRequestBuilder requestBuilder) throws IOException {
         var headers = new HashMap<String, String>();
         String line;
         while ((line = reader.readLine()) != null && !line.isEmpty()) {
@@ -46,8 +46,6 @@ public class HttpParserImpl implements HttpParser {
         requestBuilder.connection(headers.get("Connection"));
         requestBuilder.host(headers.get("Host"));
         requestBuilder.origin(headers.get("Origin"));
-
-        return requestBuilder;
     }
 
     private HttpUpgradeRequest.HttpUpgradeRequestBuilder parseRequestEndpoint(BufferedReader reader) throws IOException {

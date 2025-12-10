@@ -17,7 +17,7 @@ public interface WebSocketHandler {
 
     void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote);
 
-    void onError(WebSocketConnection webSocketConnection, Throwable throwable);
+    void onError(WebSocketConnection webSocketConnection, Exception throwable);
 
     void onPing(WebSocketConnection webSocketConnection, ByteBuffer payload);
 
