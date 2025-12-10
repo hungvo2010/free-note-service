@@ -16,7 +16,7 @@ public class NewEchoHandlerImpl extends CommonHandlerImpl {
     private static final Logger log = LogManager.getLogger(NewEchoHandlerImpl.class);
 
     @Override
-    public void onMessage(WebSocketConnection webSocketConnection, String message) throws IOException {
+    public void onMessage(WebSocketConnection webSocketConnection, String message) {
         log.info("Writing to output stream with message: {}", message);
         log.info("===========================================================================");
         webSocketConnection.setResponse(new ResponseObject<>(1, new EchoResponseData(message)));

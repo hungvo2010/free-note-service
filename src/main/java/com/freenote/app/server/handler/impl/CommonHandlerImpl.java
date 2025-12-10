@@ -3,6 +3,7 @@ package com.freenote.app.server.handler.impl;
 
 import com.freenote.annotations.URIHandlerImplementation;
 import com.freenote.app.server.connections.WebSocketConnection;
+import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
