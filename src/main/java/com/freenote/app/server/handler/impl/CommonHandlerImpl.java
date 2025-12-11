@@ -1,13 +1,11 @@
 package com.freenote.app.server.handler.impl;
 
 
-import com.freenote.annotations.URIHandlerImplementation;
 import com.freenote.app.server.connections.WebSocketConnection;
+import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.WebSocketFrame;
-import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.factory.FrameFactory;
-import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.handler.WebSocketHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
@@ -21,15 +19,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 import static com.freenote.app.server.util.IOUtils.getRawBytes;
 
-public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
+public abstract class CommonHandlerImpl implements URIHandler, WebSocketHandler {
     private static final Logger log = LogManager.getLogger(CommonHandlerImpl.class);
-    private static final ClientFrameFactory clientFrameFactory = new ClientFrameFactory();
 
     @Override
     public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) {
@@ -50,8 +46,7 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
                     .inputStream(inputStream)
                     .outputStream(outputStream)
                     .build();
-            URIHandlerImplementation annotation =
-                    this.getClass().getAnnotation(URIHandlerImplementation.class);
+
             byte[] payload = frame.isMasked() ? FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
             String content = new String(payload, StandardCharsets.UTF_8);
 
@@ -89,11 +84,9 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
     }
 
     private void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
-        if (!Objects.isNull(webSocketConnection.getResponseFrame()))
-        {
+        if (!Objects.isNull(webSocketConnection.getResponseFrame())) {
             IOUtils.writeOutPut(webSocketConnection.getOutputStream(), webSocketConnection.getResponseFrame());
-        }
-        else if (!Objects.isNull(webSocketConnection.getResponse())){
+        } else if (!Objects.isNull(webSocketConnection.getResponse())) {
             IOUtils.writeOutPut(webSocketConnection.getOutputStream(), FrameFactory.CLIENT.createBinaryFrame(webSocketConnection.getResponse().toString().getBytes(StandardCharsets.UTF_8)));
         }
 
@@ -109,8 +102,7 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
         onData(webSocketConnection, message);
     }
 
-    public void onData(WebSocketConnection webSocketConnection, String message) {
-    }
+    abstract void onData(WebSocketConnection webSocketConnection, String message);
 
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, ByteBuffer message) {
@@ -129,8 +121,8 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
     }
 
     @Override
-    public void onError(WebSocketConnection webSocketConnection, Exception throwable) {
-
+    public void onError(WebSocketConnection webSocketConnection, Exception exception) {
+        log.error("Received ERROR frame", exception);
     }
 
     @Override
@@ -138,8 +130,7 @@ public class CommonHandlerImpl implements URIHandler, WebSocketHandler {
         onControl(webSocketConnection, payload);
     }
 
-    public void onControl(WebSocketConnection webSocketConnection, ByteBuffer payload) {
-    }
+    abstract void onControl(WebSocketConnection webSocketConnection, ByteBuffer payload);
 
     @Override
     public void onPong(WebSocketConnection webSocketConnection, ByteBuffer payload) {

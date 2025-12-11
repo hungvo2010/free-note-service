@@ -27,7 +27,7 @@ class EchoHandlerTest {
     }
 
     @Test
-    void testHandle_SuccessfulEcho_UnmaskedFrame() {
+    void testHandle_SuccessfulEcho_UnmaskedFrame() throws IOException {
         // Create an input stream with unmasked text frame data
         byte[] frameData = createSimpleTextFrame("Hello World");
         inputStream = new ByteArrayInputStream(frameData);
@@ -57,7 +57,7 @@ class EchoHandlerTest {
     }
 
     @Test
-    void testHandle_EmptyInputStream() {
+    void testHandle_EmptyInputStream() throws IOException {
         inputStream = new ByteArrayInputStream(new byte[0]);
 
         boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
@@ -67,7 +67,7 @@ class EchoHandlerTest {
     }
 
     @Test
-    void testHandle_EndOfStreamReached() {
+    void testHandle_EndOfStreamReached() throws IOException {
         // Create input stream that returns -1 immediately
         inputStream = new ByteArrayInputStream(new byte[1]) {
             @Override
@@ -101,7 +101,7 @@ class EchoHandlerTest {
     }
 
     @Test
-    void testHandle_IOException() {
+    void testHandle_IOException() throws IOException {
         // Create input stream that throws IOException
         inputStream = new ByteArrayInputStream(new byte[]{0x01}) {
             @Override

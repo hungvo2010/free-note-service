@@ -7,13 +7,14 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ExampleURIHandlerTest {
     @Test
-    void shouldReturnFalseWhenInputIsEmpty() {
+    void shouldReturnFalseWhenInputIsEmpty() throws IOException {
         InputStream input = new ByteArrayInputStream(new byte[0]);
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 

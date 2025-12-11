@@ -16,6 +16,14 @@ public class JSONUtils {
         }
     }
 
+    public static byte[] toJSONBytes(Object obj) {
+        try {
+            return objectMapper.writeValueAsBytes(obj);
+        } catch (JsonProcessingException e) {
+            return new byte[0];
+        }
+    }
+
     public static <T> T fromJSON(String json, Class<T> clazz) {
         try {
             return objectMapper.readValue(json, clazz);

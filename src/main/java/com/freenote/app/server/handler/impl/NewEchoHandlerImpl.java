@@ -9,17 +9,27 @@ import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
+import java.nio.ByteBuffer;
 
 @URIHandlerImplementation("/echo")
 public class NewEchoHandlerImpl extends CommonHandlerImpl {
     private static final Logger log = LogManager.getLogger(NewEchoHandlerImpl.class);
 
     @Override
-    public void onMessage(WebSocketConnection webSocketConnection, String message) throws IOException {
+    public void onMessage(WebSocketConnection webSocketConnection, String message) {
         log.info("Writing to output stream with message: {}", message);
         log.info("===========================================================================");
         webSocketConnection.setResponse(new ResponseObject<>(1, new EchoResponseData(message)));
+    }
+
+    @Override
+    void onData(WebSocketConnection webSocketConnection, String message) {
+
+    }
+
+    @Override
+    void onControl(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+
     }
 
     @Setter
