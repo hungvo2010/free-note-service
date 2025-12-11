@@ -110,7 +110,7 @@ public class FreeNoteImpl extends CommonHandlerImpl {
 
     private DraftRequest convertToDraftRequest(MessagePayload messagePayload) {
         var actualPayload = messagePayload.getBody();
-        return objMapper.convertValue(actualPayload, DraftRequest.class);
+        return JSONUtils.fromJSON(actualPayload.toString(), DraftRequest.class);
     }
 
     private MessagePayload getMessagePayload(String rawPayload) {
