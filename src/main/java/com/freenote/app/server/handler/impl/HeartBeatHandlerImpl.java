@@ -21,7 +21,17 @@ public class HeartBeatHandlerImpl extends CommonHandlerImpl {
     }
 
     @Override
+    public void onData(WebSocketConnection webSocketConnection, String message) {
+
+    }
+
+    @Override
     public void onPing(WebSocketConnection webSocketConnection, ByteBuffer payload) {
         webSocketConnection.setFrame(serverFactory.createPongFrame());
+    }
+
+    @Override
+    public void onControl(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+
     }
 }

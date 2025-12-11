@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.freenote.app.server.application.models.enums.ActionType;
 import com.freenote.app.server.application.models.enums.DraftRequestType;
 import com.freenote.app.server.application.models.request.freenote.DraftRequest;
+import com.freenote.app.server.util.JSONUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
@@ -60,32 +60,12 @@ public class Draft {
         return new DraftAction(ActionType.NOOP);
     }
 
-    private DraftAction compareDiffAction(JsonNode jsonNode, JsonNode newDraftJson) {
-        return null;
-    }
-
-    private void updateNewString(String newDraftContent) {
-        var newDraftJson = createJSON(newDraftContent);
-        this.jsonNode = newDraftJson;
-        var newInferredAction = compareDiffAction(this.jsonNode, newDraftJson);
-        addAction(newInferredAction);
-    }
-
-    private JsonNode createJSON(String newDraftContent) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readTree(newDraftContent);
-        } catch (JsonProcessingException e) {
-            return null;
-        }
-    }
-
     public static void main(String[] args) throws JsonProcessingException {
         Draft draft = new Draft();
         DraftAction action = new DraftAction();
         draft.addAction(action);
         Logger log = LogManager.getLogger(Draft.class);
-        log.info(new ObjectMapper().writeValueAsString(draft));
+        log.info(JSONUtils.toJSONString(draft));
     }
 
 }

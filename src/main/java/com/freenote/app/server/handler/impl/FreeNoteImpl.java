@@ -1,40 +1,71 @@
 package com.freenote.app.server.handler.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.freenote.annotations.URIHandlerImplementation;
 import com.freenote.app.server.application.CoreDraftProcessor;
 import com.freenote.app.server.application.factory.ApplicationFrameFactory;
 import com.freenote.app.server.application.factory.ServerApplicationFrameFactory;
 import com.freenote.app.server.application.models.common.MessagePayload;
-import com.freenote.app.server.application.models.core.Draft;
-import com.freenote.app.server.application.models.core.Draft;
 import com.freenote.app.server.application.models.core.Room;
 import com.freenote.app.server.application.models.core.RoomManager;
 import com.freenote.app.server.application.models.request.freenote.DraftRequest;
 import com.freenote.app.server.connections.Connection;
 import com.freenote.app.server.connections.WebSocketConnection;
-import com.freenote.app.server.connections.WebSocketConnection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.MessagePayloadParsingException;
 import com.freenote.app.server.frames.base.WebSocketFrame;
-import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.util.IOUtils;
+import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Objects;
 
 @URIHandlerImplementation("/freeNote")
 public class FreeNoteImpl extends CommonHandlerImpl {
     private static final Logger log = LogManager.getLogger(FreeNoteImpl.class);
     private static final MessagePayload DEFAULT_MESSAGE_PAYLOAD = new MessagePayload();
-    private final ObjectMapper objMapper = new ObjectMapper();
     private final CoreDraftProcessor coreDraftProcessor = new CoreDraftProcessor();
     private final ApplicationFrameFactory applicationFrameFactory = new ServerApplicationFrameFactory();
     private final RoomManager roomManager = RoomManager.getInstance();
+
+    @Override
+    public void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote) {
+        removeConnectionByInputStream(webSocketConnection.getOutputStream());
+        throw new ClientDisconnectException("Client sent CLOSE frame");
+
+    }
+
+    @Override
+    public void onError(WebSocketConnection webSocketConnection, Exception exception) {
+        log.error("Error handling input stream: ", exception);
+
+    }
+
+    @Override
+    void onControl(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+
+    }
+
+    @Override
+    public void onMessage(WebSocketConnection webSocketConnection, String message) {
+        try {
+            var messagePayload = getMessagePayload(message);
+            var draftRequest = convertToDraftRequest(messagePayload);
+            var clientResponse = doApplicationLogic(draftRequest);
+
+            IOUtils.writeOutPut(webSocketConnection.getOutputStream(), clientResponse);
+            broadcastMessage(draftRequest.getDraftId(), new Connection(webSocketConnection.getOutputStream()), clientResponse);
+        } catch (Exception ex) {
+            log.error("Error in application onMessage logic: ", ex);
+        }
+    }
+
+    @Override
+    void onData(WebSocketConnection webSocketConnection, String message) {
+
+    }
 
     private void removeConnectionByInputStream(OutputStream outputStream) {
         roomManager.removeConnectionByInputStream(outputStream);
@@ -78,45 +109,11 @@ public class FreeNoteImpl extends CommonHandlerImpl {
     }
 
     private DraftRequest convertToDraftRequest(MessagePayload messagePayload) {
-        var actualPayload = messagePayload.getPayload();
-        return objMapper.convertValue(actualPayload, DraftRequest.class);
+        var actualPayload = messagePayload.getBody();
+        return JSONUtils.fromJSON(actualPayload.toString(), DraftRequest.class);
     }
 
     private MessagePayload getMessagePayload(String rawPayload) {
-        try {
-            return objMapper.readValue(rawPayload, MessagePayload.class);
-        } catch (IOException e) {
-            log.error("Error parsing MessagePayload from DataFrame", e.getCause());
-            throw new MessagePayloadParsingException("Error parsing MessagePayload from DataFrame", e);
-        }
-    }
-
-    @Override
-    public void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote) {
-        removeConnectionByInputStream(webSocketConnection.getOutputStream());
-        throw new ClientDisconnectException("Client sent CLOSE frame");
-
-    }
-
-    @Override
-    public void onError(WebSocketConnection webSocketConnection, Exception exception) {
-        log.error("Error handling input stream: ", exception);
-
-    }
-
-    @Override
-    public void onMessage(WebSocketConnection webSocketConnection, String message) {
-        try {
-            var messagePayload = getMessagePayload(message);
-            var draftRequest = convertToDraftRequest(messagePayload);
-            var clientResponse = doApplicationLogic(draftRequest);
-
-            IOUtils.writeOutPut(webSocketConnection.getOutputStream(), clientResponse);
-            broadcastMessage(draftRequest.getDraftId(), new Connection(webSocketConnection.getOutputStream()), clientResponse);
-        } catch (Exception ex) {
-            log.error("Error in application onMessage logic: {}", ex);
-        }
-
-
+        return JSONUtils.fromJSON(rawPayload, MessagePayload.class);
     }
 }
