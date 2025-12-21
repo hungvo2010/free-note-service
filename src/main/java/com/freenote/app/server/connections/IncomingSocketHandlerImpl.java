@@ -1,10 +1,9 @@
 package com.freenote.app.server.connections;
 
-import com.freenote.app.server.application.factory.ApplicationFrameFactory;
-import com.freenote.app.server.application.models.request.core.RequestObject;
-import com.freenote.app.server.application.responses.InternalServerError;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
+import com.freenote.app.server.core.RequestObject;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
+import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.InputWrapper;
@@ -55,7 +54,7 @@ public class IncomingSocketHandlerImpl implements IncomingConnectionHandler {
             log.error("Error handling socket: {}", e);
             IOUtils.writeOutPut(
                     output,
-                    ApplicationFrameFactory.SERVER.createApplicationFrame(new InternalServerError("Internal Server Error"))
+                    FrameFactory.SERVER.createTextFrame("Internal Server Error")
             );
         }
     }

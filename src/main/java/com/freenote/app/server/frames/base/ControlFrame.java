@@ -9,7 +9,7 @@ public class ControlFrame extends WebSocketFrame {
     }
 
     public ControlFrame(short opCode) {
-        super(opCode);
+        super(true, opCode, new byte[0]);
     }
 
     public ControlFrame(byte[] bytes) {

@@ -37,7 +37,7 @@ public class ServerBootStart {
                 log.info("Waiting for connection on port {}", this.port);
                 var socket = serverSocket.accept(); // block method
                 log.info("Accepted connection from {}", socket.getRemoteSocketAddress());
-                Future res = this.executorService.submit(() -> {
+                this.executorService.submit(() -> {
                     try {
                         handler.handle(socket);
                     } catch (Exception e) {

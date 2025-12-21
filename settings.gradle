@@ -1,4 +1,3 @@
 rootProject.name = 'free-note-service'
 include(":UtilityProcessor")
-
-
+include 'free-draw'

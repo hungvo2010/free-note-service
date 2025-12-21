@@ -1,6 +1,6 @@
 package com.freenote.app.server.handler.impl;
 
-import com.freenote.annotations.URIHandlerImplementation;
+import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.LargeFrame;
 import com.freenote.app.server.frames.base.DataFrame;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@URIHandlerImplementation("/update")
+@WebSocketEndpoint("/update")
 public class FragmentedURIHandlerImpl implements URIHandler {
     private static final Logger log = LogManager.getLogger(FragmentedURIHandlerImpl.class);
     private final FrameFactory frameFactory = new ServerFrameFactory();

@@ -1,7 +1,7 @@
 package com.freenote.app.server.handler.impl;
 
 
-import com.freenote.annotations.URIHandlerImplementation;
+import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.connections.WebSocketConnection;
 import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import org.apache.logging.log4j.LogManager;
@@ -9,8 +9,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.nio.ByteBuffer;
 
-@URIHandlerImplementation("/heartbeat")
-public class HeartBeatHandlerImpl extends CommonHandlerImpl {
+@WebSocketEndpoint("/heartbeat")
+public class HeartBeatHandlerImpl extends CommonEndpointHandlerImpl {
     private final Logger log = LogManager.getLogger(HeartBeatHandlerImpl.class);
     private final ServerFrameFactory serverFactory = new ServerFrameFactory();
 
@@ -27,7 +27,7 @@ public class HeartBeatHandlerImpl extends CommonHandlerImpl {
 
     @Override
     public void onPing(WebSocketConnection webSocketConnection, ByteBuffer payload) {
-        webSocketConnection.setFrame(serverFactory.createPongFrame());
+        webSocketConnection.setResponseFrame(serverFactory.createPongFrame());
     }
 
     @Override

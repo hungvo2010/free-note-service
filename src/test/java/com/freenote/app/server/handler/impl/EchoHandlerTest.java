@@ -22,7 +22,7 @@ class EchoHandlerTest {
 
     @BeforeEach
     void setUp() {
-        uriHandler = new EchoHandlerImpl();
+        uriHandler = new NewEchoHandlerImpl();
         outputStream = new ByteArrayOutputStream();
     }
 

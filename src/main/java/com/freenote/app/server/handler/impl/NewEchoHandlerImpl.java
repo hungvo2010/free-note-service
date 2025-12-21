@@ -1,45 +1,36 @@
 package com.freenote.app.server.handler.impl;
 
-import com.freenote.annotations.URIHandlerImplementation;
-import com.freenote.app.server.application.models.request.core.ResponseData;
-import com.freenote.app.server.application.models.request.core.ResponseObject;
+import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.connections.WebSocketConnection;
-import lombok.Getter;
-import lombok.Setter;
+import com.freenote.app.server.frames.factory.FrameFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.ByteBuffer;
 
-@URIHandlerImplementation("/echo")
-public class NewEchoHandlerImpl extends CommonHandlerImpl {
+@WebSocketEndpoint("/echo")
+public class NewEchoHandlerImpl extends CommonEndpointHandlerImpl {
     private static final Logger log = LogManager.getLogger(NewEchoHandlerImpl.class);
 
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, String message) {
         log.info("Writing to output stream with message: {}", message);
         log.info("===========================================================================");
-        webSocketConnection.setResponse(new ResponseObject<>(1, new EchoResponseData(message)));
+        webSocketConnection.setResponseFrame(FrameFactory.SERVER.createTextFrame(message));
     }
 
     @Override
-    void onData(WebSocketConnection webSocketConnection, String message) {
+    public void onPing(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+        webSocketConnection.setResponseFrame(FrameFactory.SERVER.createPongFrame());
+    }
+
+    @Override
+    public void onData(WebSocketConnection webSocketConnection, String message) {
 
     }
 
     @Override
-    void onControl(WebSocketConnection webSocketConnection, ByteBuffer payload) {
-
-    }
-
-    @Setter
-    @Getter
-    public static class EchoResponseData extends ResponseData {
-        private String echoMessage;
-
-        public EchoResponseData(String echoMessage) {
-            this.echoMessage = echoMessage;
-        }
+    public void onControl(WebSocketConnection webSocketConnection, ByteBuffer payload) {
 
     }
 }
