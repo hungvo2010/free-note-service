@@ -1,4 +1,6 @@
-image: public.ecr.aws/aws-cli/aws-cli
+image:
+  name: public.ecr.aws/aws-cli/aws-cli
+  entrypoint: [""]
 
 variables:
   PROJECT_NAME: "${CI_PROJECT_NAME}"
