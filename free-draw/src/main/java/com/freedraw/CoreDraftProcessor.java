@@ -1,11 +1,10 @@
 package com.freedraw;
 
-import com.freedraw.models.common.MessagePayload;
 import com.freedraw.models.common.MessageType;
 import com.freedraw.models.core.Draft;
 import com.freedraw.models.core.DraftAction;
-import com.freedraw.models.enums.ActionType;
 import com.freedraw.models.core.DraftRequest;
+import com.freedraw.models.enums.ActionType;
 import com.freedraw.repository.DraftRepository;
 import com.freedraw.repository.InMemDraftRepositoryImpl;
 import org.apache.logging.log4j.LogManager;
