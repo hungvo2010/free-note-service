@@ -1,4 +1,4 @@
-image: amazon/aws-cli:2
+image: public.ecr.aws/aws-cli/aws-cli
 
 variables:
   PROJECT_NAME: "${CI_PROJECT_NAME}"
