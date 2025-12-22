@@ -6,8 +6,20 @@ variables:
   ARTIFACT_NAME: ${CI_PROJECT_NAME}_${CI_COMMIT_SHORT_SHA}.jar
 
 stages:
+  - assumeRole
   - build
   - deploy
+
+assumeRole:
+    stage: assumeRole
+    id_tokens:
+      GITLAB_OIDC_TOKEN:
+        aud: https://gitlab.com
+    script:
+      - aws sts assume-role-with-web-identity
+        --role-arn $ROLE_ARN
+        --web-identity-token "$GITLAB_OIDC_TOKEN"
+      - aws ecr get-login-password | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
 build:
   stage: build
