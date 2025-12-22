@@ -12,6 +12,8 @@ stages:
 
 assumeRole:
     stage: assumeRole
+    variables:
+      GIT_STRATEGY: none
     id_tokens:
       GITLAB_OIDC_TOKEN:
         aud: https://gitlab.com
