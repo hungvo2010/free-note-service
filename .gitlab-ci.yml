@@ -11,11 +11,9 @@ stages:
   - deploy
 
 assumeRole:
-#    image:
-#      name: moby/buildkit:rootless
-#      entrypoint: [ "" ]
-
-    image: public.ecr.aws/aws-cli/aws-cli
+    image:
+      name: public.ecr.aws/aws-cli/aws-cli
+      entrypoint: [ "" ]
     stage: assumeRole
     variables:
       GIT_STRATEGY: none
