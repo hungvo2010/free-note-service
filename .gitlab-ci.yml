@@ -15,7 +15,7 @@ assumeRole:
 #      name: moby/buildkit:rootless
 #      entrypoint: [ "" ]
 
-    image: amazon/aws-cli:2
+    image: public.ecr.aws/aws-cli/aws-cli
     stage: assumeRole
     variables:
       GIT_STRATEGY: none
