@@ -1,10 +1,4 @@
-image:
-  name: bentolor/docker-dind-awscli
-  entrypoint: [""]
-
 variables:
-  DOCKER_HOST: tcp://docker:2375
-  DOCKER_TLS_CERTDIR: ""
   PROJECT_NAME: "${CI_PROJECT_NAME}"
   JFROG_PUSH_URL: ${JFROG_BASE_URL}/${JFROG_REPOSITORY}
   ARTIFACT_NAME: ${CI_PROJECT_NAME}_${CI_COMMIT_SHORT_SHA}.jar
@@ -48,14 +42,25 @@ assumeRole:
       - when: on_success
 
 build:
+  image:
+    name: moby/buildkit:rootless
+    entrypoint: [ "" ]
+  needs:
+    - job: assumeRole
+      artifacts: true
+  variables:
+    BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
   stage: build
   script:
-    - echo "Building the project..."
-    - ./gradlew shadowJar
-    - JAR_FILE="$(ls build/libs/*.jar)"
-    - echo "$JAR_FILE"
-    - mv $JAR_FILE $ARTIFACT_NAME
-    - ls -l $ARTIFACT_NAME
+    - echo "AWS identity (from dotenv):"
+    - echo "$AWS_ACCESS_KEY_ID"
+    - echo "Building image with BuildKit (daemonless)"
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context=. \
+        --local dockerfile=. \
+        --output type=image,name=$DOCKER_IMAGE,push=true
   artifacts:
     paths:
       - build/libs/*.jar
