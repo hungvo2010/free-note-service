@@ -2,7 +2,13 @@ image:
   name: bentolor/docker-dind-awscli
   entrypoint: [""]
 
+services:
+  - name: docker:24-dind
+    command: ["--tls=false"]
+
 variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
   PROJECT_NAME: "${CI_PROJECT_NAME}"
   JFROG_PUSH_URL: ${JFROG_BASE_URL}/${JFROG_REPOSITORY}
   ARTIFACT_NAME: ${CI_PROJECT_NAME}_${CI_COMMIT_SHORT_SHA}.jar
