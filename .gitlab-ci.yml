@@ -6,6 +6,10 @@ variables:
   PROJECT_NAME: "${CI_PROJECT_NAME}"
   JFROG_PUSH_URL: ${JFROG_BASE_URL}/${JFROG_REPOSITORY}
   ARTIFACT_NAME: ${CI_PROJECT_NAME}_${CI_COMMIT_SHORT_SHA}.jar
+  DOCKER_IMAGE: 221082202356.dkr.ecr.eu-west-3.amazonaws.com/forgeblast/${CI_PROJECT_NAME}_${CI_COMMIT_SHORT_SHA}
+  DOCKER_IMAGE_WITH_TAG: 221082202356.dkr.ecr.eu-west-3.amazonaws.com/forgeblast/${CI_PROJECT_NAME}_${CI_COMMIT_TAG}_${CI_COMMIT_SHORT_SHA}
+
+
 
 stages:
   - assumeRole
@@ -22,7 +26,8 @@ assumeRole:
     script:
       - eval $(aws sts assume-role-with-web-identity --role-arn "$ROLE_ARN" --web-identity-token "$GITLAB_OIDC_TOKEN" --role-session-name my-session --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' --output text | awk '{print "export AWS_ACCESS_KEY_ID="$1"\nexport AWS_SECRET_ACCESS_KEY="$2"\nexport AWS_SESSION_TOKEN="$3}')
       - aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin 221082202356.dkr.ecr.eu-west-3.amazonaws.com
-
+      - docker build -t $DOCKER_IMAGE . &> build.log
+      - docker push $DOCKER_IMAGE
 build:
   stage: build
   script:
