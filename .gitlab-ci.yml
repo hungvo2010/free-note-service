@@ -44,8 +44,8 @@ assumeRole:
       reports:
         dotenv: aws.env
       expire_in: 1h
-      rules:
-        - when: on_success
+    rules:
+      - when: on_success
 
 build:
   stage: build
