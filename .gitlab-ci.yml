@@ -17,28 +17,36 @@ stages:
   - deploy
 
 assumeRole:
-    image:
-      name: moby/buildkit:rootless
-      entrypoint: [ "" ]
+#    image:
+#      name: moby/buildkit:rootless
+#      entrypoint: [ "" ]
     stage: assumeRole
     variables:
       GIT_STRATEGY: none
     id_tokens:
       GITLAB_OIDC_TOKEN:
         aud: https://gitlab.com
-    before_script:
-      - python3 --version
-      - wget https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -O awscliv2.zip
-      - unzip awscliv2.zip
-      - ./aws/install -i $HOME/aws-cli -b $HOME/bin
-      - export PATH="$HOME/bin:$PATH"
-      - aws --version
+#    before_script:
+#      - python --version
+#      - wget https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -O awscliv2.zip
+#      - unzip awscliv2.zip
+#      - ./aws/install -i $HOME/aws-cli -b $HOME/bin
+#      - export PATH="$HOME/bin:$PATH"
+#      - aws --version
     script:
       - eval $(aws sts assume-role-with-web-identity --role-arn "$ROLE_ARN" --web-identity-token "$GITLAB_OIDC_TOKEN" --role-session-name my-session --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' --output text | awk '{print "export AWS_ACCESS_KEY_ID="$1"\nexport AWS_SECRET_ACCESS_KEY="$2"\nexport AWS_SESSION_TOKEN="$3}')
       - aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin 221082202356.dkr.ecr.eu-west-3.amazonaws.com
       - echo $DOCKER_IMAGE
-      - docker build -t $DOCKER_IMAGE .
-      - docker push $DOCKER_IMAGE
+#      - docker build -t $DOCKER_IMAGE .
+#      - docker push $DOCKER_IMAGE
+      - printf "AWS_ACCESS_KEY_ID=%s\nAWS_SECRET_ACCESS_KEY=%s\nAWS_SESSION_TOKEN=%s\nAWS_REGION=%s\n" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" "$AWS_SESSION_TOKEN" "$AWS_REGION" > aws.env
+    artifacts:
+      reports:
+        dotenv: aws.env
+      expire_in: 1h
+      rules:
+        - when: on_success
+
 build:
   stage: build
   script:
