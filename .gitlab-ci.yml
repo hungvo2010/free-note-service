@@ -21,7 +21,7 @@ assumeRole:
         aud: https://gitlab.com
     script:
       - aws sts assume-role-with-web-identity --role-arn $ROLE_ARN --web-identity-token "$GITLAB_OIDC_TOKEN" --role-session-name my-session
-      - aws ecr get-login-password | docker login --username AWS --password-stdin 221082202356.dkr.ecr.eu-west-3.amazonaws.com
+      - aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin 221082202356.dkr.ecr.eu-west-3.amazonaws.com
 
 build:
   stage: build
