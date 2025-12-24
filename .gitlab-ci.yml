@@ -12,7 +12,7 @@ stages:
 
 assumeRole:
     image:
-      name: public.ecr.aws/aws-cli/aws-cli
+      name: bentolor/docker-dind-awscli
       entrypoint: [ "" ]
     stage: assumeRole
     variables:
