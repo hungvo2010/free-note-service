@@ -38,7 +38,7 @@ assumeRole:
       - |
         aws ecr get-login-password --region eu-west-3 \
         | base64 \
-        | jq -R '{ "auths": { "221082202356.dkr.ecr.eu-west-3.amazonaws.com": { "auth": "AWS:" + . } } }' \
+        | awk '{print "{\"auths\":{\"221082202356.dkr.ecr.eu-west-3.amazonaws.com\":{\"auth\":\"AWS:"$0"\"}}}"}' \
         > ~/.docker/config.json
     artifacts:
       reports:
