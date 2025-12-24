@@ -55,6 +55,7 @@ build:
     - echo "AWS identity (from dotenv):"
     - echo "$AWS_ACCESS_KEY_ID"
     - echo "Building image with BuildKit (daemonless)"
+    - mkdir -p ~/.docker
     - aws ecr get-login-password --region eu-west-3 \
       | base64 \
       | awk '{print "{\"auths\":{\"221082202356.dkr.ecr.eu-west-3.amazonaws.com\":{\"auth\":\"AWS:"$0"\"}}}"}' \
