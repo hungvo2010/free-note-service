@@ -55,8 +55,7 @@ build:
     BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
   stage: build
   before_script:
-    - mkdir -p ~/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
+    - export DOCKER_CONFIG=$CI_PROJECT_DIR/.docker
   script:
     - echo "AWS identity (from dotenv):"
     - echo "$AWS_ACCESS_KEY_ID"
