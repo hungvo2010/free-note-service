@@ -60,7 +60,6 @@ build:
     - echo "AWS identity (from dotenv):"
     - echo "$AWS_ACCESS_KEY_ID"
     - echo "Building image with BuildKit (daemonless)"
-    - export DOCKER_CONFIG=$HOME/.docker
     - |
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
