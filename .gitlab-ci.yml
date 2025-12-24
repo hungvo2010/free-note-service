@@ -59,7 +59,7 @@ build:
   script:
     - echo "AWS identity (from dotenv):"
     - echo "$AWS_ACCESS_KEY_ID"
-    - echo "Building image with BuildKit (daemonless)"
+    - echo "Building image with BuildKit (daemonless) - commit"
     - cat $CI_PROJECT_DIR/.docker/config.json
     - |
       buildctl-daemonless.sh build \
