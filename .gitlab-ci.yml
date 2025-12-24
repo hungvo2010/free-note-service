@@ -60,9 +60,9 @@ build:
     - echo "AWS identity (from dotenv):"
     - echo "$AWS_ACCESS_KEY_ID"
     - echo "Building image with BuildKit (daemonless)"
+    - cat $CI_PROJECT_DIR/.docker/config.json
     - |
       buildctl-daemonless.sh build \
-        --registry-auth \
         --frontend dockerfile.v0 \
         --local context=. \
         --local dockerfile=. \
