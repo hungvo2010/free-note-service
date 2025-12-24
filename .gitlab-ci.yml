@@ -62,6 +62,7 @@ build:
     - echo "Building image with BuildKit (daemonless)"
     - |
       buildctl-daemonless.sh build \
+        --registry-auth \
         --frontend dockerfile.v0 \
         --local context=. \
         --local dockerfile=. \
