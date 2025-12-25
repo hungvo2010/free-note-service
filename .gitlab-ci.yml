@@ -62,7 +62,7 @@ credential helpers:
 build:
   image:
     name: moby/buildkit:rootless
-#    entrypoint: [ "" ]
+    entrypoint: [ "" ]
   needs:
     - assumeRole
     - credential helpers
