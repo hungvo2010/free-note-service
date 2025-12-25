@@ -102,7 +102,8 @@ deploy:
     - apt-get update -qq && apt-get install -y sshpass
   script:
     - sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_IP "
-      docker run -p 8189:8189 --restart always $DOCKER_IMAGE;
+      whoami;
+      docker run -p 8189:8189 --restart always $DOCKER_IMAGE
       "
     - echo "Deploying to VPS..."
       #      mkdir -p $PROJECT_NAME && cd $PROJECT_NAME;
