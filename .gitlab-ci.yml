@@ -7,6 +7,7 @@ variables:
 
 stages:
   - assumeRole
+  - credentials
   - build
   - deploy
 
@@ -45,18 +46,33 @@ assumeRole:
     rules:
       - when: on_success
 
+credential helpers:
+  stage: credentials
+  image: alpine
+  before_script:
+    - mkdir credentials-binaries
+  script:
+    - wget -O credentials-binaries/docker-credential-ecr-login https://amazon-ecr-credential-helper-releases.s3.us-east-2.amazonaws.com/0.10.0/linux-amd64/docker-credential-ecr-login
+    - chmod +x credentials-binaries/docker-credential-ecr-login
+    - chown 1000:1000 credentials-binaries/docker-credential-*
+  artifacts:
+    paths:
+      - credentials-binaries/
+
 build:
   image:
     name: moby/buildkit:rootless
-    entrypoint: [ "" ]
+#    entrypoint: [ "" ]
   needs:
-    - job: assumeRole
+    - job: "credential helpers"
       artifacts: true
   variables:
     BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
   stage: build
   before_script:
-    - export DOCKER_CONFIG=$CI_PROJECT_DIR/.docker
+    - mkdir -p ~/.docker
+    - export PATH="${CI_PROJECT_DIR}/credentials-binaries:$PATH"
+    - echo "{\"credsStore\":\"ecr-login\"}" > ~/.docker/config.json
   script:
     - echo "AWS identity (from dotenv):"
     - echo "$AWS_ACCESS_KEY_ID"
