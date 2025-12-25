@@ -33,9 +33,7 @@ assumeRole:
       - echo $DOCKER_IMAGE
 #      - docker build -t $DOCKER_IMAGE .
 #      - docker push $DOCKER_IMAGE
-      - aws ecr describe-repositories \
-        --repository-names forgeblast/forgeblast-backend \
-        --region eu-west-3
+      - aws ecr describe-repositories --repository-names forgeblast/forgeblast-backend --region eu-west-3
       - printf "AWS_ACCESS_KEY_ID=%s\nAWS_SECRET_ACCESS_KEY=%s\nAWS_SESSION_TOKEN=%s\nAWS_REGION=%s\n" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" "$AWS_SESSION_TOKEN" "$AWS_REGION" > aws.env
       - rm -f .docker/config.json && mkdir -p .docker && aws ecr get-login-password --region eu-west-3 | awk '{print "AWS:"$0}' | base64 | awk '{print "{\"auths\":{\"221082202356.dkr.ecr.eu-west-3.amazonaws.com\":{\"auth\":\""$0"\"}}}"}' > .docker/config.json
     artifacts:
