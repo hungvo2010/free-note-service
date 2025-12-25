@@ -102,18 +102,18 @@ deploy:
     - apt-get update -qq && apt-get install -y sshpass
   script:
     - sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_IP "
-      docker run -p 8189:8189 --restart always $DOCKER_IMAGE
-#      mkdir -p $PROJECT_NAME && cd $PROJECT_NAME;
-#      whoami;
-#      echo 'Stopping existing SimpleServer process...';
-#      pid=\$(ps aux | grep $PROJECT_NAME | grep -v grep | awk '{print \$2}');
-#      if [ -n \"\$pid\" ]; then
-#        kill -9 \$pid && echo 'Process stopped.';
-#      else
-#        echo 'No existing process found.';
-#      fi;
-#      curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -O "$JFROG_PUSH_URL/$ARTIFACT_NAME";
-#      ls -l $ARTIFACT_NAME;
-#      nohup java -jar $ARTIFACT_NAME > file.txt 2>&1 &
+      docker run -p 8189:8189 --restart always $DOCKER_IMAGE;
       "
     - echo "Deploying to VPS..."
+      #      mkdir -p $PROJECT_NAME && cd $PROJECT_NAME;
+      #      whoami;
+      #      echo 'Stopping existing SimpleServer process...';
+      #      pid=\$(ps aux | grep $PROJECT_NAME | grep -v grep | awk '{print \$2}');
+      #      if [ -n \"\$pid\" ]; then
+      #        kill -9 \$pid && echo 'Process stopped.';
+      #      else
+      #        echo 'No existing process found.';
+      #      fi;
+      #      curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -O "$JFROG_PUSH_URL/$ARTIFACT_NAME";
+      #      ls -l $ARTIFACT_NAME;
+      #      nohup java -jar $ARTIFACT_NAME > file.txt 2>&1 &
