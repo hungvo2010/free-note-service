@@ -64,8 +64,8 @@ build:
     name: moby/buildkit:rootless
 #    entrypoint: [ "" ]
   needs:
-    - job: "credential helpers"
-      artifacts: true
+    - assumeRole
+    - credential helpers
   variables:
     BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
   stage: build
