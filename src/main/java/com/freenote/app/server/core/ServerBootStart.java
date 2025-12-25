@@ -20,9 +20,6 @@ public class ServerBootStart {
     @Setter
     private int port = 8189;
 
-    public ServerBootStart() {
-    }
-
     public ServerBootStart(int port) {
         this.port = port;
     }
