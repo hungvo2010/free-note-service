@@ -113,17 +113,11 @@ deploy:
       }
       EOF
   script:
-    - sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_IP "whoami; docker run -d -p 8189:8189 --restart always $DOCKER_IMAGE"
-    - echo "Deploying to VPS..."
-      #      mkdir -p $PROJECT_NAME && cd $PROJECT_NAME;
-      #      whoami;
-      #      echo 'Stopping existing SimpleServer process...';
-      #      pid=\$(ps aux | grep $PROJECT_NAME | grep -v grep | awk '{print \$2}');
-      #      if [ -n \"\$pid\" ]; then
-      #        kill -9 \$pid && echo 'Process stopped.';
-      #      else
-      #        echo 'No existing process found.';
-      #      fi;
-      #      curl -u "$JFROG_USERNAME:$JFROG_PASSWORD" -O "$JFROG_PUSH_URL/$ARTIFACT_NAME";
-      #      ls -l $ARTIFACT_NAME;
-      #      nohup java -jar $ARTIFACT_NAME > file.txt 2>&1 &
+    - |
+      sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_IP "
+        aws ecr get-login-password --region eu-west-3 \
+        | docker login --username AWS --password-stdin 221082202356.dkr.ecr.eu-west-3.amazonaws.com &&
+        docker pull $DOCKER_IMAGE &&
+        docker rm -f forgeblast || true &&
+        docker run -d --name forgeblast -p 8189:8189 --restart always $DOCKER_IMAGE
+      "
