@@ -72,7 +72,14 @@ build:
   before_script:
     - mkdir -p ~/.docker
     - export PATH="${CI_PROJECT_DIR}/credentials-binaries:$PATH"
-    - echo "{\"credsStore\":\"ecr-login\"}" > ~/.docker/config.json
+    - |
+      cat > ~/.docker/config.json <<EOF
+      {
+        "credHelpers": {
+          "221082202356.dkr.ecr.eu-west-3.amazonaws.com": "ecr-login"
+        }
+      }
+      EOF
   script:
     - echo "AWS identity (from dotenv):"
     - echo "$AWS_ACCESS_KEY_ID"
