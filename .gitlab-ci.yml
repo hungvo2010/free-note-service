@@ -97,9 +97,21 @@ build:
 
 deploy:
   stage: deploy
-  needs: ["build"]
+  needs:
+    - build
+    - credential helpers
   before_script:
     - apt-get update -qq && apt-get install -y sshpass
+    - mkdir -p ~/.docker
+    - export PATH="${CI_PROJECT_DIR}/credentials-binaries:$PATH"
+    - |
+      cat > ~/.docker/config.json <<EOF
+      {
+        "credHelpers": {
+          "221082202356.dkr.ecr.eu-west-3.amazonaws.com": "ecr-login"
+        }
+      }
+      EOF
   script:
     - sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_IP "whoami; docker run -d -p 8189:8189 --restart always $DOCKER_IMAGE"
     - echo "Deploying to VPS..."
