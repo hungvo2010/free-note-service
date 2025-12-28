@@ -1,7 +1,7 @@
 package com.freenote.app.server.example;
 
 
-import com.freenote.app.server.core.ServerBootStart;
+import com.freenote.app.server.core.ServerBootstrap;
 import com.freenote.app.server.connections.IncomingSocketHandlerImpl;
 import com.freenote.app.server.factory.SSLSocketImpl;
 import com.freenote.app.server.connections.IncomingConnectionHandler;
@@ -24,9 +24,9 @@ public class SSLServer {
 
     public void start() throws Exception {
         log.info("Starting SSL Server on port {}", this.port);
-        var serverHolder = new ServerBootStart(new SSLSocketImpl(this.keystorePath, this.password));
-        serverHolder.setPort(this.port);
-        serverHolder.start(this.handler);
+        var serverBootstrap = new ServerBootstrap(new SSLSocketImpl(this.keystorePath, this.password));
+        serverBootstrap.setPort(this.port);
+        serverBootstrap.start(this.handler);
     }
 
     // Main entrypoint

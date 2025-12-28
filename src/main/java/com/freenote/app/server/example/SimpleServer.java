@@ -1,6 +1,6 @@
 package com.freenote.app.server.example;
 
-import com.freenote.app.server.core.ServerBootStart;
+import com.freenote.app.server.core.ServerBootstrap;
 import com.freenote.app.server.connections.IncomingSocketHandlerImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,7 +19,7 @@ public class SimpleServer {
 
     public static List<Future<Void>> run(int port) {
         List<Future<Void>> futures = new ArrayList<>();
-        var serverHolder = new ServerBootStart(port);
+        var serverHolder = new ServerBootstrap(port);
         try {
             log.info("Server started on port {}", port);
             serverHolder.start(new IncomingSocketHandlerImpl());

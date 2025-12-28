@@ -44,14 +44,13 @@ public class IncomingSocketHandlerImpl implements IncomingConnectionHandler {
                     log.warn("No handler found for URI: {}", request.getPath());
                     return;
                 }
-                URIHandler handler = pathHandler;
-                handler.handle(inputWrapper, output);
+                pathHandler.handle(inputWrapper, output);
             }
         } catch (ClientDisconnectException disconnectException) {
             log.error("Client disconnected => self closed ");
             incomingSocket.close();
         } catch (Exception e) {
-            log.error("Error handling socket: {}", e);
+            log.error("Error handling socket: ", e);
             IOUtils.writeOutPut(
                     output,
                     FrameFactory.SERVER.createTextFrame("Internal Server Error")

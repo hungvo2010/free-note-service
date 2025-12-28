@@ -107,8 +107,12 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
 
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, ByteBuffer message) {
-        onData(webSocketConnection, message);
+        onBinaryMessage(webSocketConnection, message);
     }
+
+    protected void onBinaryMessage(WebSocketConnection webSocketConnection, ByteBuffer message) {
+    }
+
 
     @Override
     public void onOpen(WebSocketConnection webSocketConnection, HttpUpgradeRequest handshake) {
@@ -140,9 +144,5 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
 
     @Override
     public void onContinue(WebSocketConnection webSocketConnection, ByteBuffer payload) {
-        onData(webSocketConnection, payload);
-    }
-
-    public void onData(WebSocketConnection webSocketConnection, ByteBuffer payload) {
     }
 }

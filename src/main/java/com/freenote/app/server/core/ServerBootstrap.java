@@ -1,8 +1,8 @@
 package com.freenote.app.server.core;
 
+import com.freenote.app.server.connections.IncomingConnectionHandler;
 import com.freenote.app.server.factory.RawSocketImpl;
 import com.freenote.app.server.factory.ServerSocketFactory;
-import com.freenote.app.server.connections.IncomingConnectionHandler;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
@@ -10,22 +10,25 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 @AllArgsConstructor
-public class ServerBootStart {
-    private final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-    private static final Logger log = LogManager.getLogger(ServerBootStart.class);
+public class ServerBootstrap {
+    private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private static final Logger log = LogManager.getLogger(ServerBootstrap.class);
     private ServerSocketFactory serverSocketFactory = new RawSocketImpl();
     @Setter
     private int port = 8189;
 
-    public ServerBootStart(int port) {
+    public ServerBootstrap(int port) {
         this.port = port;
     }
 
-    public ServerBootStart(ServerSocketFactory serverSocketFactory) {
+    public ServerBootstrap(ServerSocketFactory serverSocketFactory) {
         this.serverSocketFactory = serverSocketFactory;
+    }
+
+    public ServerBootstrap(ExecutorService executorService) {
+        this.executorService = executorService;
     }
 
     public void start(IncomingConnectionHandler handler) throws Exception {
