@@ -1,6 +1,6 @@
 package com.freenote.app.server.model;
 
-import com.freenote.app.server.core.RequestObject;
+import com.freenote.app.server.core.data.RequestObject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

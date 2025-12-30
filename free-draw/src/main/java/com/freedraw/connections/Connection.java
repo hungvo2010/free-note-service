@@ -1,4 +1,4 @@
-package com.freenote.app.server.connections;
+package com.freedraw.connections;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

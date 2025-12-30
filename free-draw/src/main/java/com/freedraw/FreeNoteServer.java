@@ -1,6 +1,6 @@
 package com.freedraw;
 
-import com.freenote.app.server.connections.IncomingSocketHandlerImpl;
+import com.freenote.app.server.core.IncomingSocketHandlerImpl;
 import com.freenote.app.server.core.ServerBootstrap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

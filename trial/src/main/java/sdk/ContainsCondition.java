@@ -1,4 +1,4 @@
-package com.freenote.app.server.unleak.sdk;
+package sdk;
 
 import java.util.List;
 

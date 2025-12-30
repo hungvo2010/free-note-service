@@ -1,8 +1,12 @@
-package com.freenote.app.server.unleak.sdk;
+package sdk;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
 public class CompositeCondition {
+    private static final Logger log = LogManager.getLogger(CompositeCondition.class);
     private final List<SingleCondition> conditions = List.of(
             new ContainsCondition(false, "productId", List.of("prod_123", "prod_456")),
             new NumericCondition(false, "appVersion", 10, Operator.NUM_EQ),
@@ -14,7 +18,7 @@ public class CompositeCondition {
     public boolean evaluate(CompositeInput input) {
         for (SingleCondition condition : conditions) {
             if (!condition.evaluate(input)) {
-                System.out.println("Condition failed: " + condition);
+                log.info("Condition failed: {}", condition);
                 return false;
             }
         }

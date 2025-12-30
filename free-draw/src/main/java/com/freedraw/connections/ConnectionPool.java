@@ -1,4 +1,4 @@
-package com.freenote.app.server.connections;
+package com.freedraw.connections;
 
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.util.IOUtils;

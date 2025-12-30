@@ -1,6 +1,5 @@
 package com.freenote.app.server.core;
 
-import com.freenote.app.server.connections.IncomingConnectionHandler;
 import com.freenote.app.server.factory.RawSocketImpl;
 import com.freenote.app.server.factory.ServerSocketFactory;
 import lombok.AllArgsConstructor;

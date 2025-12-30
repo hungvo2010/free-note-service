@@ -6,9 +6,9 @@ import com.freedraw.models.common.MessagePayload;
 import com.freedraw.models.common.MessageType;
 import com.freedraw.models.core.*;
 import com.freenote.annotations.WebSocketEndpoint;
-import com.freenote.app.server.connections.Connection;
-import com.freenote.app.server.connections.WebSocketConnection;
-import com.freenote.app.server.core.ResponseObject;
+import com.freedraw.connections.Connection;
+import com.freenote.app.server.core.WebSocketConnection;
+import com.freenote.app.server.core.data.ResponseObject;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.MessagePayloadParsingException;
 import com.freenote.app.server.frames.base.WebSocketFrame;
@@ -43,11 +43,11 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
 
     @Override
     public void onControl(WebSocketConnection webSocketConnection, ByteBuffer payload) {
-
+        log.info("Received control payload: {}", payload);
     }
 
     public static void main(String[] args) {
-        System.out.println(JSONUtils.fromJSON("{requestType=2, content={type=1, details={op=update, id=247, patch={type=rectangle, data={id=247, x=458, y=379.609375, width=599, height=-114}}}}}", DraftRequest.class));
+        log.info(String.valueOf(JSONUtils.fromJSON("{requestType=2, content={type=1, details={op=update, id=247, patch={type=rectangle, data={id=247, x=458, y=379.609375, width=599, height=-114}}}}}", DraftRequest.class)));
 
     }
 
@@ -63,6 +63,8 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
 
             var draftRequest = JSONUtils.fromMap(messagePayload.getBody(), DraftRequest.class);
             log.info("Received DraftRequest: {}", messagePayload.getBody().toString());
+            log.info("RequestId: {}", draftRequest.getRequestId());
+            log.info("TraceId: {}, requestId: {}", draftRequest.getTraceId(), draftRequest.getRequestId());
             if (draftRequest == null) {
                 log.error("Received null or invalid DraftRequest");
                 webSocketConnection.setResponseFrame(ApplicationFrameFactory.SERVER.createApplicationFrame(DEFAULT_MESSAGE_PAYLOAD));
@@ -84,7 +86,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
 
     @Override
     public void onData(WebSocketConnection webSocketConnection, String message) {
-
+        log.info("Received data: {}", message);
     }
 
     private void removeConnectionByInputStream(OutputStream outputStream) {

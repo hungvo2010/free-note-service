@@ -1,4 +1,4 @@
-package com.freenote.app.server.unleak.sdk;
+package sdk;
 
 public enum StringOperator {
     STR_CONTAINS {
