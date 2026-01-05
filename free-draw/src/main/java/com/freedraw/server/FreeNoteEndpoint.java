@@ -1,12 +1,15 @@
 package com.freedraw.server;
 
 import com.freedraw.CoreDraftProcessor;
+import com.freedraw.dto.DraftRequest;
+import com.freedraw.dto.DraftResponseData;
+import com.freedraw.entities.Draft;
 import com.freedraw.factory.ApplicationFrameFactory;
 import com.freedraw.models.common.MessagePayload;
 import com.freedraw.models.common.MessageType;
 import com.freedraw.models.core.*;
 import com.freenote.annotations.WebSocketEndpoint;
-import com.freenote.app.server.connections.Connection;
+import com.freedraw.models.core.Connection;
 import com.freenote.app.server.connections.WebSocketConnection;
 import com.freenote.app.server.core.ResponseObject;
 import com.freenote.app.server.exceptions.ClientDisconnectException;

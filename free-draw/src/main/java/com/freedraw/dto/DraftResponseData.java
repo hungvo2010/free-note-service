@@ -1,5 +1,6 @@
-package com.freedraw.models.core;
+package com.freedraw.dto;
 
+import com.freedraw.entities.DraftAction;
 import com.freenote.app.server.core.ResponseData;
 import lombok.AllArgsConstructor;
 import lombok.Data;

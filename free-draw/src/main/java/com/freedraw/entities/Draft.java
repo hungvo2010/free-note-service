@@ -1,9 +1,10 @@
-package com.freedraw.models.core;
+package com.freedraw.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.freedraw.dto.DraftRequest;
 import com.freedraw.models.enums.ActionType;
 import com.freedraw.models.enums.DraftRequestType;
 import com.freenote.app.server.util.JSONUtils;

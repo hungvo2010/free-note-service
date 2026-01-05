@@ -1,4 +1,4 @@
-package com.freedraw.models.core;
+package com.freedraw.dto;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

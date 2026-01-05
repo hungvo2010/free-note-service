@@ -1,4 +1,4 @@
-package com.freenote.app.server.unleak.sdk;
+package com.unleak.sdk;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

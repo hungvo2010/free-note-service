@@ -1,7 +1,6 @@
 package com.freedraw.models.core;
 
 import com.freenote.annotations.Singleton;
-import com.freenote.app.server.connections.Connection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

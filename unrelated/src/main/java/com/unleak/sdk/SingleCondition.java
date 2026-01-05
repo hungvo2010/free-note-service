@@ -1,4 +1,4 @@
-package com.freenote.app.server.unleak.sdk;
+package com.unleak.sdk;
 
 public interface SingleCondition {
     boolean evaluate(CompositeInput input);

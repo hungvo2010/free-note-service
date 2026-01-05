@@ -1,7 +1,7 @@
 package com.freedraw.repository.persistence.disk;
 
-import com.freedraw.models.core.Draft;
-import com.freedraw.models.core.DraftAction;
+import com.freedraw.entities.Draft;
+import com.freedraw.entities.DraftAction;
 import com.freedraw.repository.persistence.disk.service.SearchFieldByOffset;
 import com.freedraw.repository.persistence.disk.service.SearchIx;
 import com.freedraw.repository.persistence.disk.service.SearchOffset;

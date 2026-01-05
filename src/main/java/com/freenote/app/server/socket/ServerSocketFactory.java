@@ -1,4 +1,4 @@
-package com.freenote.app.server.factory;
+package com.freenote.app.server.socket;
 
 import java.net.ServerSocket;
 

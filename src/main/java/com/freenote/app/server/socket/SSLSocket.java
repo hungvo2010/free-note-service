@@ -1,4 +1,4 @@
-package com.freenote.app.server.factory;
+package com.freenote.app.server.socket;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -7,11 +7,11 @@ import java.io.FileInputStream;
 import java.net.ServerSocket;
 import java.security.KeyStore;
 
-public class SSLSocketImpl implements ServerSocketFactory {
+public class SSLSocket implements ServerSocketFactory {
     private final String keystorePath;
     private final String password;
 
-    public SSLSocketImpl(String keystorePath, String password) {
+    public SSLSocket(String keystorePath, String password) {
         this.keystorePath = keystorePath;
         this.password = password;
     }

@@ -66,7 +66,7 @@ public class HttpUpgradeRequest {
     @Override
     public String toString() {
         return String.join("\r\n",
-                method + " " + uri + " " + version,
+                method + " " + path + " " + version,
                 "Host: " + host,
                 "Upgrade: " + upgrade,
                 "Connection: " + connection,

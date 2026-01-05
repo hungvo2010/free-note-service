@@ -1,5 +1,6 @@
-package com.freedraw.models.core;
+package com.freedraw.entities;
 
+import com.freedraw.dto.DraftContent;
 import com.freedraw.models.enums.ActionType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

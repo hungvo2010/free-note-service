@@ -1,6 +1,6 @@
 package com.freedraw.repository;
 
-import com.freedraw.models.core.Draft;
+import com.freedraw.entities.Draft;
 import com.freedraw.repository.persistence.disk.PersistenceContext;
 
 import java.util.List;

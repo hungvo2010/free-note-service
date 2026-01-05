@@ -1,9 +1,9 @@
 package com.freedraw;
 
 import com.freedraw.models.common.MessageType;
-import com.freedraw.models.core.Draft;
-import com.freedraw.models.core.DraftAction;
-import com.freedraw.models.core.DraftRequest;
+import com.freedraw.entities.Draft;
+import com.freedraw.entities.DraftAction;
+import com.freedraw.dto.DraftRequest;
 import com.freedraw.models.enums.ActionType;
 import com.freedraw.repository.DraftRepository;
 import com.freedraw.repository.InMemDraftRepositoryImpl;

@@ -1,4 +1,4 @@
-package com.freenote.app.server.unleak.sdk;
+package com.unleak.sdk;
 
 public class NumericCondition implements SingleCondition {
     private final Operator numericOperator;

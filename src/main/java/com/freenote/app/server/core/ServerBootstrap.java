@@ -1,13 +1,15 @@
 package com.freenote.app.server.core;
 
 import com.freenote.app.server.connections.IncomingConnectionHandler;
-import com.freenote.app.server.factory.RawSocketImpl;
-import com.freenote.app.server.factory.ServerSocketFactory;
+import com.freenote.app.server.socket.RawSocket;
+import com.freenote.app.server.socket.ServerSocketFactory;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.jmx.Server;
 
+import java.net.ServerSocket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,7 +17,7 @@ import java.util.concurrent.Executors;
 public class ServerBootstrap {
     private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     private static final Logger log = LogManager.getLogger(ServerBootstrap.class);
-    private ServerSocketFactory serverSocketFactory = new RawSocketImpl();
+    private ServerSocketFactory serverSocketFactory = new RawSocket();
     @Setter
     private int port = 8189;
 
