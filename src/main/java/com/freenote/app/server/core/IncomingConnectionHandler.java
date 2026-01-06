@@ -1,4 +1,4 @@
-package com.freenote.app.server.connections;
+package com.freenote.app.server.core;
 
 
 import java.io.IOException;

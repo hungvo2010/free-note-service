@@ -1,8 +1,16 @@
+<<<<<<<< HEAD:unrelated/src/main/java/com/unleak/sdk/CompositeCondition.java
 package com.unleak.sdk;
+========
+package sdk;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+>>>>>>>> 25da83b6c9f9182369f7ea2b7f7c01d4d535bd32:trial/src/main/java/sdk/CompositeCondition.java
 
 import java.util.List;
 
 public class CompositeCondition {
+    private static final Logger log = LogManager.getLogger(CompositeCondition.class);
     private final List<SingleCondition> conditions = List.of(
             new ContainsCondition(false, "productId", List.of("prod_123", "prod_456")),
             new NumericCondition(false, "appVersion", 10, Operator.NUM_EQ),
@@ -14,7 +22,7 @@ public class CompositeCondition {
     public boolean evaluate(CompositeInput input) {
         for (SingleCondition condition : conditions) {
             if (!condition.evaluate(input)) {
-                System.out.println("Condition failed: " + condition);
+                log.info("Condition failed: {}", condition);
                 return false;
             }
         }

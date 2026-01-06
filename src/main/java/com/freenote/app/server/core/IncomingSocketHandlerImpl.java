@@ -1,7 +1,7 @@
-package com.freenote.app.server.connections;
+package com.freenote.app.server.core;
 
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
-import com.freenote.app.server.core.RequestObject;
+import com.freenote.app.server.core.data.RequestObject;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.handler.URIHandler;
