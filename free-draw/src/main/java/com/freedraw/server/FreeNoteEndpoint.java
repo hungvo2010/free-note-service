@@ -5,13 +5,13 @@ import com.freedraw.dto.DraftRequest;
 import com.freedraw.dto.DraftResponseData;
 import com.freedraw.entities.Draft;
 import com.freedraw.factory.ApplicationFrameFactory;
-import com.freedraw.models.common.MessagePayload;
-import com.freedraw.models.common.MessageType;
+import com.freedraw.models.common.AppMessage;
+import com.freedraw.models.enums.MessageType;
 import com.freedraw.models.core.*;
 import com.freenote.annotations.WebSocketEndpoint;
 import com.freedraw.models.core.Connection;
-import com.freenote.app.server.connections.WebSocketConnection;
-import com.freenote.app.server.core.ResponseObject;
+import com.freenote.app.server.core.WebSocketConnection;
+import com.freenote.app.server.core.data.ResponseObject;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.MessagePayloadParsingException;
 import com.freenote.app.server.frames.base.WebSocketFrame;
@@ -27,7 +27,7 @@ import java.util.List;
 @WebSocketEndpoint("/freeNote")
 public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
     private static final Logger log = LogManager.getLogger(FreeNoteEndpoint.class);
-    private static final MessagePayload DEFAULT_MESSAGE_PAYLOAD = new MessagePayload();
+    private static final AppMessage DEFAULT_MESSAGE_PAYLOAD = new AppMessage();
     private final CoreDraftProcessor coreDraftProcessor = new CoreDraftProcessor();
     private final RoomManager roomManager = RoomManager.getInstance();
 
@@ -57,7 +57,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, String message) {
         try {
-            var messagePayload = JSONUtils.fromJSON(message, MessagePayload.class);
+            var messagePayload = JSONUtils.fromJSON(message, AppMessage.class);
             if (messagePayload == null) {
                 log.error("Received null or invalid MessagePayload");
                 webSocketConnection.setResponseFrame(ApplicationFrameFactory.SERVER.createApplicationFrame(DEFAULT_MESSAGE_PAYLOAD));
@@ -78,7 +78,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
                     new ResponseObject<>(0, new DraftResponseData(lastAction))
             );
             broadcastMessage(draft.getDraftId(), new Connection(webSocketConnection.getOutputStream()),
-                    ApplicationFrameFactory.SERVER.createApplicationFrame(new MessagePayload(lastAction))
+                    ApplicationFrameFactory.SERVER.createApplicationFrame(new AppMessage(lastAction))
             );
         } catch (Exception ex) {
             log.error("Error in application onMessage logic: ", ex);

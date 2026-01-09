@@ -1,9 +1,9 @@
 package com.freedraw.responses;
 
-import com.freedraw.models.common.MessagePayload;
+import com.freedraw.models.common.AppMessage;
 import com.freenote.app.server.util.JSONUtils;
 
-public class InternalServerError extends MessagePayload {
+public class InternalServerError extends AppMessage {
     public InternalServerError(String errorMessage) {
         super(JSONUtils.toJSONString(new ServerResponse(502, errorMessage)));
     }

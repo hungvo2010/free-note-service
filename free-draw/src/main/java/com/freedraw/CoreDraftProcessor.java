@@ -1,6 +1,6 @@
 package com.freedraw;
 
-import com.freedraw.models.common.MessageType;
+import com.freedraw.models.enums.MessageType;
 import com.freedraw.entities.Draft;
 import com.freedraw.entities.DraftAction;
 import com.freedraw.dto.DraftRequest;

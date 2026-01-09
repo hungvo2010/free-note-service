@@ -1,4 +1,4 @@
-package com.freedraw.models.common;
+package com.freedraw.models.enums;
 
 public enum MessageType {
     DRAFT_REQUEST,

@@ -19,9 +19,9 @@ import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Getter
 public class Draft {
-    @Getter
-    private String draftId;
+    private final String draftId;
     private String draftName;
 
     @Getter
