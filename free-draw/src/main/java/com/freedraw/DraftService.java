@@ -12,11 +12,11 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Objects;
 
-public class CoreDraftProcessor {
-    private static final Logger log = LogManager.getLogger(CoreDraftProcessor.class);
+public class DraftService {
+    private static final Logger log = LogManager.getLogger(DraftService.class);
     private final DraftRepository draftRepository = new InMemDraftRepositoryImpl();
 
-    public Draft processDraft(DraftRequest draftRequest, MessageType type) {
+    public Draft handleDraftRequest(DraftRequest draftRequest, MessageType type) {
         var draftId = draftRequest.getDraftId();
 
         if (Objects.isNull(draftId)) {

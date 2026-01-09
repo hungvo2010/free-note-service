@@ -3,7 +3,7 @@ package com.freedraw.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.freedraw.models.enums.DraftRequestType;
-import com.freenote.app.server.core.data.RequestData;
+import com.freenote.app.server.data.RequestData;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;

@@ -2,7 +2,6 @@ package com.freenote.app.server.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.experimental.UtilityClass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,7 +31,7 @@ public class JSONUtils {
         try {
             return objectMapper.readValue(json, clazz);
         } catch (Exception e) {
-            log.error("Error parsing json: {}", json, e);
+            log.error("Error parsing json: {}, ex - {}", json, e.getMessage());
             return null;
         }
     }

@@ -1,7 +1,7 @@
 package com.freenote.app.server.core;
 
-import com.freenote.app.server.core.data.RequestObject;
-import com.freenote.app.server.core.data.ResponseObject;
+import com.freenote.app.server.data.ws.RequestObject;
+import com.freenote.app.server.data.ws.ResponseObject;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import lombok.Builder;
 import lombok.Data;

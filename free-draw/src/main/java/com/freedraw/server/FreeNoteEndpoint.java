@@ -1,9 +1,10 @@
 package com.freedraw.server;
 
-import com.freedraw.CoreDraftProcessor;
+import com.freedraw.DraftService;
 import com.freedraw.dto.DraftRequest;
 import com.freedraw.dto.DraftResponseData;
 import com.freedraw.entities.Draft;
+import com.freedraw.entities.DraftAction;
 import com.freedraw.factory.ApplicationFrameFactory;
 import com.freedraw.models.common.AppMessage;
 import com.freedraw.models.core.Connection;
@@ -12,7 +13,7 @@ import com.freedraw.models.core.RoomManager;
 import com.freedraw.models.enums.MessageType;
 import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.core.WebSocketConnection;
-import com.freenote.app.server.core.data.ResponseObject;
+import com.freenote.app.server.data.ws.ResponseObject;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.MessagePayloadParsingException;
 import com.freenote.app.server.frames.base.WebSocketFrame;
@@ -30,7 +31,7 @@ import java.util.List;
 public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
     private static final Logger log = LogManager.getLogger(FreeNoteEndpoint.class);
     private static final AppMessage DEFAULT_MESSAGE_PAYLOAD = new AppMessage();
-    private final CoreDraftProcessor coreDraftProcessor = new CoreDraftProcessor();
+    private final DraftService draftService = new DraftService();
     private final RoomManager roomManager = RoomManager.getInstance();
 
     @Override
@@ -64,32 +65,40 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, String message) {
         try {
-            var messagePayload = JSONUtils.fromJSON(message, AppMessage.class);
-            if (messagePayload == null) {
+            var appMessage = JSONUtils.fromJSON(message, AppMessage.class);
+            if (appMessage == null) {
                 log.error("Received null or invalid MessagePayload");
-                webSocketConnection.setResponseFrame(ApplicationFrameFactory.SERVER.createApplicationFrame(DEFAULT_MESSAGE_PAYLOAD));
+                webSocketConnection.setResponseFrame(defaultMessageFrame(DEFAULT_MESSAGE_PAYLOAD));
                 return;
             }
 
-            var draftRequest = JSONUtils.fromMap(messagePayload.getBody(), DraftRequest.class);
-            log.info("Received DraftRequest: {}", messagePayload.getBody().toString());
+            var draftRequest = JSONUtils.fromMap(appMessage.getBody(), DraftRequest.class);
+            log.info("Received DraftRequest: {}", appMessage.getBody().toString());
             if (draftRequest == null) {
                 log.error("Received null or invalid DraftRequest");
-                webSocketConnection.setResponseFrame(ApplicationFrameFactory.SERVER.createApplicationFrame(DEFAULT_MESSAGE_PAYLOAD));
+                webSocketConnection.setResponseFrame(defaultMessageFrame(DEFAULT_MESSAGE_PAYLOAD));
                 return;
             }
 
-            var draft = processDraftRequest(draftRequest, messagePayload.getType());
-            var lastAction = draft.getActions().get(draft.getActions().size() - 1);
+            var draft = processDraftRequest(draftRequest, appMessage.getType());
+            var lastAction = getLastAction(draft);
             webSocketConnection.setResponse(
                     new ResponseObject<>(0, new DraftResponseData(lastAction))
             );
             broadcastMessage(draft.getDraftId(), new Connection(webSocketConnection.getOutputStream()),
-                    ApplicationFrameFactory.SERVER.createApplicationFrame(new AppMessage(lastAction))
+                    defaultMessageFrame(new AppMessage(lastAction))
             );
         } catch (Exception ex) {
             log.error("Error in application onMessage logic: ", ex);
         }
+    }
+
+    private DraftAction getLastAction(Draft draft) {
+        return draft.getActions().get(draft.getActions().size() - 1);
+    }
+
+    private WebSocketFrame defaultMessageFrame(AppMessage defaultMessagePayload) {
+        return ApplicationFrameFactory.SERVER.createApplicationFrame(defaultMessagePayload);
     }
 
     @Override
@@ -107,7 +116,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
 
     private Draft processDraftRequest(DraftRequest draftRequest, MessageType type) {
         try {
-            return coreDraftProcessor.processDraft(draftRequest, type);
+            return draftService.handleDraftRequest(draftRequest, type);
         } catch (MessagePayloadParsingException ex) {
             log.error("Failed to parse MessagePayload: {}", ex.getMessage());
             return new Draft();

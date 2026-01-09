@@ -1,4 +1,4 @@
-package com.freenote.app.server.example;
+package com.freenote.app.server.demo;
 
 import com.freenote.app.server.core.IncomingSocketHandlerImpl;
 import com.freenote.app.server.core.ServerBootstrap;

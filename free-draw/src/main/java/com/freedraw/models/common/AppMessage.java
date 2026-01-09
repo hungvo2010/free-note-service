@@ -4,12 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.freedraw.models.enums.MessageType;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 @Data
-@NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AppMessage {
     private String msgId;
@@ -20,6 +18,11 @@ public class AppMessage {
 
     public AppMessage(Object payload) {
         this.body = payload;
+        this.msgId = UUID.randomUUID().toString();
+    }
+
+    public AppMessage() {
+        timestamp = System.currentTimeMillis();
         this.msgId = UUID.randomUUID().toString();
     }
 }

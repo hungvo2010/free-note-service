@@ -1,6 +1,6 @@
 package com.freenote.app.server;
 
-import com.freenote.app.server.example.SimpleServer;
+import com.freenote.app.server.demo.SimpleServer;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;

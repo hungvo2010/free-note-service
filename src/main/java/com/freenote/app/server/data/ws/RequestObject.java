@@ -1,5 +1,6 @@
-package com.freenote.app.server.core.data;
+package com.freenote.app.server.data.ws;
 
+import com.freenote.app.server.data.RequestData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Setter;

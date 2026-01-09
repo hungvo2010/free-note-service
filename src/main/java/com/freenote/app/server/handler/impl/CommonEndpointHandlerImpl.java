@@ -103,7 +103,9 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
         onData(webSocketConnection, message);
     }
 
-    public abstract void onData(WebSocketConnection webSocketConnection, String message);
+    public void onData(WebSocketConnection webSocketConnection, String message){
+        webSocketConnection.setResponseFrame(FrameFactory.SERVER.createTextFrame(message));
+    }
 
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, ByteBuffer message) {
