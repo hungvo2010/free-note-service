@@ -2,6 +2,7 @@ package com.freedraw;
 
 import com.freenote.app.server.core.IncomingSocketHandlerImpl;
 import com.freenote.app.server.core.ServerBootstrap;
+import com.freenote.app.server.socket.RawSocket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,7 +15,7 @@ public class FreeNoteServer {
     }
 
     public static void run(int port) {
-        var serverHolder = new ServerBootstrap(port);
+        var serverHolder = new ServerBootstrap(new RawSocket());
         try {
             log.info("Server started on port {}", port);
             serverHolder.start(new IncomingSocketHandlerImpl());

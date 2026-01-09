@@ -6,15 +6,17 @@ import com.freedraw.dto.DraftResponseData;
 import com.freedraw.entities.Draft;
 import com.freedraw.factory.ApplicationFrameFactory;
 import com.freedraw.models.common.AppMessage;
-import com.freedraw.models.enums.MessageType;
-import com.freedraw.models.core.*;
-import com.freenote.annotations.WebSocketEndpoint;
 import com.freedraw.models.core.Connection;
+import com.freedraw.models.core.Room;
+import com.freedraw.models.core.RoomManager;
+import com.freedraw.models.enums.MessageType;
+import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.core.WebSocketConnection;
 import com.freenote.app.server.core.data.ResponseObject;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.MessagePayloadParsingException;
 import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.frames.control.PongFrame;
 import com.freenote.app.server.handler.impl.CommonEndpointHandlerImpl;
 import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
@@ -42,6 +44,11 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
     public void onError(WebSocketConnection webSocketConnection, Exception exception) {
         log.error("Error handling input stream: ", exception);
 
+    }
+
+    @Override
+    public void onPing(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+        webSocketConnection.setResponseFrame(new PongFrame());
     }
 
     @Override
