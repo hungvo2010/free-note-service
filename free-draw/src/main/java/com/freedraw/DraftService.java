@@ -1,10 +1,11 @@
 package com.freedraw;
 
-import com.freedraw.models.enums.MessageType;
+import com.freedraw.dto.DraftRequestData;
 import com.freedraw.entities.Draft;
 import com.freedraw.entities.DraftAction;
-import com.freedraw.dto.DraftRequest;
+import com.freedraw.exception.DraftNotFoundException;
 import com.freedraw.models.enums.ActionType;
+import com.freedraw.models.enums.MessageType;
 import com.freedraw.repository.DraftRepository;
 import com.freedraw.repository.InMemDraftRepositoryImpl;
 import org.apache.logging.log4j.LogManager;
@@ -16,29 +17,29 @@ public class DraftService {
     private static final Logger log = LogManager.getLogger(DraftService.class);
     private final DraftRepository draftRepository = new InMemDraftRepositoryImpl();
 
-    public Draft handleDraftRequest(DraftRequest draftRequest, MessageType type) {
-        var draftId = draftRequest.getDraftId();
+    public Draft handleDraftRequest(DraftRequestData draftRequestData, MessageType type) {
+        var draftId = draftRequestData.getDraftId();
 
         if (Objects.isNull(draftId)) {
-            log.info("Received new draft request: {}", draftRequest);
-            return createDraft(draftRequest);
+            log.info("Received new draft request: {}", draftRequestData);
+            return createDraft(draftRequestData);
         }
 
         var draft = draftRepository.getDraftById(draftId);
         if (Objects.isNull(draft)) {
-            throw new IllegalArgumentException("Draft with ID " + draftId + " not found.");
+            throw new DraftNotFoundException("Draft with ID " + draftId + " not found.");
         }
 
-        var result = draft.doRequest(draftRequest);
+        var result = draft.doRequest(draftRequestData);
         draftRepository.save(draft);
         return draft;
     }
 
-    private Draft createDraft(DraftRequest draftRequest) {
+    private Draft createDraft(DraftRequestData draftRequestData) {
         var newDraft = draftRepository.createNew();
         var draftAction = new DraftAction(ActionType.INIT);
         draftAction.addData("draftId", newDraft.getDraftId());
-        draftAction.addData("content", draftRequest.getContent());
+        draftAction.addData("content", draftRequestData.getContent());
         newDraft.addAction(draftAction);
         draftRepository.save(newDraft);
         return newDraft;

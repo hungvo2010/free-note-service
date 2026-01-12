@@ -1,7 +1,7 @@
 package com.freedraw.dto;
 
 import com.freedraw.entities.DraftAction;
-import com.freenote.app.server.data.ResponseData;
+import com.freenote.app.server.model.TraceResponseData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,6 +9,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
-public class DraftResponseData extends ResponseData {
+public class DraftResponseData extends TraceResponseData {
     private DraftAction action;
 }

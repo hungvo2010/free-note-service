@@ -1,10 +1,11 @@
 package com.freenote.app.server.model;
 
-import com.freenote.app.server.data.ws.RequestObject;
+import com.freenote.app.server.model.ws.CommonRequestObject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 
@@ -12,16 +13,21 @@ import java.net.Socket;
 @Setter
 @AllArgsConstructor
 public class InputWrapper {
-    private InputStream inputStream;
     private Socket socket;
-    private RequestObject requestObject;
+    private CommonRequestObject requestObject;
 
-    public InputWrapper(InputStream input, Socket incomingSocket) {
-        this.inputStream = input;
+    public InputWrapper(Socket incomingSocket) {
         this.socket = incomingSocket;
     }
 
-    public InputWrapper(InputStream input) {
-        this.inputStream = input;
+    public InputWrapper() {
+    }
+
+    public InputStream getInputStream() {
+        try {
+            return requestObject.getSocket().getInputStream();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -20,7 +20,7 @@ class ExampleURIHandlerTest {
 
         URIHandler handler = new FragmentedURIHandlerImpl();
 
-        boolean result = handler.handle(new InputWrapper(input), output);
+        boolean result = handler.handle(new InputWrapper(), output);
 
         assertFalse(result);
         assertEquals("", output.toString());
@@ -33,6 +33,6 @@ class ExampleURIHandlerTest {
         assertThrows(NullPointerException.class,
                 () -> handler.handle(null, new ByteArrayOutputStream()));
         assertThrows(NullPointerException.class,
-                () -> handler.handle(new InputWrapper(new ByteArrayInputStream("hi".getBytes())), null));
+                () -> handler.handle(new InputWrapper(), null));
     }
 }

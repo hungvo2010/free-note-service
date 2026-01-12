@@ -1,7 +1,7 @@
 package com.freenote.app.server.util;
 
 import com.freenote.app.server.frames.base.WebSocketFrame;
-import io.NoHeaderObjectOutputStream;
+import com.freenote.app.server.io.NoHeaderObjectOutputStream;
 import lombok.experimental.UtilityClass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

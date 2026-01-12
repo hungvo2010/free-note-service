@@ -12,6 +12,7 @@ import com.freenote.app.server.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
+import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -88,7 +89,11 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
         if (!Objects.isNull(webSocketConnection.getResponseFrame())) {
             IOUtils.writeOutPut(webSocketConnection.getOutputStream(), webSocketConnection.getResponseFrame());
         } else if (!Objects.isNull(webSocketConnection.getResponse())) {
-            IOUtils.writeOutPut(webSocketConnection.getOutputStream(), FrameFactory.SERVER.createBinaryFrame(webSocketConnection.getResponse().toString().getBytes(StandardCharsets.UTF_8)));
+            IOUtils.writeOutPut(
+                    webSocketConnection.getOutputStream(),
+                    FrameFactory.SERVER.createTextFrame(
+                            JSONUtils.toJSONString(webSocketConnection.getResponse().getResponseData()
+                    )));
         }
 
     }
@@ -103,7 +108,7 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
         onData(webSocketConnection, message);
     }
 
-    public void onData(WebSocketConnection webSocketConnection, String message){
+    public void onData(WebSocketConnection webSocketConnection, String message) {
         webSocketConnection.setResponseFrame(FrameFactory.SERVER.createTextFrame(message));
     }
 

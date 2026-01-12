@@ -12,7 +12,7 @@ public class HttpUpgradeResponse {
 //    Connection: Upgrade
 //    Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
     private String version;
-    private String statusCode;
+    private String statusCode = "-1";
     private String statusText;
     private String upgrade;
     private String connection;

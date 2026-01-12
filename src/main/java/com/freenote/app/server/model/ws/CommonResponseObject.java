@@ -1,13 +1,12 @@
-package com.freenote.app.server.data.ws;
+package com.freenote.app.server.model.ws;
 
-import com.freenote.app.server.data.ResponseData;
+import com.freenote.app.server.model.TraceResponseData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ResponseObject<T extends ResponseData> {
-    private int requestType;
+public class CommonResponseObject<T extends TraceResponseData> {
     private T responseData;
 
     public T getResponseData(Class<T> clazz) {

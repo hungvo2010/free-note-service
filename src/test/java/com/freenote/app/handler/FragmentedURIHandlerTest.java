@@ -50,7 +50,7 @@ class FragmentedURIHandlerTest {
 
         Thread newThread = new Thread(() -> {
             try {
-                var result = handler.handle(new InputWrapper(inputStream, mock(Socket.class)), outputStream);
+                var result = handler.handle(new InputWrapper(mock(Socket.class)), outputStream);
                 log.info("Result: {}", result);
                 atomicBoolean.set(result);
             } catch (Throwable t) {
@@ -78,7 +78,7 @@ class FragmentedURIHandlerTest {
         IOUtils.writeOutPut(pipedOutputStream, someFrame);
 
         var outputStream = new ByteArrayOutputStream();
-        var result = handler.handle(new InputWrapper(inputStream, mock(Socket.class)), outputStream);
+        var result = handler.handle(new InputWrapper(mock(Socket.class)), outputStream);
 
         assertFalse(result);
     }
@@ -93,7 +93,7 @@ class FragmentedURIHandlerTest {
         IOUtils.writeOutPut(pipedOutputStream, someFrame);
 
         var outputStream = new ByteArrayOutputStream();
-        var result = handler.handle(new InputWrapper(inputStream, mock(Socket.class)), outputStream);
+        var result = handler.handle(new InputWrapper(mock(Socket.class)), outputStream);
 
         assertTrue(result);
     }
@@ -110,7 +110,7 @@ class FragmentedURIHandlerTest {
         var outputStream = mock(OutputStream.class);
         doThrow(new IOException("Simulated write error")).when(outputStream).write(any(byte[].class));
 
-        var result = handler.handle(new InputWrapper(inputStream, mock(Socket.class)), outputStream);
+        var result = handler.handle(new InputWrapper(mock(Socket.class)), outputStream);
 
         assertFalse(result);
     }

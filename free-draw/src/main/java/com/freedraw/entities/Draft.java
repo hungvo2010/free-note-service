@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.freedraw.dto.DraftRequest;
+import com.freedraw.dto.DraftRequestData;
 import com.freedraw.models.enums.ActionType;
 import com.freedraw.models.enums.DraftRequestType;
 import com.freenote.app.server.util.JSONUtils;
@@ -46,15 +46,15 @@ public class Draft {
         actions.add(action);
     }
 
-    public DraftAction doRequest(DraftRequest draftRequest) {
-        if (draftRequest.getDraftRequestType() == DraftRequestType.CONNECT) {
-            return connectAction(draftRequest);
+    public DraftAction doRequest(DraftRequestData draftRequestData) {
+        if (draftRequestData.getDraftRequestType() == DraftRequestType.CONNECT) {
+            return connectAction(draftRequestData);
         }
-        return new DraftAction(draftRequest.getContent());
+        return new DraftAction(draftRequestData.getContent());
     }
 
-    private DraftAction connectAction(DraftRequest draftRequest) {
-        var requestDraftId = draftRequest.getDraftId();
+    private DraftAction connectAction(DraftRequestData draftRequestData) {
+        var requestDraftId = draftRequestData.getDraftId();
         return new DraftAction(ActionType.NOOP);
     }
 

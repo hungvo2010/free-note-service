@@ -17,10 +17,9 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
     private static final String UNIVERSAL_WEBSOCKET_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     private static final Collection<String> ALLOWED_ORIGINS = Arrays.asList(
             "http://localhost:3000",
-            "",
-            null,
             "http://localhost:63342",
             "http://localhost:8082",
+            null,
             "http://localhost:8083",
             "http://localhost:8084",
             "http://localhost:8085",
@@ -32,8 +31,8 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
     @Override
     public HttpUpgradeResponse handle(HttpUpgradeRequest request) {
         try {
-            var handshakeApproved = checkHandshakeApproval(request);
-            if (!handshakeApproved) {
+            var rejectHandShake = isRejectHandShake(request);
+            if (rejectHandShake) {
                 log.warn("Handshake not approved for request: {}", request);
                 return HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE;
             }
@@ -56,8 +55,9 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
         }
     }
 
-    private boolean checkHandshakeApproval(HttpUpgradeRequest request) {
-        return !(Objects.isNull(request.getSecWebSocketKey())
-                || Objects.isNull(request.getSecWebSocketVersion()));
+    private boolean isRejectHandShake(HttpUpgradeRequest request) {
+        return Objects.isNull(request.getSecWebSocketKey())
+                || Objects.isNull(request.getSecWebSocketVersion())
+                || !ALLOWED_ORIGINS.contains(request.getOrigin());
     }
 }

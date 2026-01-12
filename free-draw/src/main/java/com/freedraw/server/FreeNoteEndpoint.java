@@ -1,7 +1,7 @@
 package com.freedraw.server;
 
 import com.freedraw.DraftService;
-import com.freedraw.dto.DraftRequest;
+import com.freedraw.dto.DraftRequestData;
 import com.freedraw.dto.DraftResponseData;
 import com.freedraw.entities.Draft;
 import com.freedraw.entities.DraftAction;
@@ -13,12 +13,12 @@ import com.freedraw.models.core.RoomManager;
 import com.freedraw.models.enums.MessageType;
 import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.core.WebSocketConnection;
-import com.freenote.app.server.data.ws.ResponseObject;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
-import com.freenote.app.server.exceptions.MessagePayloadParsingException;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.frames.control.PongFrame;
+import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.handler.impl.CommonEndpointHandlerImpl;
+import com.freenote.app.server.model.ws.CommonResponseObject;
 import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -58,7 +58,30 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
     }
 
     public static void main(String[] args) {
-        System.out.println(JSONUtils.fromJSON("{requestType=2, content={type=1, details={op=update, id=247, patch={type=rectangle, data={id=247, x=458, y=379.609375, width=599, height=-114}}}}}", DraftRequest.class));
+        System.out.println(JSONUtils.fromJSON(
+                """
+                        {
+                          "content": {
+                            "type": 1,
+                            "details": {
+                              "op": "update",
+                              "id": 247,
+                              "patch": {
+                                "type": "rectangle",
+                                "data": {
+                                  "id": 247,
+                                  "x": 458,
+                                  "y": 379.609375,
+                                  "width": 599,
+                                  "height": -114
+                                }
+                              }
+                            }
+                          }
+                        }
+                        """,
+                DraftRequestData.class)
+        );
 
     }
 
@@ -72,7 +95,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
                 return;
             }
 
-            var draftRequest = JSONUtils.fromMap(appMessage.getBody(), DraftRequest.class);
+            var draftRequest = JSONUtils.fromMap(appMessage.getBody(), DraftRequestData.class);
             log.info("Received DraftRequest: {}", appMessage.getBody().toString());
             if (draftRequest == null) {
                 log.error("Received null or invalid DraftRequest");
@@ -83,13 +106,14 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
             var draft = processDraftRequest(draftRequest, appMessage.getType());
             var lastAction = getLastAction(draft);
             webSocketConnection.setResponse(
-                    new ResponseObject<>(0, new DraftResponseData(lastAction))
+                    new CommonResponseObject<>(new DraftResponseData(lastAction))
             );
             broadcastMessage(draft.getDraftId(), new Connection(webSocketConnection.getOutputStream()),
                     defaultMessageFrame(new AppMessage(lastAction))
             );
         } catch (Exception ex) {
-            log.error("Error in application onMessage logic: ", ex);
+            log.error("Error in application onMessage logic: {}", ex.getMessage());
+            webSocketConnection.setResponseFrame(ServerFrameFactory.SERVER.createTextFrame(JSONUtils.toJSONString(DEFAULT_MESSAGE_PAYLOAD)));
         }
     }
 
@@ -114,14 +138,11 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
         targetRoom.remove(newConnection);
     }
 
-    private Draft processDraftRequest(DraftRequest draftRequest, MessageType type) {
+    private Draft processDraftRequest(DraftRequestData draftRequestData, MessageType type) {
         try {
-            return draftService.handleDraftRequest(draftRequest, type);
-        } catch (MessagePayloadParsingException ex) {
-            log.error("Failed to parse MessagePayload: {}", ex.getMessage());
-            return new Draft();
+            return draftService.handleDraftRequest(draftRequestData, type);
         } catch (Exception ex) {
-            log.error("Error in application logic: {}", ex.getMessage());
+            log.error("Draft Request handle failed: {}", ex.getMessage());
             throw ex;
         }
     }

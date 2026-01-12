@@ -1,7 +1,7 @@
 package com.freenote.app.server.core;
 
-import com.freenote.app.server.data.ws.RequestObject;
-import com.freenote.app.server.data.ws.ResponseObject;
+import com.freenote.app.server.model.ws.CommonRequestObject;
+import com.freenote.app.server.model.ws.CommonResponseObject;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import lombok.Builder;
 import lombok.Data;
@@ -16,8 +16,8 @@ public class WebSocketConnection {
     private InputStream inputStream;
     private OutputStream outputStream;
     private Socket socket;
-    private RequestObject requestObject;
-    private ResponseObject response;
+    private CommonRequestObject requestObject;
+    private CommonResponseObject response;
     private WebSocketFrame requestFrame;
     private WebSocketFrame responseFrame;
 }

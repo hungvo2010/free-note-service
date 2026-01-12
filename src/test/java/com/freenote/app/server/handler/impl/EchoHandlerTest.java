@@ -32,7 +32,7 @@ class EchoHandlerTest {
         byte[] frameData = createSimpleTextFrame("Hello World");
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(new InputWrapper(), outputStream);
 
         assertTrue(result);
         assertTrue(outputStream.size() > 0);
@@ -50,7 +50,7 @@ class EchoHandlerTest {
         byte[] frameData = createMaskedTextFrame(message, maskingKey);
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(new InputWrapper(), outputStream);
 
         assertTrue(result);
         assertTrue(outputStream.size() > 0);
@@ -60,7 +60,7 @@ class EchoHandlerTest {
     void testHandle_EmptyInputStream() throws IOException {
         inputStream = new ByteArrayInputStream(new byte[0]);
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(new InputWrapper(), outputStream);
 
         assertFalse(result);
         assertEquals(0, outputStream.size());
@@ -95,7 +95,7 @@ class EchoHandlerTest {
             }
         };
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(new InputWrapper(), outputStream);
 
         assertFalse(result);
     }
@@ -110,7 +110,7 @@ class EchoHandlerTest {
             }
         };
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(new InputWrapper(), outputStream);
 
         assertFalse(result);
     }
@@ -129,7 +129,7 @@ class EchoHandlerTest {
             }
         };
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), errorOutputStream);
+        boolean result = uriHandler.handle(new InputWrapper(), errorOutputStream);
 
         assertFalse(result);
     }
@@ -150,7 +150,7 @@ class EchoHandlerTest {
 
         inputStream = new ByteArrayInputStream(combinedFrames.toByteArray());
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(new InputWrapper(), outputStream);
 
         assertTrue(result);
         assertTrue(outputStream.size() > 0);
@@ -167,7 +167,7 @@ class EchoHandlerTest {
         byte[] frameData = createSimpleTextFrame(largeMessage.toString());
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(new InputWrapper(), outputStream);
 
         assertTrue(result);
         assertTrue(outputStream.size() > 0);
@@ -181,7 +181,7 @@ class EchoHandlerTest {
         byte[] frameData = createFrameWithOpcode(message, (byte) 0x02); // Binary frame
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(new InputWrapper(), outputStream);
 
         assertTrue(result);
     }
@@ -192,7 +192,7 @@ class EchoHandlerTest {
         byte[] frameData = createFragmentedFrame(message);
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(new InputWrapper(), outputStream);
 
         assertTrue(result);
     }
@@ -203,7 +203,7 @@ class EchoHandlerTest {
         when(inputStream.available()).thenReturn(1);
         when(inputStream.read(any(byte[].class))).thenReturn(0);
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(new InputWrapper(), outputStream);
 
         assertTrue(result);
     }
