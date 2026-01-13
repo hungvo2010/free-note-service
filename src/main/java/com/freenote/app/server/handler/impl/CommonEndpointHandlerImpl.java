@@ -88,11 +88,11 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
     private void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
         if (!Objects.isNull(webSocketConnection.getResponseFrame())) {
             IOUtils.writeOutPut(webSocketConnection.getOutputStream(), webSocketConnection.getResponseFrame());
-        } else if (!Objects.isNull(webSocketConnection.getResponse())) {
+        } else if (!Objects.isNull(webSocketConnection.getResponseObject())) {
             IOUtils.writeOutPut(
                     webSocketConnection.getOutputStream(),
                     FrameFactory.SERVER.createTextFrame(
-                            JSONUtils.toJSONString(webSocketConnection.getResponse().getResponseData()
+                            JSONUtils.toJSONString(webSocketConnection.getResponseObject().getResponseData()
                     )));
         }
 

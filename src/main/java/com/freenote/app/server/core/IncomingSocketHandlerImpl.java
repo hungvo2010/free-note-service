@@ -45,13 +45,13 @@ public class IncomingSocketHandlerImpl implements IncomingConnectionHandler {
             doHandShake(upgradeRequest, output);
 
             var inputWrapper = buildInputWrapper(incomingSocket, upgradeRequest);
+            var pathHandler = (URIHandler) (getInstanceByURI(upgradeRequest.getPath()));
+            if (pathHandler == null) {
+                log.warn("No handler found for URI: {}", upgradeRequest.getPath());
+                throw new AcceptConnectionException("No handler for URI: " + upgradeRequest.getPath());
+            }
 
             while (!incomingSocket.isClosed()) { // todo: not correct due to incoming socket will not be closed after client disconnects
-                var pathHandler = (URIHandler) (getInstanceByURI(upgradeRequest.getPath()));
-                if (pathHandler == null) {
-                    log.warn("No handler found for URI: {}", upgradeRequest.getPath());
-                    return;
-                }
                 pathHandler.handle(inputWrapper, output);
             }
         } catch (ClientDisconnectException | AcceptConnectionException connectionException) {

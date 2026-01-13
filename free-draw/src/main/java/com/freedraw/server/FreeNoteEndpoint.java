@@ -105,8 +105,11 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
 
             var draft = processDraftRequest(draftRequest, appMessage.getType());
             var lastAction = getLastAction(draft);
-            webSocketConnection.setResponse(
-                    new CommonResponseObject<>(new DraftResponseData(lastAction))
+
+            var responseData = new DraftResponseData(lastAction);
+            log.info("Response: {}", responseData);
+            webSocketConnection.setResponseObject(
+                    new CommonResponseObject<>(responseData)
             );
             broadcastMessage(draft.getDraftId(), new Connection(webSocketConnection.getOutputStream()),
                     defaultMessageFrame(new AppMessage(lastAction))

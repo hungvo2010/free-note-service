@@ -14,7 +14,7 @@ public class HeartBeatHandlerImpl extends CommonEndpointHandlerImpl {
 
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, String message) {
-        webSocketConnection.setResponse(null);
+        webSocketConnection.setResponseObject(null);
     }
 
     @Override

@@ -21,6 +21,7 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
             "http://localhost:8082",
             null,
             "http://localhost:8083",
+            "http://localhost:5173",
             "http://localhost:8084",
             "http://localhost:8085",
             "http://localhost:8086",

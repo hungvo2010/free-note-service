@@ -35,9 +35,7 @@ public class RoomManager {
     }
 
     public void removeConnectionByInputStream(OutputStream outputStream) {
-        var iterator = rooms.values().iterator();
-        while (iterator.hasNext()) {
-            var room = iterator.next();
+        for (Room room : rooms.values()) {
             room.remove(new Connection(outputStream));
         }
     }

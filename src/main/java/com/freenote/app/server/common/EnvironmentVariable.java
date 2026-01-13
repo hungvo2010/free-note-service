@@ -22,7 +22,7 @@ public class EnvironmentVariable {
                 return targetDir;
             }
             if (targetDir == null || targetDir.isEmpty()) {
-                targetDir = "file:///tmp/freenote_data";
+                targetDir = "/tmp/freenote_data";
             }
             Files.createDirectories(Path.of(targetDir));
             return targetDir;
