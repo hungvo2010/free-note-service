@@ -21,6 +21,7 @@ public class SimpleServer {
     public static List<Future<Void>> run(int port) {
         List<Future<Void>> futures = new ArrayList<>();
         var serverBootstrap = new ServerBootstrap(new RawSocket());
+        serverBootstrap.setPort(port);
         try {
             log.info("Server started on port {}", port);
             serverBootstrap.start(new IncomingSocketHandlerImpl());

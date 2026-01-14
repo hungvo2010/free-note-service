@@ -15,10 +15,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 public class PersistenceContext {
@@ -74,7 +72,7 @@ public class PersistenceContext {
         }
         var newLength = draft.getActions().size();
         actionsOffsets.update(draftPosition, new int[]{start, newLength});
-        for (var action : draft.getActions()) {
+        for (var action : draft.getActions().stream().filter(Objects::nonNull).collect(Collectors.toList())) {
             actionsVector.append(action.toString());
             var idx = this.searchActionType.insert(action.getActionType().getCode());
             log.info("Persisting actionType: {}, idx: {}", action.getActionType().getCode(), idx);

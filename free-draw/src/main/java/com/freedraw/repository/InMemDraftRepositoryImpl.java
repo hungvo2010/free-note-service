@@ -26,13 +26,6 @@ public class InMemDraftRepositoryImpl implements DraftRepository {
     }
 
     @Override
-    public Draft createNew() {
-        var newDraft = new Draft();
-        allDrafts.add(newDraft);
-        return newDraft;
-    }
-
-    @Override
     public void save(Draft draft) {
         this.persistenceContext.persist(draft);
     }

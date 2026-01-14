@@ -19,6 +19,7 @@ public class EnvironmentVariable {
                 if (targetDir == null || targetDir.isEmpty()) {
                     targetDir = "D:\\tempdata";
                 }
+                Files.createDirectories(Path.of(targetDir));
                 return targetDir;
             }
             if (targetDir == null || targetDir.isEmpty()) {

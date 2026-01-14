@@ -15,10 +15,11 @@ public class FreeNoteServer {
     }
 
     public static void run(int port) {
-        var serverHolder = new ServerBootstrap(new RawSocket());
+        var serverBootstrap = new ServerBootstrap(new RawSocket());
         try {
             log.info("Server started on port {}", port);
-            serverHolder.start(new IncomingSocketHandlerImpl());
+            serverBootstrap.setPort(port);
+            serverBootstrap.start(new IncomingSocketHandlerImpl());
         } catch (Exception e) {
             log.error("Error starting server", e);
         }

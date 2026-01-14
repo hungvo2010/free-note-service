@@ -7,10 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Room {
     private static final Logger log = LogManager.getLogger(Room.class);
@@ -19,10 +16,20 @@ public class Room {
     @Getter
     private final Set<Connection> connections;
 
-    public Room(String roomId) {
-        this.roomId = roomId;
+    public Room(String draftId) {
+        this.roomId = hashDraftId(draftId);
         connections = new HashSet<>();
         log.info("Room created with Room ID: {}", this.roomId);
+    }
+
+    private String hashDraftId(String draftId) {
+        return draftId;
+    }
+
+    public static void main(String[] args) {
+        var uuIdVal = UUID.fromString("b4a04191-0547-43d1-a50b-adf676a1e6b0");
+        System.out.println(uuIdVal.hashCode());
+        System.out.println("b4a04191-0547-43d1-a50b-adf676a1e6b0".hashCode());
     }
 
     public void addMember(Connection connection) {

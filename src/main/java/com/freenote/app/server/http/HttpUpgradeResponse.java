@@ -1,6 +1,9 @@
 package com.freenote.app.server.http;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Builder
 @AllArgsConstructor
@@ -12,6 +15,7 @@ public class HttpUpgradeResponse {
 //    Connection: Upgrade
 //    Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
     private String version;
+    @Builder.Default
     private String statusCode = "-1";
     private String statusText;
     private String upgrade;

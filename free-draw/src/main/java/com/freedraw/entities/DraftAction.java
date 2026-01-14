@@ -6,14 +6,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @NoArgsConstructor
 public class DraftAction {
     @Getter
     private ActionType actionType = ActionType.INIT;
-    private final Map<String, Object> data = new HashMap<>();
+    private final Map<String, Object> data = new LinkedHashMap<>();
 
     public DraftAction(ActionType actionType) {
         this.actionType = actionType;

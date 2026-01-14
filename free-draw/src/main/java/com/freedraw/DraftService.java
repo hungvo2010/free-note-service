@@ -5,9 +5,9 @@ import com.freedraw.entities.Draft;
 import com.freedraw.entities.DraftAction;
 import com.freedraw.exception.DraftNotFoundException;
 import com.freedraw.models.enums.ActionType;
-import com.freedraw.models.enums.MessageType;
+import com.freedraw.models.enums.DraftRequestType;
 import com.freedraw.repository.DraftRepository;
-import com.freedraw.repository.InMemDraftRepositoryImpl;
+import com.freedraw.repository.RedisRepositoryImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,9 +15,9 @@ import java.util.Objects;
 
 public class DraftService {
     private static final Logger log = LogManager.getLogger(DraftService.class);
-    private final DraftRepository draftRepository = new InMemDraftRepositoryImpl();
+    private final DraftRepository draftRepository = new RedisRepositoryImpl();
 
-    public Draft handleDraftRequest(DraftRequestData draftRequestData, MessageType type) {
+    public Draft handleDraftRequest(DraftRequestData draftRequestData, DraftRequestType type) {
         var draftId = draftRequestData.getDraftId();
 
         if (Objects.isNull(draftId)) {
@@ -30,18 +30,34 @@ public class DraftService {
             throw new DraftNotFoundException("Draft with ID " + draftId + " not found.");
         }
 
-        var result = draft.doRequest(draftRequestData);
-        draftRepository.save(draft);
+        var draftAction = doRequest(draftRequestData);
+        if (draftAction.getActionType() == ActionType.UPDATE) {
+            draft.addAction(draftAction);
+            draftRepository.save(draft);
+        }
         return draft;
     }
 
     private Draft createDraft(DraftRequestData draftRequestData) {
-        var newDraft = draftRepository.createNew();
+        var newDraft = new Draft();
         var draftAction = new DraftAction(ActionType.INIT);
         draftAction.addData("draftId", newDraft.getDraftId());
         draftAction.addData("content", draftRequestData.getContent());
         newDraft.addAction(draftAction);
         draftRepository.save(newDraft);
         return newDraft;
+    }
+
+
+    private DraftAction connectAction(DraftRequestData draftRequestData) {
+        var requestDraftId = draftRequestData.getDraftId();
+        return new DraftAction(ActionType.NOOP);
+    }
+
+    private DraftAction doRequest(DraftRequestData draftRequestData) {
+        if (draftRequestData.getDraftRequestType() == DraftRequestType.CONNECT) {
+            return connectAction(draftRequestData);
+        }
+        return new DraftAction(draftRequestData.getContent());
     }
 }
