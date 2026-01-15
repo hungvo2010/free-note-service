@@ -17,7 +17,7 @@ public class InMemDraftRepositoryImpl implements DraftRepository {
 
     @Override
     public Draft getDraftById(String draftId) {
-        for (Draft draft : allDrafts) {
+        for (Draft draft : this.persistenceContext.getAllDrafts()) {
             if (draft.getDraftId().equals(draftId)) {
                 return draft;
             }

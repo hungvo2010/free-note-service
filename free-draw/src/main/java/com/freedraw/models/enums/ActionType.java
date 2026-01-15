@@ -1,5 +1,7 @@
 package com.freedraw.models.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 @Getter
@@ -14,6 +16,7 @@ public enum ActionType {
         this.code = code;
     }
 
+    @JsonCreator
     public static ActionType fromCode(int code) {
         for (ActionType actionType : ActionType.values()) {
             if (actionType.code == code) {
@@ -21,5 +24,10 @@ public enum ActionType {
             }
         }
         return INVALID;
+    }
+
+    @JsonValue
+    public int getCode() {
+        return code;
     }
 }
