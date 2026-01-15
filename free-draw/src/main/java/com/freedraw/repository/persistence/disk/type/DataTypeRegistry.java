@@ -1,6 +1,6 @@
 package com.freedraw.repository.persistence.disk.type;
 
-import com.freedraw.repository.persistence.disk.type.impl.*;
+import com.freedraw.repository.persistence.disk.type.predefine.*;
 import lombok.experimental.UtilityClass;
 
 import java.util.HashMap;

@@ -5,7 +5,7 @@ import com.freedraw.entities.DraftAction;
 import com.freedraw.repository.persistence.disk.service.SearchFieldByOffset;
 import com.freedraw.repository.persistence.disk.service.SearchIx;
 import com.freedraw.repository.persistence.disk.service.SearchOffset;
-import com.freedraw.repository.persistence.disk.service.impl.SearchDraftActionsByOffset;
+import com.freedraw.repository.persistence.disk.service.impl.SearchDraftActionsRangeByOffset;
 import com.freedraw.repository.persistence.disk.service.impl.generic.FixedLengthFieldSearchByOffset;
 import com.freedraw.repository.persistence.disk.service.impl.generic.SearchIxImpl;
 import com.freedraw.repository.persistence.disk.service.impl.generic.VariableLengthFieldSearchByOffset;
@@ -16,7 +16,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Getter
 public class PersistenceContext {
@@ -38,7 +37,7 @@ public class PersistenceContext {
 
     private void initOrLoadFileOffsets() throws IOException {
         var fileOffsets = FileUtility.findFile("offsets");
-        this.searchOffset = new SearchDraftActionsByOffset(fileOffsets.getPath());
+        this.searchOffset = new SearchDraftActionsRangeByOffset(fileOffsets.getPath());
     }
 
     private void initOrLoadFileIndex() throws IOException {
@@ -72,8 +71,9 @@ public class PersistenceContext {
         }
         var newLength = draft.getActions().size();
         actionsOffsets.update(draftPosition, new int[]{start, newLength});
-        for (var action : draft.getActions().stream().filter(Objects::nonNull).collect(Collectors.toList())) {
-            actionsVector.append(action.toString());
+
+        for (var action : draft.getActions().stream().filter(Objects::nonNull).toList()) {
+            actionsVector.append(JSONUtils.toJSONString(action));
             var idx = this.searchActionType.insert(action.getActionType().getCode());
             log.info("Persisting actionType: {}, idx: {}", action.getActionType().getCode(), idx);
         }
@@ -82,10 +82,10 @@ public class PersistenceContext {
     public List<Draft> getAllDrafts() {
         var allDraftIds = this.searchDraftIx.getAll();
         var result = new ArrayList<Draft>();
-        for (int i = 0; i < allDraftIds.size(); i++) {
-            var draftId = allDraftIds.get(i);
+        for (int idx = 0; idx < allDraftIds.size(); idx++) {
+            var draftId = allDraftIds.get(idx);
             log.info("DraftId: {}", draftId);
-            result.add(buildDraftById(draftId, i));
+            result.add(buildDraftById(draftId, idx));
         }
         return result;
     }
@@ -104,6 +104,9 @@ public class PersistenceContext {
         var result = new ArrayList<DraftAction>();
         for (int j = 0; j < length; j++) {
             var actionData = actionsVector.getData(start + j);
+            if (!actionData.isEmpty()){
+                log.info("Action data: {}", actionData);
+            }
             result.add(JSONUtils.fromJSON(actionData, DraftAction.class));
         }
         return result;

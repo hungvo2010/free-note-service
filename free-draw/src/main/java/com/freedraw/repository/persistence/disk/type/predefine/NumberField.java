@@ -1,4 +1,4 @@
-package com.freedraw.repository.persistence.disk.type.impl;
+package com.freedraw.repository.persistence.disk.type.predefine;
 
 import com.freedraw.repository.persistence.disk.type.DataType;
 

@@ -6,11 +6,11 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public class SearchDraftActionsByOffset implements Closeable, SearchOffset {
+public class SearchDraftActionsRangeByOffset implements Closeable, SearchOffset {
     private final RandomAccessFile fileReader;
     private final long itemSize;
 
-    public SearchDraftActionsByOffset(String filePath) throws IOException {
+    public SearchDraftActionsRangeByOffset(String filePath) throws IOException {
         this.fileReader = new RandomAccessFile(filePath, "rw");
         this.itemSize = this.getItemSize(filePath);
     }

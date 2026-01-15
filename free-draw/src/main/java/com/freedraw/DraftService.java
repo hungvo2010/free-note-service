@@ -7,7 +7,7 @@ import com.freedraw.exception.DraftNotFoundException;
 import com.freedraw.models.enums.ActionType;
 import com.freedraw.models.enums.DraftRequestType;
 import com.freedraw.repository.DraftRepository;
-import com.freedraw.repository.RedisRepositoryImpl;
+import com.freedraw.repository.InMemDraftRepositoryImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,7 +15,7 @@ import java.util.Objects;
 
 public class DraftService {
     private static final Logger log = LogManager.getLogger(DraftService.class);
-    private final DraftRepository draftRepository = new RedisRepositoryImpl();
+    private final DraftRepository draftRepository = new InMemDraftRepositoryImpl();
 
     public Draft handleDraftRequest(DraftRequestData draftRequestData, DraftRequestType type) {
         var draftId = draftRequestData.getDraftId();

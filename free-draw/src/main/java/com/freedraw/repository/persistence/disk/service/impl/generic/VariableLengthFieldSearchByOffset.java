@@ -52,7 +52,31 @@ public class VariableLengthFieldSearchByOffset<T> implements SearchFieldByOffset
 
     @Override
     public int append(T item) {
-        return 0;
+        try {
+            // 1. Convert the generic data to bytes
+            byte[] bytes = dataType.toBytes(item);
+            int length = bytes.length;
+
+            // 2. Determine the starting position (current end of file)
+            long startPosition = fileReader.length();
+
+            // 3. Move to the end and write the actual data
+            fileReader.seek(startPosition);
+            fileReader.write(bytes);
+
+            // 4. Update the index file with [startPosition, length]
+            // FixedLengthFieldSearchByOffset handles the indexing logic
+            Integer[] metadata = new Integer[]{(int) startPosition, length};
+            int newOffset = offsetIndexReader.append(metadata);
+
+            log.debug("[Disk] Appended data to {}. Start: {}, Length: {}, Offset Index: {}",
+                    this.path, startPosition, length, newOffset);
+
+            return newOffset;
+        } catch (IOException e) {
+            log.error("Failed to append data to file: {}", this.path, e);
+            throw new DiskReadException("Error appending data to file: " + this.path, e);
+        }
     }
 
     @Override

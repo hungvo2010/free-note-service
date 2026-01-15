@@ -14,5 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DraftResponseData extends TraceResponseData {
+    private String draftId;
+    private String draftName;
     private DraftAction action;
 }
