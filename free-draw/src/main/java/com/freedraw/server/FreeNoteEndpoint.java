@@ -1,6 +1,6 @@
 package com.freedraw.server;
 
-import com.freedraw.DraftService;
+import com.freedraw.service.DraftService;
 import com.freedraw.dto.DraftRequestData;
 import com.freedraw.dto.DraftResponseData;
 import com.freedraw.entities.Draft;
@@ -106,7 +106,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
 
     private Draft processDraftRequest(DraftRequestData draftRequestData, DraftRequestType type) {
         try {
-            return draftService.handleDraftRequest(draftRequestData, type);
+            return draftService.handleDraftRequest(draftRequestData);
         } catch (Exception ex) {
             log.error("Draft Request handle failed: ", ex);
             throw ex;

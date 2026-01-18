@@ -20,7 +20,7 @@ public class DraftRequestData extends TraceRequestData {
     private String draftId;
     private String draftName;
     private DraftRequestType draftRequestType;
-    private DraftContent content = new DraftContent();
+    private DraftRequestContent content = new DraftRequestContent();
 
 
     @JsonSetter("requestType")

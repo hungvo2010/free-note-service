@@ -1,10 +1,10 @@
-package com.freedraw;
+package com.freedraw.service;
 
 import com.freedraw.dto.DraftRequestData;
 import com.freedraw.entities.Draft;
 import com.freedraw.entities.DraftAction;
 import com.freedraw.exception.DraftNotFoundException;
-import com.freedraw.models.enums.ActionType;
+import com.freedraw.models.enums.DraftActionType;
 import com.freedraw.models.enums.DraftRequestType;
 import com.freedraw.repository.DraftRepository;
 import com.freedraw.repository.InMemDraftRepositoryImpl;
@@ -17,7 +17,7 @@ public class DraftService {
     private static final Logger log = LogManager.getLogger(DraftService.class);
     private final DraftRepository draftRepository = new InMemDraftRepositoryImpl();
 
-    public Draft handleDraftRequest(DraftRequestData draftRequestData, DraftRequestType type) {
+    public Draft handleDraftRequest(DraftRequestData draftRequestData) {
         var draftId = draftRequestData.getDraftId();
 
         if (Objects.isNull(draftId)) {
@@ -31,7 +31,7 @@ public class DraftService {
         }
 
         var draftAction = doRequest(draftRequestData);
-        if (draftAction.getActionType() == ActionType.UPDATE) {
+        if (draftAction.getActionType() == DraftActionType.UPDATE) {
             draft.addAction(draftAction);
             draftRepository.save(draft);
         }
@@ -40,7 +40,7 @@ public class DraftService {
 
     private Draft createDraft(DraftRequestData draftRequestData) {
         var newDraft = new Draft();
-        var draftAction = new DraftAction(ActionType.INIT);
+        var draftAction = new DraftAction(DraftActionType.INIT);
         draftAction.addData("draftId", newDraft.getDraftId());
         draftAction.addData("content", draftRequestData.getContent());
         newDraft.addAction(draftAction);
@@ -51,7 +51,7 @@ public class DraftService {
 
     private DraftAction connectAction(DraftRequestData draftRequestData) {
         var requestDraftId = draftRequestData.getDraftId();
-        return new DraftAction(ActionType.NOOP);
+        return new DraftAction(DraftActionType.NOOP);
     }
 
     private DraftAction doRequest(DraftRequestData draftRequestData) {

@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DraftContent {
+public class DraftRequestContent {
     private final HashMap<String, Object> data = new HashMap<>();
 
     public Object getAttribute(String key) {
