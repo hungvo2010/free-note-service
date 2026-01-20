@@ -1,5 +1,6 @@
 package com.freedraw.dto;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -9,13 +10,14 @@ import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DraftRequestContent {
-    private final HashMap<String, Object> data = new HashMap<>();
+    private final Map<String, Object> data = new HashMap<>();
 
     public Object getAttribute(String key) {
         return data.get(key);
     }
 
-    public Map<String, ?> getAttributes() {
+    @JsonAnyGetter
+    public Map<String, Object> getAttributes() {
         return Collections.unmodifiableMap(this.data);
     }
 

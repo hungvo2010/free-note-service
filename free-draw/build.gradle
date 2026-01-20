@@ -28,8 +28,35 @@ dependencies {
     implementation(project(":"))
     implementation(project(":UtilityProcessor"))
 
+    // Apicurio Registry Client
+    implementation("io.apicurio:apicurio-registry-client:2.5.8.Final")
+    implementation("io.apicurio:apicurio-registry-serdes-jsonschema-serde:2.5.8.Final")
+
 }
 
 test {
     useJUnitPlatform()
+}
+
+
+// Task to register schemas with Apicurio Registry
+task registerSchemas(type: Exec) {
+    description = 'Register AsyncAPI schemas to Apicurio Registry'
+    group = 'schema'
+    
+    workingDir rootProject.projectDir
+    commandLine 'bash', 'register-schemas.sh'
+    
+    doFirst {
+        println "Registering schemas to Apicurio Registry..."
+    }
+}
+
+// Task to validate AsyncAPI spec
+task validateAsyncAPI(type: Exec) {
+    description = 'Validate AsyncAPI specification'
+    group = 'schema'
+    
+    workingDir rootProject.projectDir
+    commandLine 'bash', '-c', 'npx @asyncapi/cli validate asyncapi.yaml || echo "Install AsyncAPI CLI: npm install -g @asyncapi/cli"'
 }

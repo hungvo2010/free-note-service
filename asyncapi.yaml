@@ -1,206 +1,263 @@
 asyncapi: 3.0.0
 info:
-  title: Streetlights Kafka API
+  title: FreeNote WebSocket API
   version: 1.0.0
   description: |-
-    The Smartylighting Streetlights API allows you to remotely manage the city
-    lights.
-    ### Check out its awesome features:
-
-    * Turn a specific streetlight on/off 🌃  
-    * Dim a specific streetlight 😎
-    * Receive real-time information about environmental lighting conditions 📈
+    The FreeNote WebSocket API enables real-time drawing and collaboration.
+    
+    ### Features:
+    * Real-time drawing synchronization 🎨
+    * Multi-user collaboration support 👥
+    * Bidirectional communication 🔄
+    * Shape management (add, update, remove) ✏️
+    
+    ### Schema Registry:
+    This API is integrated with Apicurio Registry for schema management and validation.
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
+  x-schema-registry:
+    vendor: apicurio
+    url: http://localhost:8080/apis/registry/v2
+    description: Apicurio Registry for schema management
 defaultContentType: application/json
 servers:
-  scram-connections:
-    host: test.mykafkacluster.org:18092
-    protocol: kafka-secure
-    description: Test broker secured with scramSha256
-    security:
-      - $ref: '#/components/securitySchemes/saslScram'
+  development:
+    host: localhost:8189
+    protocol: ws
+    description: Local development WebSocket server
     tags:
-      - name: env:test-scram
-        description: >-
-          This environment is meant for running internal tests through
-          scramSha256
-      - name: kind:remote
-        description: This server is a remote server. Not exposed by the application
-      - name: visibility:private
-        description: This resource is private and only available to certain users
-  mtls-connections:
-    host: test.mykafkacluster.org:28092
-    protocol: kafka-secure
-    description: Test broker secured with X509
-    security:
-      - $ref: '#/components/securitySchemes/certs'
+      - name: env:development
+        description: Development environment
+      - name: kind:local
+        description: Local server instance
+  production:
+    host: your-domain.com:8189
+    protocol: wss
+    description: Production WebSocket server with SSL/TLS
     tags:
-      - name: env:test-mtls
-        description: This environment is meant for running internal tests through mtls
+      - name: env:production
+        description: Production environment
       - name: kind:remote
-        description: This server is a remote server. Not exposed by the application
-      - name: visibility:private
-        description: This resource is private and only available to certain users
+        description: Remote production server
 channels:
-  lightingMeasured:
-    address: smartylighting.streetlights.1.0.event.{streetlightId}.lighting.measured
+  freeNoteChannel:
+    address: /freeNote
+    description: Main WebSocket channel for real-time draft/drawing communication
     messages:
-      lightMeasured:
-        $ref: '#/components/messages/lightMeasured'
-    description: The topic on which measured values may be produced and consumed.
-    parameters:
-      streetlightId:
-        $ref: '#/components/parameters/streetlightId'
-  lightTurnOn:
-    address: smartylighting.streetlights.1.0.action.{streetlightId}.turn.on
-    messages:
-      turnOn:
-        $ref: '#/components/messages/turnOnOff'
-    parameters:
-      streetlightId:
-        $ref: '#/components/parameters/streetlightId'
-  lightTurnOff:
-    address: smartylighting.streetlights.1.0.action.{streetlightId}.turn.off
-    messages:
-      turnOff:
-        $ref: '#/components/messages/turnOnOff'
-    parameters:
-      streetlightId:
-        $ref: '#/components/parameters/streetlightId'
-  lightsDim:
-    address: smartylighting.streetlights.1.0.action.{streetlightId}.dim
-    messages:
-      dimLight:
-        $ref: '#/components/messages/dimLight'
-    parameters:
-      streetlightId:
-        $ref: '#/components/parameters/streetlightId'
+      draftRequest:
+        $ref: '#/components/messages/draftRequest'
+      draftResponse:
+        $ref: '#/components/messages/draftResponse'
 operations:
-  receiveLightMeasurement:
+  sendDraftRequest:
+    action: send
+    channel:
+      $ref: '#/channels/freeNoteChannel'
+    summary: Client sends draft requests to the server
+    description: Client publishes draft actions (connect, add, update, remove shapes) to be processed and broadcast
+    messages:
+      - $ref: '#/channels/freeNoteChannel/messages/draftRequest'
+  receiveDraftResponse:
     action: receive
     channel:
-      $ref: '#/channels/lightingMeasured'
-    summary: >-
-      Inform about environmental lighting conditions of a particular
-      streetlight.
-    traits:
-      - $ref: '#/components/operationTraits/kafka'
+      $ref: '#/channels/freeNoteChannel'
+    summary: Client receives draft responses from the server
+    description: Client subscribes to draft action responses broadcast by the server
     messages:
-      - $ref: '#/channels/lightingMeasured/messages/lightMeasured'
-  turnOn:
-    action: send
-    channel:
-      $ref: '#/channels/lightTurnOn'
-    traits:
-      - $ref: '#/components/operationTraits/kafka'
-    messages:
-      - $ref: '#/channels/lightTurnOn/messages/turnOn'
-  turnOff:
-    action: send
-    channel:
-      $ref: '#/channels/lightTurnOff'
-    traits:
-      - $ref: '#/components/operationTraits/kafka'
-    messages:
-      - $ref: '#/channels/lightTurnOff/messages/turnOff'
-  dimLight:
-    action: send
-    channel:
-      $ref: '#/channels/lightsDim'
-    traits:
-      - $ref: '#/components/operationTraits/kafka'
-    messages:
-      - $ref: '#/channels/lightsDim/messages/dimLight'
+      - $ref: '#/channels/freeNoteChannel/messages/draftResponse'
 components:
   messages:
-    lightMeasured:
-      name: lightMeasured
-      title: Light measured
-      summary: >-
-        Inform about environmental lighting conditions of a particular
-        streetlight.
+    draftRequest:
+      name: draftRequest
+      title: Draft Request
+      summary: Request to manage shapes in a draft (add, update, remove)
       contentType: application/json
-      traits:
-        - $ref: '#/components/messageTraits/commonHeaders'
+      x-schema-registry:
+        groupId: com.freedraw
+        artifactId: DraftRequestData
+        version: 1.0.0
       payload:
-        $ref: '#/components/schemas/lightMeasuredPayload'
-    turnOnOff:
-      name: turnOnOff
-      title: Turn on/off
-      summary: Command a particular streetlight to turn the lights on or off.
-      traits:
-        - $ref: '#/components/messageTraits/commonHeaders'
+        $ref: '#/components/schemas/draftRequestPayload'
+      examples:
+        - name: connectRequest
+          summary: Initial connection to a draft
+          payload:
+            draftId: "draft-123"
+            draftName: "My Drawing"
+            requestType: 1
+            content:
+              shapes: []
+        - name: addShapes
+          summary: Add new shapes to the draft
+          payload:
+            draftId: "draft-123"
+            draftName: "My Drawing"
+            requestType: 2
+            content:
+              shapes:
+                - shapeId: "shape-001"
+                  type: "rectangle"
+                  coordinates:
+                    x: 100
+                    y: 150
+                    width: 200
+                    height: 100
+                - shapeId: "shape-002"
+                  type: "circle"
+                  coordinates:
+                    x: 400
+                    y: 300
+                    radius: 50
+        - name: updateShape
+          summary: Update existing shape
+          payload:
+            draftId: "draft-123"
+            requestType: 3
+            content:
+              shapes:
+                - shapeId: "shape-001"
+                  type: "rectangle"
+                  coordinates:
+                    x: 458
+                    y: 379.609375
+                    width: 599
+                    height: 114
+        - name: removeShape
+          summary: Remove a shape from the draft
+          payload:
+            draftId: "draft-123"
+            requestType: 4
+            content:
+              shapes:
+                - shapeId: "shape-001"
+    draftResponse:
+      name: draftResponse
+      title: Draft Response
+      summary: Response containing the draft state and affected shapes
+      contentType: application/json
+      x-schema-registry:
+        groupId: com.freedraw
+        artifactId: DraftResponseData
+        version: 1.0.0
       payload:
-        $ref: '#/components/schemas/turnOnOffPayload'
-    dimLight:
-      name: dimLight
-      title: Dim light
-      summary: Command a particular streetlight to dim the lights.
-      traits:
-        - $ref: '#/components/messageTraits/commonHeaders'
-      payload:
-        $ref: '#/components/schemas/dimLightPayload'
+        $ref: '#/components/schemas/draftResponsePayload'
+      examples:
+        - name: shapesAdded
+          summary: Response after adding shapes
+          payload:
+            draftId: "draft-123"
+            draftName: "My Drawing"
+            actionType: 2
+            shapes:
+              - shapeId: "shape-001"
+                type: "rectangle"
+                coordinates:
+                  x: 100
+                  y: 150
+                  width: 200
+                  height: 100
+        - name: shapeUpdated
+          summary: Response after updating a shape
+          payload:
+            draftId: "draft-123"
+            actionType: 3
+            shapes:
+              - shapeId: "shape-001"
+                type: "rectangle"
+                coordinates:
+                  x: 458
+                  y: 379.609375
+                  width: 599
+                  height: 114
   schemas:
-    lightMeasuredPayload:
+    draftRequestPayload:
       type: object
+      required:
+        - requestType
       properties:
-        lumens:
-          type: integer
-          minimum: 0
-          description: Light intensity measured in lumens.
-        sentAt:
-          $ref: '#/components/schemas/sentAt'
-    turnOnOffPayload:
-      type: object
-      properties:
-        command:
+        draftId:
           type: string
-          enum:
-            - 'on'
-            - 'off'
-          description: Whether to turn on or off the light.
-        sentAt:
-          $ref: '#/components/schemas/sentAt'
-    dimLightPayload:
+          description: Unique identifier for the draft/drawing session
+        draftName:
+          type: string
+          description: Name of the draft
+        requestType:
+          type: integer
+          description: Type of request (0=INIT, 1=CONNECT, 2=ADD, 3=UPDATE, 4=REMOVE, 5=NOOP)
+          enum: [0, 1, 2, 3, 4, 5]
+        content:
+          type: object
+          required:
+            - shapes
+          properties:
+            shapes:
+              type: array
+              description: List of shapes to add, update, or remove
+              items:
+                $ref: '#/components/schemas/shapeData'
+    draftResponsePayload:
       type: object
       properties:
-        percentage:
+        draftId:
+          type: string
+          description: Unique identifier for the draft
+        draftName:
+          type: string
+          description: Name of the draft
+        actionType:
           type: integer
-          description: Percentage to which the light should be dimmed to.
-          minimum: 0
-          maximum: 100
-        sentAt:
-          $ref: '#/components/schemas/sentAt'
-    sentAt:
-      type: string
-      format: date-time
-      description: Date and time when the message was sent.
-  securitySchemes:
-    saslScram:
-      type: scramSha256
-      description: Provide your username and password for SASL/SCRAM authentication
-    certs:
-      type: X509
-      description: Download the certificate files from service provider
-  parameters:
-    streetlightId:
-      description: The ID of the streetlight.
-  messageTraits:
-    commonHeaders:
-      headers:
-        type: object
-        properties:
-          my-app-header:
-            type: integer
-            minimum: 0
-            maximum: 100
-  operationTraits:
-    kafka:
-      bindings:
-        kafka:
-          clientId:
-            type: string
-            enum:
-              - my-app-id
+          description: Type of action performed (0=INIT, 1=CONNECT, 2=ADD, 3=UPDATE, 4=REMOVE, 5=NOOP, -1=INVALID)
+          enum: [0, 1, 2, 3, 4, 5, -1]
+        shapes:
+          type: array
+          description: List of shapes affected by the action
+          items:
+            $ref: '#/components/schemas/shapeData'
+    shapeData:
+      type: object
+      required:
+        - shapeId
+      properties:
+        shapeId:
+          type: string
+          description: Unique identifier for the shape
+        type:
+          type: string
+          description: Type of shape
+          enum: [rectangle, circle, line, text, ellipse, polygon, path]
+        content:
+          type: object
+          description: Generic content map containing shape-specific data (coordinates, styles, etc.)
+          additionalProperties: true
+    coordinatesData:
+      type: object
+      description: Coordinate data for the shape (fields vary by shape type) - DEPRECATED, use content field in shapeData
+      properties:
+        x:
+          type: number
+          description: X position
+        y:
+          type: number
+          description: Y position
+        width:
+          type: number
+          description: Width (for rectangles, ellipses)
+        height:
+          type: number
+          description: Height (for rectangles, ellipses)
+        startX:
+          type: number
+          description: Start X position (for lines)
+        startY:
+          type: number
+          description: Start Y position (for lines)
+        endX:
+          type: number
+          description: End X position (for lines)
+        endY:
+          type: number
+          description: End Y position (for lines)
+        radius:
+          type: number
+          description: Radius (for circles)
