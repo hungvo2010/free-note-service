@@ -10,9 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -24,7 +21,6 @@ public class DraftRequestData extends TraceRequestData {
     private String draftName;
     private DraftRequestType draftRequestType;
     private DraftRequestContent content = new DraftRequestContent();
-    private List<ShapeData> shapes = new ArrayList<>();
 
     @JsonSetter("requestType")
     public void setDraftRequestType(int value) {

@@ -29,8 +29,8 @@ dependencies {
     implementation(project(":UtilityProcessor"))
 
     // Apicurio Registry Client
-    implementation("io.apicurio:apicurio-registry-client:2.5.8.Final")
-    implementation("io.apicurio:apicurio-registry-serdes-jsonschema-serde:2.5.8.Final")
+    implementation("io.apicurio:apicurio-registry-client:2.6.13.Final")
+    implementation("io.apicurio:apicurio-registry-serdes-jsonschema-serde:2.6.13.Final")
 
 }
 

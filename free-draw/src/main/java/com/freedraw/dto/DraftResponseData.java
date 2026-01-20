@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
@@ -19,6 +18,12 @@ import java.util.List;
 public class DraftResponseData extends TraceResponseData {
     private String draftId;
     private String draftName;
-    private DraftRequestType actionType;
-    private List<ShapeData> shapes = new ArrayList<>();
+    private DraftRequestType requestType;
+    private DraftResponseContent data;
+
+    public DraftResponseData(String draftId, String draftName, List<ShapeData> shapes) {
+        this.draftId = draftId;
+        this.draftName = draftName;
+        this.data = new DraftResponseContent(shapes);
+    }
 }
