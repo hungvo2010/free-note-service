@@ -28,6 +28,7 @@ public class Draft {
 
     public Draft() {
         this.draftId = UUID.randomUUID().toString();
+        this.draftName = "Untitled";
     }
 
     public Draft(String draftId, String draftName) {

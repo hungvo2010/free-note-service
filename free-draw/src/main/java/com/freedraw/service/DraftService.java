@@ -4,7 +4,6 @@ import com.freedraw.dto.DraftRequestData;
 import com.freedraw.entities.Draft;
 import com.freedraw.entities.DraftAction;
 import com.freedraw.exception.DraftNotFoundException;
-import com.freedraw.models.enums.DraftActionType;
 import com.freedraw.models.enums.DraftRequestType;
 import com.freedraw.repository.DraftRepository;
 import com.freedraw.repository.InMemDraftRepositoryImpl;
@@ -31,18 +30,17 @@ public class DraftService {
         }
 
         var draftAction = doRequest(draftRequestData);
-        if (draftAction.getActionType() == DraftActionType.UPDATE) {
-            draft.addAction(draftAction);
-            draftRepository.save(draft);
-        }
+        draft.addAction(draftAction);
+        draftRepository.save(draft);
         return draft;
     }
 
     private Draft createDraft(DraftRequestData draftRequestData) {
         var newDraft = new Draft();
-        var draftAction = new DraftAction(DraftActionType.INIT);
-        draftAction.addData("draftId", newDraft.getDraftId());
-        draftAction.addData("content", draftRequestData.getContent());
+        var draftAction = new DraftAction(draftRequestData.getContent());
+        draftAction.putData("draftId", newDraft.getDraftId());
+        draftAction.putData("content", draftRequestData.getContent());
+
         newDraft.addAction(draftAction);
         draftRepository.save(newDraft);
         return newDraft;
@@ -51,7 +49,7 @@ public class DraftService {
 
     private DraftAction connectAction(DraftRequestData draftRequestData) {
         var requestDraftId = draftRequestData.getDraftId();
-        return new DraftAction(DraftActionType.NOOP);
+        return new DraftAction();
     }
 
     private DraftAction doRequest(DraftRequestData draftRequestData) {

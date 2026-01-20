@@ -31,22 +31,34 @@ public class VariableLengthFieldSearchByOffset<T> implements SearchFieldByOffset
     public T getData(long offset) {
         try {
             var startLength = getStartLength(offset);
+            if (startLength == null) {
+                log.warn("No data found at offset: {} in file: {}", offset, this.path);
+                return null;
+            }
             int start = startLength[0];
             int length = startLength[1];
+            if (start < 0 || length < 0) {
+                log.warn("Invalid start/length at offset: {} in file: {}", offset, this.path);
+                return null;
+            }
             var byteData = FileUtility.readRange(this.fileReader, start, length);
             return dataType.fromBytes(byteData);
         } catch (Exception e) {
-            throw new DiskReadException("Error reading data at offset: " + offset + " from file: " + this.path, e);
+            log.error("Error reading data at offset: {} from file: {}, exception: {}", offset, this.path, e.getMessage());
+            return null;
         }
     }
 
-    private int[] getStartLength(long offset) {
+    private Integer[] getStartLength(long offset) {
         try {
             var startLength = this.offsetIndexReader.getData(offset);
-            return new int[]{startLength[0], startLength[1]};
+            if (startLength == null) {
+                return null;
+            }
+            return startLength;
         } catch (Exception e) {
             log.error("Error reading start and length at offset: {} from file: {}, exception: {}", offset, this.path, e.getMessage());
-            return new int[]{-1, -1};
+            return null;
         }
     }
 
@@ -92,6 +104,18 @@ public class VariableLengthFieldSearchByOffset<T> implements SearchFieldByOffset
             }
         } catch (Exception e) {
             log.error("Error appending data to file: {}, exception: {}", this.path, e.getMessage());
+        }
+    }
+
+    /**
+     * Returns the number of items currently stored (based on index file).
+     */
+    public int getSize() {
+        try {
+            return offsetIndexReader.getCount();
+        } catch (Exception e) {
+            log.error("Error getting size for file: {}, exception: {}", this.path, e.getMessage());
+            return 0;
         }
     }
 }

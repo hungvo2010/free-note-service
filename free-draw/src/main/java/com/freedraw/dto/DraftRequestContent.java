@@ -1,29 +1,17 @@
 package com.freedraw.dto;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
+import lombok.Data;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Data
 public class DraftRequestContent {
-    private final Map<String, Object> data = new HashMap<>();
-
-    public Object getAttribute(String key) {
-        return data.get(key);
-    }
-
-    @JsonAnyGetter
-    public Map<String, Object> getAttributes() {
-        return Collections.unmodifiableMap(this.data);
-    }
-
-    @JsonAnySetter
-    public void addAttribute(String key, Object value) {
-        data.put(key, value);
-    }
+    @JsonSetter(nulls = Nulls.SKIP)
+    private List<ShapeData> shapes = new ArrayList<>();
 }
 

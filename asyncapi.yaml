@@ -98,14 +98,14 @@ components:
               shapes:
                 - shapeId: "shape-001"
                   type: "rectangle"
-                  coordinates:
+                  content:
                     x: 100
                     y: 150
                     width: 200
                     height: 100
                 - shapeId: "shape-002"
                   type: "circle"
-                  coordinates:
+                  content:
                     x: 400
                     y: 300
                     radius: 50
@@ -118,7 +118,7 @@ components:
               shapes:
                 - shapeId: "shape-001"
                   type: "rectangle"
-                  coordinates:
+                  content:
                     x: 458
                     y: 379.609375
                     width: 599
@@ -148,28 +148,30 @@ components:
           payload:
             draftId: "draft-123"
             draftName: "My Drawing"
-            actionType: 2
-            shapes:
-              - shapeId: "shape-001"
-                type: "rectangle"
-                coordinates:
-                  x: 100
-                  y: 150
-                  width: 200
-                  height: 100
+            requestType: 2
+            data:
+              shapes:
+                - shapeId: "shape-001"
+                  type: "rectangle"
+                  content:
+                    x: 100
+                    y: 150
+                    width: 200
+                    height: 100
         - name: shapeUpdated
           summary: Response after updating a shape
           payload:
             draftId: "draft-123"
-            actionType: 3
-            shapes:
-              - shapeId: "shape-001"
-                type: "rectangle"
-                coordinates:
-                  x: 458
-                  y: 379.609375
-                  width: 599
-                  height: 114
+            requestType: 3
+            data:
+              shapes:
+                - shapeId: "shape-001"
+                  type: "rectangle"
+                  content:
+                    x: 458
+                    y: 379.609375
+                    width: 599
+                    height: 114
   schemas:
     draftRequestPayload:
       type: object
@@ -188,12 +190,12 @@ components:
           enum: [0, 1, 2, 3, 4, 5]
         content:
           type: object
-          required:
-            - shapes
+          description: Content wrapper containing shapes array (defaults to empty list if null)
           properties:
             shapes:
               type: array
-              description: List of shapes to add, update, or remove
+              description: List of shapes to add, update, or remove (defaults to empty array, null values are skipped)
+              default: []
               items:
                 $ref: '#/components/schemas/shapeData'
     draftResponsePayload:
@@ -205,15 +207,19 @@ components:
         draftName:
           type: string
           description: Name of the draft
-        actionType:
+        requestType:
           type: integer
-          description: Type of action performed (0=INIT, 1=CONNECT, 2=ADD, 3=UPDATE, 4=REMOVE, 5=NOOP, -1=INVALID)
-          enum: [0, 1, 2, 3, 4, 5, -1]
-        shapes:
-          type: array
-          description: List of shapes affected by the action
-          items:
-            $ref: '#/components/schemas/shapeData'
+          description: Type of request that triggered this response (0=INIT, 1=CONNECT, 2=ADD, 3=UPDATE, 4=REMOVE, 5=NOOP)
+          enum: [0, 1, 2, 3, 4, 5]
+        data:
+          type: object
+          description: Response data wrapper containing shapes
+          properties:
+            shapes:
+              type: array
+              description: List of shapes affected by the action
+              items:
+                $ref: '#/components/schemas/shapeData'
     shapeData:
       type: object
       required:
@@ -224,40 +230,16 @@ components:
           description: Unique identifier for the shape
         type:
           type: string
-          description: Type of shape
-          enum: [rectangle, circle, line, text, ellipse, polygon, path]
+          description: Type of shape (rectangle, circle, line, text, etc.)
         content:
           type: object
-          description: Generic content map containing shape-specific data (coordinates, styles, etc.)
+          description: Generic content map containing shape-specific data (coordinates, styles, etc.). Defaults to empty map.
+          default: {}
           additionalProperties: true
-    coordinatesData:
-      type: object
-      description: Coordinate data for the shape (fields vary by shape type) - DEPRECATED, use content field in shapeData
-      properties:
-        x:
-          type: number
-          description: X position
-        y:
-          type: number
-          description: Y position
-        width:
-          type: number
-          description: Width (for rectangles, ellipses)
-        height:
-          type: number
-          description: Height (for rectangles, ellipses)
-        startX:
-          type: number
-          description: Start X position (for lines)
-        startY:
-          type: number
-          description: Start Y position (for lines)
-        endX:
-          type: number
-          description: End X position (for lines)
-        endY:
-          type: number
-          description: End Y position (for lines)
-        radius:
-          type: number
-          description: Radius (for circles)
+          example:
+            x: 100
+            y: 150
+            width: 200
+            height: 100
+            color: "#FF0000"
+            strokeWidth: 2

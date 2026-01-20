@@ -1,6 +1,5 @@
 package com.freedraw.server;
 
-import com.freedraw.service.DraftService;
 import com.freedraw.dto.DraftRequestData;
 import com.freedraw.dto.DraftResponseData;
 import com.freedraw.entities.Draft;
@@ -9,6 +8,7 @@ import com.freedraw.models.core.Connection;
 import com.freedraw.models.core.Room;
 import com.freedraw.models.core.RoomManager;
 import com.freedraw.models.enums.DraftRequestType;
+import com.freedraw.service.DraftService;
 import com.freedraw.utils.FrameUtils;
 import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.core.WebSocketConnection;
@@ -69,7 +69,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
             var draft = processDraftRequest(draftRequest, draftRequest.getDraftRequestType());
             var lastAction = getLastAction(draft);
 
-            var responseData = new DraftResponseData(draft.getDraftId(), draft.getDraftName(), lastAction);
+            var responseData = new DraftResponseData(draft.getDraftId(), draft.getDraftName(), lastAction.getShapes());
             log.info("Response: {}", JSONUtils.toJSONString(responseData));
             webSocketConnection.setResponseObject(
                     new CommonResponseObject<>(responseData)
@@ -78,7 +78,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
                     FrameUtils.createApplicationFrame(lastAction)
             );
         } catch (Exception ex) {
-            log.error("Error in application onMessage logic: {}", ex.getMessage());
+            log.error("Error in application onMessage logic: {}", ex);
             webSocketConnection.setResponseFrame(FrameFactory.SERVER.createTextFrame(JSONUtils.toJSONString(DEFAULT_MESSAGE_PAYLOAD)));
         }
     }
