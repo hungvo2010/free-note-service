@@ -8,7 +8,10 @@ variables:
 stages:
   - assumeRole
   - credentials
+  - validate
+  - test
   - build
+  - register-schema
   - deploy
 
 assumeRole:
@@ -59,6 +62,36 @@ credential helpers:
     paths:
       - credentials-binaries/
 
+validate-asyncapi:
+  stage: validate
+  image: node:18-alpine
+  before_script:
+    - npm install -g @asyncapi/cli
+  script:
+    - echo "Validating AsyncAPI specification..."
+    - asyncapi validate asyncapi.yaml
+    - echo "✓ AsyncAPI spec is valid"
+  rules:
+    - when: on_success
+
+schema-validation-tests:
+  stage: test
+  image: gradle:8.5-jdk17
+  needs:
+    - validate-asyncapi
+  before_script:
+    - echo "Running schema validation tests..."
+  script:
+    - ./gradlew :free-draw:test --tests "*SchemaValidation*"
+    - echo "✓ Schema validation tests passed"
+  artifacts:
+    reports:
+      junit: free-draw/build/test-results/test/**/TEST-*.xml
+    paths:
+      - free-draw/build/reports/tests/
+  rules:
+    - when: on_success
+
 build:
   image:
     name: moby/buildkit:rootless
@@ -66,6 +99,7 @@ build:
   needs:
     - assumeRole
     - credential helpers
+    - schema-validation-tests
   variables:
     BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
   stage: build
@@ -95,11 +129,30 @@ build:
     paths:
       - build/libs/*.jar
 
+register-schema:
+  stage: register-schema
+  image: alpine:latest
+  needs:
+    - build
+  before_script:
+    - apk add --no-cache curl jq bash
+  script:
+    - echo "Registering AsyncAPI schema to Apicurio Registry..."
+    - chmod +x register-schemas.sh
+    - ./register-schemas.sh
+    - echo "✓ Schema registered successfully"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
+      when: on_success
+    - when: manual
+  allow_failure: false
+
 deploy:
   stage: deploy
   needs:
     - build
     - credential helpers
+    - register-schema
   before_script:
     - apt-get update -qq && apt-get install -y sshpass
     - mkdir -p ~/.docker
@@ -121,3 +174,7 @@ deploy:
         docker rm -f forgeblast || true &&
         docker run -d --name forgeblast -p 8189:8189 --restart always $DOCKER_IMAGE
       "
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
+      when: on_success
+    - when: manual
