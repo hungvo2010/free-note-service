@@ -1,13 +1,13 @@
 package com.freedraw.validation;
 
-import com.freenote.app.server.util.JSONUtils;
+import com.freedraw.dto.DraftRequestContent;
 import com.freedraw.dto.DraftRequestData;
 import com.freedraw.dto.DraftResponseData;
 import com.freedraw.dto.ShapeData;
-import com.freedraw.models.enums.DraftRequestType;
+import com.freenote.app.server.util.JSONUtils;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,9 +32,10 @@ class SchemaValidationTest {
         request.setDraftRequestType(1); // CONNECT
         request.setDraftId("draft-123");
         request.setDraftName("My Drawing");
-        request.setShapes(new ArrayList<>());
+        request.setContent(new DraftRequestContent());
         
         String json = JSONUtils.toJSONString(request);
+        System.out.println("CONNECT Request JSON: " + json);
         var result = validator.validateRequest(json);
         
         assertTrue(result.isValid(), "CONNECT request should be valid: " + result.getErrorMessage());
@@ -61,9 +62,13 @@ class SchemaValidationTest {
         shape.setContent(content);
         
         shapes.add(shape);
-        request.setShapes(shapes);
+        
+        DraftRequestContent requestContent = new DraftRequestContent();
+        requestContent.setShapes(shapes);
+        request.setContent(requestContent);
         
         String json = JSONUtils.toJSONString(request);
+        System.out.println("ADD Request JSON: " + json);
         var result = validator.validateRequest(json);
         
         assertTrue(result.isValid(), "ADD request with shapes should be valid: " + result.getErrorMessage());
@@ -88,9 +93,13 @@ class SchemaValidationTest {
         shape.setContent(content);
         
         shapes.add(shape);
-        request.setShapes(shapes);
+        
+        DraftRequestContent requestContent = new DraftRequestContent();
+        requestContent.setShapes(shapes);
+        request.setContent(requestContent);
         
         String json = JSONUtils.toJSONString(request);
+        System.out.println("UPDATE Request JSON: " + json);
         var result = validator.validateRequest(json);
         
         assertTrue(result.isValid(), "UPDATE request should be valid: " + result.getErrorMessage());
@@ -107,9 +116,13 @@ class SchemaValidationTest {
         ShapeData shape = new ShapeData();
         shape.setShapeId("shape-001");
         shapes.add(shape);
-        request.setShapes(shapes);
+        
+        DraftRequestContent requestContent = new DraftRequestContent();
+        requestContent.setShapes(shapes);
+        request.setContent(requestContent);
         
         String json = JSONUtils.toJSONString(request);
+        System.out.println("REMOVE Request JSON: " + json);
         var result = validator.validateRequest(json);
         
         assertTrue(result.isValid(), "REMOVE request should be valid: " + result.getErrorMessage());
@@ -119,20 +132,17 @@ class SchemaValidationTest {
     @DisplayName("Request without requestType should fail validation")
     void testInvalidRequestMissingType() {
         String json = "{\"draftId\":\"draft-123\",\"draftName\":\"My Drawing\"}";
+        System.out.println("Invalid Request JSON: " + json);
         var result = validator.validateRequest(json);
         
         assertFalse(result.isValid(), "Request without requestType should be invalid");
         assertNotNull(result.getErrorMessage());
+        System.out.println("Expected validation error: " + result.getErrorMessage());
     }
     
     @Test
     @DisplayName("Valid response should pass validation")
     void testValidResponse() {
-        DraftResponseData response = new DraftResponseData();
-        response.setDraftId("draft-123");
-        response.setDraftName("My Drawing");
-        response.setActionType(DraftRequestType.ADD);
-        
         List<ShapeData> shapes = new ArrayList<>();
         ShapeData shape = new ShapeData();
         shape.setShapeId("shape-001");
@@ -146,9 +156,11 @@ class SchemaValidationTest {
         shape.setContent(content);
         
         shapes.add(shape);
-        response.setShapes(shapes);
+        
+        DraftResponseData response = new DraftResponseData("draft-123", "My Drawing", shapes);
         
         String json = JSONUtils.toJSONString(response);
+        System.out.println("Response JSON: " + json);
         var result = validator.validateResponse(json);
         
         assertTrue(result.isValid(), "Response should be valid: " + result.getErrorMessage());
@@ -186,9 +198,12 @@ class SchemaValidationTest {
         circle.setContent(circleContent);
         shapes.add(circle);
         
-        request.setShapes(shapes);
+        DraftRequestContent requestContent = new DraftRequestContent();
+        requestContent.setShapes(shapes);
+        request.setContent(requestContent);
         
         String json = JSONUtils.toJSONString(request);
+        System.out.println("Multiple Shapes Request JSON: " + json);
         var result = validator.validateRequest(json);
         
         assertTrue(result.isValid(), "Request with multiple shapes should be valid: " + result.getErrorMessage());

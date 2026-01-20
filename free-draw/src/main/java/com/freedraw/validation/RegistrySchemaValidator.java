@@ -2,6 +2,7 @@ package com.freedraw.validation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
@@ -12,6 +13,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -47,7 +50,10 @@ public class RegistrySchemaValidator {
             // Parse YAML to JSON
             JsonNode asyncApiDoc = yamlMapper.readTree(asyncApiYaml);
             
-            // Extract schemas
+            // Get all schemas
+            JsonNode allSchemas = asyncApiDoc.path("components").path("schemas");
+            
+            // Extract and resolve request schema
             JsonNode requestSchemaNode = asyncApiDoc
                 .path("components")
                 .path("schemas")
@@ -59,14 +65,18 @@ public class RegistrySchemaValidator {
                 .path("draftResponsePayload");
             
             if (!requestSchemaNode.isMissingNode()) {
-                this.requestSchema = factory.getSchema(requestSchemaNode);
+                // Resolve $ref references
+                JsonNode resolvedRequestSchema = resolveReferences(requestSchemaNode, allSchemas);
+                this.requestSchema = factory.getSchema(resolvedRequestSchema);
                 log.info("✓ Request schema loaded from registry");
             } else {
                 log.warn("Request schema not found in AsyncAPI spec");
             }
             
             if (!responseSchemaNode.isMissingNode()) {
-                this.responseSchema = factory.getSchema(responseSchemaNode);
+                // Resolve $ref references
+                JsonNode resolvedResponseSchema = resolveReferences(responseSchemaNode, allSchemas);
+                this.responseSchema = factory.getSchema(resolvedResponseSchema);
                 log.info("✓ Response schema loaded from registry");
             } else {
                 log.warn("Response schema not found in AsyncAPI spec");
@@ -74,6 +84,60 @@ public class RegistrySchemaValidator {
             
         } catch (Exception e) {
             log.error("Failed to load schemas from registry", e);
+        }
+    }
+    
+    /**
+     * Resolve $ref references in schema
+     */
+    private JsonNode resolveReferences(JsonNode schema, JsonNode allSchemas) {
+        try {
+            ObjectNode resolved = schema.deepCopy();
+            resolveReferencesRecursive(resolved, allSchemas);
+            return resolved;
+        } catch (Exception e) {
+            log.error("Failed to resolve references", e);
+            return schema;
+        }
+    }
+    
+    /**
+     * Recursively resolve all $ref in a schema node
+     */
+    private void resolveReferencesRecursive(JsonNode node, JsonNode allSchemas) {
+        if (node.isObject()) {
+            ObjectNode objNode = (ObjectNode) node;
+            
+            // Check if this node has a $ref
+            if (objNode.has("$ref")) {
+                String ref = objNode.get("$ref").asText();
+                // Extract schema name from #/components/schemas/schemaName
+                if (ref.startsWith("#/components/schemas/")) {
+                    String schemaName = ref.substring("#/components/schemas/".length());
+                    JsonNode referencedSchema = allSchemas.get(schemaName);
+                    
+                    if (referencedSchema != null) {
+                        // Remove $ref and merge referenced schema
+                        objNode.remove("$ref");
+                        Iterator<Map.Entry<String, JsonNode>> fields = referencedSchema.fields();
+                        while (fields.hasNext()) {
+                            Map.Entry<String, JsonNode> field = fields.next();
+                            objNode.set(field.getKey(), field.getValue().deepCopy());
+                        }
+                    }
+                }
+            }
+            
+            // Recursively process all fields
+            Iterator<Map.Entry<String, JsonNode>> fields = objNode.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> field = fields.next();
+                resolveReferencesRecursive(field.getValue(), allSchemas);
+            }
+        } else if (node.isArray()) {
+            for (JsonNode item : node) {
+                resolveReferencesRecursive(item, allSchemas);
+            }
         }
     }
     
