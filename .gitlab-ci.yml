@@ -61,6 +61,8 @@ credential helpers:
   artifacts:
     paths:
       - credentials-binaries/
+  rules:
+    - when: on_success
 
 validate-asyncapi:
   stage: validate
@@ -128,6 +130,8 @@ build:
   artifacts:
     paths:
       - build/libs/*.jar
+  rules:
+    - when: on_success
 
 register-schema:
   stage: register-schema
