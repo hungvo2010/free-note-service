@@ -18,77 +18,95 @@ import java.io.IOException;
 import java.util.*;
 
 @Getter
-public class PersistenceContext {
+public class PersistenceContext implements PersistenceWriter {
     private static final Logger log = LogManager.getLogger(PersistenceContext.class);
     private SearchIx<String> searchDraftIx;
     private SearchOffset searchOffset;
     private final Map<String, SearchFieldByOffset> searchOffsetMap = new HashMap<>();
+    
+    // In-memory store only
+    private InMemoryDraftStore inMemoryStore;
 
     public void initData() {
         try {
             initOrLoadFileIndex();
             initOrLoadFileOffsets();
             initOrLoadSingleFieldData();
+            initInMemoryStore();
         } catch (IOException e) {
             log.error("Error initializing PersistenceContext: {}", e.getMessage());
         }
     }
+    
+    /**
+     * Initialize in-memory store and load all data from disk
+     */
+    private void initInMemoryStore() {
+        log.info("Initializing in-memory draft store");
+        inMemoryStore = new InMemoryDraftStore();
+        
+        // Load all existing drafts from disk
+        List<Draft> draftsFromDisk = getAllDraftsFromDisk();
+        inMemoryStore.loadFromDisk(draftsFromDisk);
+        
+        log.info("In-memory store initialized with {} drafts", draftsFromDisk.size());
+    }
 
+    /**
+     * Persist a draft to disk (called by scheduler)
+     * Always rewrites all actions at the end of the vector to avoid conflicts
+     */
+    @Override
     public void persist(Draft draft) {
         var draftPosition = this.searchDraftIx.insert(draft.getDraftId());
         log.info("Persisting draftId: {}, position: {}", draft.getDraftId(), draftPosition);
 
-        var actionsVector = (VariableLengthFieldSearchByOffset<String>) this.searchOffsetMap.get("actions");
-        var actionsStartLengthOffsets = (FixedLengthFieldSearchByOffset<Integer[]>) this.searchOffsetMap.get("actions.offsets");
+        var actionsVector = getActionsVector();
+        var actionsStartLengthOffsets = getActionsStartLengthOffsets();
 
-        // Use getOrAppend to handle new drafts automatically
-        int currentActionsStart = actionsVector.getSize();
-        var startLength = actionsStartLengthOffsets.getOrAppend(draftPosition, new Integer[]{currentActionsStart, 0});
-        
-        if (startLength == null) {
-            log.error("Failed to get or create start/length for draftId: {}, position: {}", draft.getDraftId(), draftPosition);
-            return;
-        }
-        
-        var start = startLength[0];
-        var length = startLength[1];
-
-        log.info("Start: {}, length: {}", start, length);
-        
-        // Validate the data
-        if (start < 0 || length < 0 || length > 1000000) {
-            log.error("Invalid start/length values for draftId: {}, start: {}, length: {}. Reinitializing.", 
-                     draft.getDraftId(), start, length);
-            start = currentActionsStart;
-            length = 0;
-        }
-        
         int newActionsCount = draft.getActions().size();
         
-        if (newActionsCount == length) {
-            log.info("No new actions to persist for draftId: {}", draft.getDraftId());
+        if (newActionsCount == 0) {
+            log.info("No actions to persist for draftId: {}", draft.getDraftId());
             return;
         }
+
+        // ALWAYS rewrite all actions at the end of the vector
+        // This solves the insertion/append conflict problem
+        int newStart = actionsVector.getSize();
         
-        if (newActionsCount < length) {
-            log.warn("Draft has fewer actions ({}) than previously stored ({}). Resetting.", newActionsCount, length);
-            start = currentActionsStart;
-            length = 0;
-        }
-        
-        // Append only the NEW actions (from 'length' index to end)
-        var newActions = draft.getActions().subList(length, newActionsCount);
-        log.info("Appending {} new actions for draftId: {}", newActions.size(), draft.getDraftId());
-        
-        for (var action : newActions.stream().filter(Objects::nonNull).toList()) {
+        log.info("Rewriting {} actions for draftId: {} at position {}", 
+            newActionsCount, draft.getDraftId(), newStart);
+
+        for (var action : draft.getActions().stream().filter(Objects::nonNull).toList()) {
             actionsVector.append(JSONUtils.toJSONString(action));
         }
+
+        // Update the offset with new start and length
+        actionsStartLengthOffsets.put(draftPosition, new int[]{newStart, newActionsCount});
         
-        // Update the offset with new length AFTER appending actions
-        actionsStartLengthOffsets.put(draftPosition, new int[]{start, newActionsCount});
+        log.info("Successfully persisted draft {} with {} actions", draft.getDraftId(), newActionsCount);
     }
 
+    private VariableLengthFieldSearchByOffset<String> getActionsVector() {
+        return (VariableLengthFieldSearchByOffset<String>) this.searchOffsetMap.get("actions");
+    }
+
+    /**
+     * Get all drafts from in-memory store (fast)
+     */
     public List<Draft> getAllDrafts() {
+        if (inMemoryStore != null) {
+            return inMemoryStore.getAllDrafts();
+        }
+        // Fallback to disk if in-memory store not initialized
+        return getAllDraftsFromDisk();
+    }
+    
+    /**
+     * Get all drafts directly from disk (used during initialization)
+     */
+    private List<Draft> getAllDraftsFromDisk() {
         var allDraftIds = this.searchDraftIx.getAll();
         var result = new ArrayList<Draft>();
         for (int draftIdIdx = 0; draftIdIdx < allDraftIds.size(); draftIdIdx++) {
@@ -96,6 +114,49 @@ public class PersistenceContext {
             result.add(buildDraftById(draftId, draftIdIdx));
         }
         return result;
+    }
+    
+    /**
+     * Get a specific draft from in-memory store
+     */
+    public Optional<Draft> getDraft(String draftId) {
+        if (inMemoryStore != null) {
+            return inMemoryStore.getDraft(draftId);
+        }
+        return Optional.empty();
+    }
+    
+    /**
+     * Save draft to in-memory store (will be persisted later)
+     */
+    public void saveDraft(Draft draft) {
+        if (inMemoryStore != null) {
+            inMemoryStore.saveDraft(draft);
+        } else {
+            log.warn("In-memory store not initialized, cannot save draft");
+        }
+    }
+    
+    /**
+     * Add action to draft in memory
+     */
+    public void addAction(String draftId, DraftAction action) {
+        if (inMemoryStore != null) {
+            inMemoryStore.addAction(draftId, action);
+        } else {
+            log.warn("In-memory store not initialized, cannot add action");
+        }
+    }
+    
+    /**
+     * Insert action at specific position in memory
+     */
+    public void insertAction(String draftId, int position, DraftAction action) {
+        if (inMemoryStore != null) {
+            inMemoryStore.insertAction(draftId, position, action);
+        } else {
+            log.warn("In-memory store not initialized, cannot insert action");
+        }
     }
 
     private Draft buildDraftById(String draftId, int idx) {
@@ -105,10 +166,10 @@ public class PersistenceContext {
     }
 
     private List<DraftAction> getDraftActionsStartLength(int draftPosition) {
-        var startLength = getStartLength((FixedLengthFieldSearchByOffset<Integer[]>) this.searchOffsetMap.get("actions.offsets"), draftPosition);
+        var startLength = getStartLength(getActionsStartLengthOffsets(), draftPosition);
         var start = startLength[0];
         var length = startLength[1];
-        var actionsVector = (VariableLengthFieldSearchByOffset<String>) this.searchOffsetMap.get("actions");
+        var actionsVector = getActionsVector();
         var result = new ArrayList<DraftAction>();
         for (int j = 0; j < length; j++) {
             var actionData = actionsVector.getData(start + j);
@@ -118,6 +179,10 @@ public class PersistenceContext {
             result.add(JSONUtils.fromJSON(actionData, DraftAction.class));
         }
         return result;
+    }
+
+    private FixedLengthFieldSearchByOffset<Integer[]> getActionsStartLengthOffsets() {
+        return (FixedLengthFieldSearchByOffset<Integer[]>) this.searchOffsetMap.get("actions.offsets");
     }
 
     private Integer[] getStartLength(FixedLengthFieldSearchByOffset<Integer[]> actionsStartLengthOffsets, int draftPosition) {

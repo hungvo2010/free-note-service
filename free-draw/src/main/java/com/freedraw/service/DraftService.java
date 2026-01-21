@@ -14,7 +14,21 @@ import java.util.Objects;
 
 public class DraftService {
     private static final Logger log = LogManager.getLogger(DraftService.class);
-    private final DraftRepository draftRepository = new InMemDraftRepositoryImpl();
+    private final DraftRepository draftRepository;
+    
+    /**
+     * Default constructor - creates its own repository instance
+     */
+    public DraftService() {
+        this.draftRepository = new InMemDraftRepositoryImpl();
+    }
+    
+    /**
+     * Constructor for dependency injection (testing or custom configuration)
+     */
+    public DraftService(DraftRepository draftRepository) {
+        this.draftRepository = draftRepository;
+    }
 
     public Draft handleDraftRequest(DraftRequestData draftRequestData) {
         var draftId = draftRequestData.getDraftId();

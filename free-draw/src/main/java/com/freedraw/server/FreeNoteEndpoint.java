@@ -70,12 +70,17 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
             var lastAction = getLastAction(draft);
 
             var responseData = new DraftResponseData(draft.getDraftId(), draft.getDraftName(), lastAction.getShapes());
+            responseData.setRequestType(draftRequest.getDraftRequestType());
             log.info("Response: {}", JSONUtils.toJSONString(responseData));
+            
+            // Send response to the sender
             webSocketConnection.setResponseObject(
                     new CommonResponseObject<>(responseData)
             );
+            
+            // Broadcast the SAME format to other clients in the room
             broadcastMessage(draft.getDraftId(), new Connection(webSocketConnection.getOutputStream()),
-                    FrameUtils.createApplicationFrame(lastAction)
+                    FrameUtils.createApplicationFrame(responseData)  // Use responseData instead of lastAction
             );
         } catch (Exception ex) {
             log.error("Error in application onMessage logic: {}", ex);

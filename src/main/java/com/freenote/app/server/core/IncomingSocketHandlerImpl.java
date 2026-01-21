@@ -45,15 +45,12 @@ public class IncomingSocketHandlerImpl implements IncomingConnectionHandler {
             doHandShake(upgradeRequest, output);
 
             var inputWrapper = buildInputWrapper(incomingSocket, upgradeRequest);
-            var pathHandler = (URIHandler) (getInstanceByURI(upgradeRequest.getPath()));
-            if (pathHandler == null) {
-                log.warn("No handler found for URI: {}", upgradeRequest.getPath());
-                throw new AcceptConnectionException("No handler for URI: " + upgradeRequest.getPath());
-            }
+            var pathHandler = getPathHandler(upgradeRequest);
 
             while (!incomingSocket.isClosed()) { // todo: not correct due to incoming socket will not be closed after client disconnects
                 pathHandler.handle(inputWrapper, output);
             }
+            
         } catch (ClientDisconnectException | AcceptConnectionException connectionException) {
             log.error("Client disconnected => self closed: {}", connectionException.getMessage());
             incomingSocket.close();
@@ -64,6 +61,15 @@ public class IncomingSocketHandlerImpl implements IncomingConnectionHandler {
                     FrameFactory.SERVER.createTextFrame("Internal Server Error")
             );
         }
+    }
+
+    private URIHandler getPathHandler(HttpUpgradeRequest upgradeRequest) {
+        var pathHandler = (URIHandler) (getInstanceByURI(upgradeRequest.getPath()));
+        if (pathHandler == null) {
+            log.warn("No handler found for URI: {}", upgradeRequest.getPath());
+            throw new AcceptConnectionException("No handler for URI: " + upgradeRequest.getPath());
+        }
+        return pathHandler;
     }
 
     private void doHandShake(HttpUpgradeRequest request, OutputStream output) throws IOException {
