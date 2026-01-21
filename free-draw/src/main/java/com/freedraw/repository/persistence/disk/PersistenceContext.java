@@ -76,9 +76,6 @@ public class PersistenceContext {
             length = 0;
         }
         
-        // Update the offset with new length
-        actionsStartLengthOffsets.put(draftPosition, new int[]{start, newActionsCount});
-
         // Append only the NEW actions (from 'length' index to end)
         var newActions = draft.getActions().subList(length, newActionsCount);
         log.info("Appending {} new actions for draftId: {}", newActions.size(), draft.getDraftId());
@@ -86,15 +83,17 @@ public class PersistenceContext {
         for (var action : newActions.stream().filter(Objects::nonNull).toList()) {
             actionsVector.append(JSONUtils.toJSONString(action));
         }
+        
+        // Update the offset with new length AFTER appending actions
+        actionsStartLengthOffsets.put(draftPosition, new int[]{start, newActionsCount});
     }
 
     public List<Draft> getAllDrafts() {
         var allDraftIds = this.searchDraftIx.getAll();
         var result = new ArrayList<Draft>();
-        for (int idx = 0; idx < allDraftIds.size(); idx++) {
-            var draftId = allDraftIds.get(idx);
-            log.info("DraftId: {}", draftId);
-            result.add(buildDraftById(draftId, idx));
+        for (int draftIdIdx = 0; draftIdIdx < allDraftIds.size(); draftIdIdx++) {
+            var draftId = allDraftIds.get(draftIdIdx);
+            result.add(buildDraftById(draftId, draftIdIdx));
         }
         return result;
     }
@@ -114,7 +113,7 @@ public class PersistenceContext {
         for (int j = 0; j < length; j++) {
             var actionData = actionsVector.getData(start + j);
             if (!actionData.isEmpty()) {
-                log.info("Action data: {}", actionData);
+//                log.info("Action data: {}", actionData);
             }
             result.add(JSONUtils.fromJSON(actionData, DraftAction.class));
         }
