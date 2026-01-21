@@ -148,7 +148,7 @@ register-schema:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
       when: on_success
-    - when: manual
+    # - when: manual
   allow_failure: false
 
 deploy:
@@ -181,4 +181,4 @@ deploy:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
       when: on_success
-    - when: manual
+    # - when: manual
