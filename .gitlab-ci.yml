@@ -146,8 +146,8 @@ register-schema:
     - ./register-schemas.sh
     - echo "✓ Schema registered successfully"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
-      when: on_success
+    # - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
+    #   when: on_success
     # - when: manual
   allow_failure: false
 
@@ -179,6 +179,6 @@ deploy:
         docker run -d --name forgeblast -p 8189:8189 --restart always $DOCKER_IMAGE
       "
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
-      when: on_success
+    # - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
+    #   when: on_success
     # - when: manual
