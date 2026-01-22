@@ -50,64 +50,6 @@ public class FixedLengthFieldSearchByOffset<T> implements SearchFieldByOffset<T>
     }
 
     /**
-     * Gets data at offset, or appends default value if position doesn't exist.
-     * More robust for handling new entries with automatic gap filling.
-     */
-    public T getOrAppend(long offset, T defaultValue) {
-        try {
-            long position = offset * itemSize;
-            long fileLength = this.fileReader.length();
-            
-            // If position exists, read it
-            if (position < fileLength) {
-                this.fileReader.seek(position);
-                byte[] byteValues = new byte[(int) itemSize];
-                this.fileReader.read(byteValues);
-                T existingValue = dataType.fromBytes(byteValues);
-                
-                // Validate the data for Integer[] type (start/length pairs)
-                if (existingValue instanceof Integer[]) {
-                    Integer[] values = (Integer[]) existingValue;
-                    if (values.length >= 2) {
-                        // Check if values are corrupted (negative or unreasonably large)
-                        if (values[0] < 0 || values[1] < 0 || values[1] > 1000000) {
-                            log.warn("Corrupted data at offset {}: [{}, {}]. Overwriting with default.", 
-                                    offset, values[0], values[1]);
-                            // Overwrite with default value
-                            this.fileReader.seek(position);
-                            var byteBuffer = ByteBuffer.allocate((int) this.itemSize);
-                            byteBuffer.put(dataType.toBytes(defaultValue));
-                            this.fileReader.write(byteBuffer.array());
-                            return defaultValue;
-                        }
-                    }
-                }
-                
-                return existingValue;
-            }
-            
-            // Position doesn't exist - need to append
-            long currentItems = fileLength / itemSize;
-            
-            // Fill gaps if offset is beyond current end
-            while (currentItems <= offset) {
-                this.fileReader.seek(this.fileReader.length());
-                var byteBuffer = ByteBuffer.allocate((int) this.itemSize);
-                byteBuffer.put(dataType.toBytes(defaultValue));
-                this.fileReader.write(byteBuffer.array());
-                currentItems++;
-            }
-            
-            log.info("Appended default value at offset: {}", offset);
-            return defaultValue;
-            
-        } catch (IOException e) {
-            log.error("Error in getOrAppend at offset: {}, exception: {}", offset, e.getMessage());
-            return null;
-        }
-    }
-
-    /**
      * Returns the number of items currently stored in the file.
      */
     public int getCount() {

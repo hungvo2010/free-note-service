@@ -10,14 +10,14 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class SearchIxImpl<T> implements SearchIx<T>, AutoCloseable {
     private static final Logger log = LogManager.getLogger(SearchIxImpl.class);
     private final RandomAccessFile fileReader;
-    private final Map<T, Integer> valueIndexMap = new HashMap<>();
+    private final Map<T, Integer> valueIndexMap = new LinkedHashMap<>();
     private final DataType<T> dataType;
 
     public SearchIxImpl(String filePath, Class<T> fieldType) throws IOException {

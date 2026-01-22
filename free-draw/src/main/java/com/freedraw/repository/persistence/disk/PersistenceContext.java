@@ -68,6 +68,11 @@ public class PersistenceContext implements PersistenceWriter {
         
         if (newActionsCount == 0) {
             log.info("No actions to persist for draftId: {}", draft.getDraftId());
+            // Still need to ensure offset entry exists with [0, 0]
+            Integer[] existing = actionsStartLengthOffsets.getData(draftPosition);
+            if (existing == null) {
+                actionsStartLengthOffsets.append(new Integer[]{0, 0});
+            }
             return;
         }
 
@@ -82,8 +87,15 @@ public class PersistenceContext implements PersistenceWriter {
             actionsVector.append(JSONUtils.toJSONString(action));
         }
 
-        // Update the offset with new start and length
-        actionsStartLengthOffsets.put(draftPosition, new int[]{newStart, newActionsCount});
+        // Check if position exists, then either update or append
+        Integer[] existing = actionsStartLengthOffsets.getData(draftPosition);
+        if (existing != null) {
+            // Position exists, update it
+            actionsStartLengthOffsets.put(draftPosition, new int[]{newStart, newActionsCount});
+        } else {
+            // Position doesn't exist, append it
+            actionsStartLengthOffsets.append(new Integer[]{newStart, newActionsCount});
+        }
         
         log.info("Successfully persisted draft {} with {} actions", draft.getDraftId(), newActionsCount);
     }
@@ -105,6 +117,8 @@ public class PersistenceContext implements PersistenceWriter {
     
     /**
      * Get all drafts directly from disk (used during initialization)
+     * CRITICAL: LinkedHashMap in SearchIxImpl preserves insertion order,
+     * so list index matches the stored position in actions.offsets
      */
     private List<Draft> getAllDraftsFromDisk() {
         var allDraftIds = this.searchDraftIx.getAll();
@@ -167,16 +181,34 @@ public class PersistenceContext implements PersistenceWriter {
 
     private List<DraftAction> getDraftActionsStartLength(int draftPosition) {
         var startLength = getStartLength(getActionsStartLengthOffsets(), draftPosition);
+        
+        // Handle null or empty case (draft exists but has no actions yet)
+        if (startLength == null || startLength.length < 2) {
+            log.debug("No actions found for draft at position: {}", draftPosition);
+            return new ArrayList<>();
+        }
+        
         var start = startLength[0];
         var length = startLength[1];
+        
+        // Validate start and length
+        if (start < 0 || length < 0) {
+            log.warn("Invalid start/length [{}, {}] for draft at position: {}", start, length, draftPosition);
+            return new ArrayList<>();
+        }
+        
+        if (length == 0) {
+            return new ArrayList<>();
+        }
+        
         var actionsVector = getActionsVector();
         var result = new ArrayList<DraftAction>();
         for (int j = 0; j < length; j++) {
             var actionData = actionsVector.getData(start + j);
-            if (!actionData.isEmpty()) {
+            if (actionData != null && !actionData.isEmpty()) {
 //                log.info("Action data: {}", actionData);
+                result.add(JSONUtils.fromJSON(actionData, DraftAction.class));
             }
-            result.add(JSONUtils.fromJSON(actionData, DraftAction.class));
         }
         return result;
     }

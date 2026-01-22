@@ -81,10 +81,9 @@ components:
         $ref: '#/components/schemas/draftRequestPayload'
       examples:
         - name: connectRequest
-          summary: Initial connection to a draft
+          summary: Connect to existing draft and retrieve all shapes
           payload:
             draftId: "draft-123"
-            draftName: "My Drawing"
             requestType: 1
             content:
               shapes: []
@@ -143,6 +142,27 @@ components:
       payload:
         $ref: '#/components/schemas/draftResponsePayload'
       examples:
+        - name: connectResponse
+          summary: Response after connecting to draft with all shapes
+          payload:
+            draftId: "draft-123"
+            draftName: "My Drawing"
+            requestType: 1
+            data:
+              shapes:
+                - shapeId: "shape-001"
+                  type: "rectangle"
+                  content:
+                    x: 100
+                    y: 150
+                    width: 200
+                    height: 100
+                - shapeId: "shape-002"
+                  type: "circle"
+                  content:
+                    x: 400
+                    y: 300
+                    radius: 50
         - name: shapesAdded
           summary: Response after adding shapes
           payload:
@@ -186,7 +206,14 @@ components:
           description: Name of the draft
         requestType:
           type: integer
-          description: Type of request (0=INIT, 1=CONNECT, 2=ADD, 3=UPDATE, 4=REMOVE, 5=NOOP)
+          description: |-
+            Type of request:
+            - 0: INIT - Initialize a new draft
+            - 1: CONNECT - Connect to existing draft and retrieve all shapes
+            - 2: ADD - Add new shapes to the draft
+            - 3: UPDATE - Update existing shapes
+            - 4: REMOVE - Remove shapes from the draft
+            - 5: NOOP - No operation
           enum: [0, 1, 2, 3, 4, 5]
         content:
           type: object
@@ -209,7 +236,14 @@ components:
           description: Name of the draft
         requestType:
           type: integer
-          description: Type of request that triggered this response (0=INIT, 1=CONNECT, 2=ADD, 3=UPDATE, 4=REMOVE, 5=NOOP)
+          description: |-
+            Type of request that triggered this response:
+            - 0: INIT - New draft initialized
+            - 1: CONNECT - Connected to draft, returns all shapes
+            - 2: ADD - Shapes added
+            - 3: UPDATE - Shapes updated
+            - 4: REMOVE - Shapes removed
+            - 5: NOOP - No operation performed
           enum: [0, 1, 2, 3, 4, 5]
         data:
           type: object
@@ -217,7 +251,10 @@ components:
           properties:
             shapes:
               type: array
-              description: List of shapes affected by the action
+              description: |-
+                List of shapes in the response:
+                - For CONNECT: Returns all shapes in the draft
+                - For ADD/UPDATE/REMOVE: Returns only the affected shapes
               items:
                 $ref: '#/components/schemas/shapeData'
     shapeData:

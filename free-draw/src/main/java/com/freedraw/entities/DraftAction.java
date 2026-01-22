@@ -8,11 +8,18 @@ import java.util.*;
 
 @NoArgsConstructor
 public class DraftAction {
-    private List<ShapeData> shapes;
-    private Map<String, Object> actionData = new HashMap<>();
+    private static final String ALL_SHAPES_KEY = "allShapes";
+    
+    private List<ShapeData> shapes = new ArrayList<>();
+    private final Map<String, Object> actionData = new HashMap<>();
 
     public DraftAction(DraftRequestContent requestContent) {
         this.shapes = new ArrayList<>(requestContent.getShapes());
+    }
+    
+    public DraftAction(List<ShapeData> allShapes) {
+        this.shapes = new ArrayList<>(allShapes);
+        this.actionData.put(ALL_SHAPES_KEY, true);
     }
 
     public void putData(String key, Object value) {
