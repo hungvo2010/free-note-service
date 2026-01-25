@@ -6,7 +6,6 @@ import lombok.Getter;
 
 @Getter
 public enum DraftRequestType {
-    INIT(0),
     CONNECT(1),
     ADD(2),
     UPDATE(3),

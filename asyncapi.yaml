@@ -208,13 +208,12 @@ components:
           type: integer
           description: |-
             Type of request:
-            - 0: INIT - Initialize a new draft
-            - 1: CONNECT - Connect to existing draft and retrieve all shapes
+            - 1: CONNECT - Connect to existing draft and retrieve all shapes (requires draftId)
             - 2: ADD - Add new shapes to the draft
-            - 3: UPDATE - Update existing shapes
+            - 3: UPDATE - Update existing shapes (if no draftId, creates new draft)
             - 4: REMOVE - Remove shapes from the draft
             - 5: NOOP - No operation
-          enum: [0, 1, 2, 3, 4, 5]
+          enum: [1, 2, 3, 4, 5]
         content:
           type: object
           description: Content wrapper containing shapes array (defaults to empty list if null)
@@ -238,13 +237,12 @@ components:
           type: integer
           description: |-
             Type of request that triggered this response:
-            - 0: INIT - New draft initialized
             - 1: CONNECT - Connected to draft, returns all shapes
             - 2: ADD - Shapes added
-            - 3: UPDATE - Shapes updated
+            - 3: UPDATE - Shapes updated (or new draft created)
             - 4: REMOVE - Shapes removed
             - 5: NOOP - No operation performed
-          enum: [0, 1, 2, 3, 4, 5]
+          enum: [1, 2, 3, 4, 5]
         data:
           type: object
           description: Response data wrapper containing shapes

@@ -35,10 +35,18 @@ public class DraftService {
 
     public Draft handleDraftRequest(DraftRequestData draftRequestData) {
         var draftId = draftRequestData.getDraftId();
+        var requestType = draftRequestData.getDraftRequestType();
 
-        if (Objects.isNull(draftId)) {
-            log.info("Received new draft request: {}", draftRequestData);
-            return createDraft(draftRequestData);
+        // Handle UPDATE with no draftId - create new draft with shapes
+        if (requestType == DraftRequestType.UPDATE && (Objects.isNull(draftId) || draftId.isEmpty())) {
+            log.info("UPDATE request with no draftId - creating new draft with shapes");
+            return createDraftWithShapes(draftRequestData);
+        }
+
+        // Handle CONNECT with no draftId - return invalid action
+        if (requestType == DraftRequestType.CONNECT && (Objects.isNull(draftId) || draftId.isEmpty())) {
+            log.error("CONNECT request requires draftId");
+            throw new IllegalArgumentException("CONNECT request requires draftId");
         }
 
         var draft = draftRepository.getDraftById(draftId);
@@ -50,6 +58,22 @@ public class DraftService {
         draft.addAction(draftAction);
         draftRepository.save(draft);
         return draft;
+    }
+
+    private Draft createDraftWithShapes(DraftRequestData draftRequestData) {
+        var newDraft = new Draft();
+        var draftAction = new DraftAction(draftRequestData.getContent());
+        draftAction.putData("draftId", newDraft.getDraftId());
+        draftAction.putData("content", draftRequestData.getContent());
+
+        newDraft.addAction(draftAction);
+        draftRepository.save(newDraft);
+        
+        log.info("Created new draft {} with {} unique shapes", 
+                newDraft.getDraftId(), 
+                draftRequestData.getContent().getShapes().size());
+        
+        return newDraft;
     }
 
     private Draft createDraft(DraftRequestData draftRequestData) {
@@ -100,9 +124,14 @@ public class DraftService {
     }
 
     private DraftAction doRequest(DraftRequestData draftRequestData) {
-        if (draftRequestData.getDraftRequestType() == DraftRequestType.CONNECT) {
+        DraftRequestType requestType = draftRequestData.getDraftRequestType();
+        
+        // Handle CONNECT - return all merged shapes
+        if (requestType == DraftRequestType.CONNECT) {
             return connectAction(draftRequestData);
         }
+        
+        // Handle ADD, UPDATE, REMOVE - return action with shapes from content
         return new DraftAction(draftRequestData.getContent());
     }
 }

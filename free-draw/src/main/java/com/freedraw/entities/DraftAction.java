@@ -1,5 +1,6 @@
 package com.freedraw.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.freedraw.dto.DraftRequestContent;
 import com.freedraw.dto.ShapeData;
 import lombok.NoArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.util.*;
 
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DraftAction {
     private static final String ALL_SHAPES_KEY = "allShapes";
     
