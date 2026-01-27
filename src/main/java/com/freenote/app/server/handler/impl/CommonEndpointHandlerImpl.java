@@ -2,6 +2,7 @@ package com.freenote.app.server.handler.impl;
 
 
 import com.freenote.app.server.core.WebSocketConnection;
+import com.freenote.app.server.dto.HeartbeatMsg;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.WebSocketFrame;
@@ -10,6 +11,8 @@ import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.handler.WebSocketHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.InputWrapper;
+import com.freenote.app.server.model.enums.MsgType;
+import com.freenote.app.server.model.ws.CommonResponseObject;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import com.freenote.app.server.util.JSONUtils;
@@ -93,7 +96,7 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
                     webSocketConnection.getOutputStream(),
                     FrameFactory.SERVER.createTextFrame(
                             JSONUtils.toJSONString(webSocketConnection.getResponseObject().getResponseData()
-                    )));
+                            )));
         }
 
     }
@@ -105,6 +108,14 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
 
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, String message) {
+        var requestMessage = JSONUtils.fromJSON(message, HeartbeatMsg.class);
+        if (requestMessage != null && requestMessage.getMsgType() == MsgType.PING) {
+            webSocketConnection.setResponseObject(new CommonResponseObject(HeartbeatMsg.builder()
+                    .msgType(MsgType.PONG)
+                    .receivedPingAt(System.currentTimeMillis())
+                    .pongAt(System.currentTimeMillis())
+                    .build()));
+        }
         onData(webSocketConnection, message);
     }
 

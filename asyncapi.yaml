@@ -49,6 +49,8 @@ channels:
         $ref: '#/components/messages/draftRequest'
       draftResponse:
         $ref: '#/components/messages/draftResponse'
+      heartbeat:
+        $ref: '#/components/messages/heartbeat'
 operations:
   sendDraftRequest:
     action: send
@@ -66,6 +68,22 @@ operations:
     description: Client subscribes to draft action responses broadcast by the server
     messages:
       - $ref: '#/channels/freeNoteChannel/messages/draftResponse'
+  sendPing:
+    action: send
+    channel:
+      $ref: '#/channels/freeNoteChannel'
+    summary: Client sends ping to keep connection alive
+    description: WebSocket PING frame to check connection health
+    messages:
+      - $ref: '#/channels/freeNoteChannel/messages/heartbeat'
+  receiveHeartbeat:
+    action: receive
+    channel:
+      $ref: '#/channels/freeNoteChannel'
+    summary: Client receives heartbeat/pong response
+    description: Server responds with heartbeat message containing timing information
+    messages:
+      - $ref: '#/channels/freeNoteChannel/messages/heartbeat'
 components:
   messages:
     draftRequest:
@@ -192,6 +210,32 @@ components:
                     y: 379.609375
                     width: 599
                     height: 114
+    heartbeat:
+      name: heartbeat
+      title: Heartbeat Message
+      summary: WebSocket heartbeat/ping-pong message for connection health monitoring
+      contentType: application/json
+      x-schema-registry:
+        groupId: com.freenote
+        artifactId: HeartbeatMsg
+        version: 1.0.0
+      payload:
+        $ref: '#/components/schemas/heartbeatPayload'
+      examples:
+        - name: pingMessage
+          summary: Client sends ping to check connection
+          payload:
+            msgType: "PING"
+            message: "ping"
+            pingAt: 1706371200000
+        - name: pongResponse
+          summary: Server responds with pong including timing information
+          payload:
+            msgType: "PONG"
+            message: "pong"
+            pingAt: 1706371200000
+            receivedPingAt: 1706371200050
+            pongAt: 1706371200055
   schemas:
     draftRequestPayload:
       type: object
@@ -278,3 +322,27 @@ components:
             height: 100
             color: "#FF0000"
             strokeWidth: 2
+    heartbeatPayload:
+      type: object
+      required:
+        - msgType
+      properties:
+        msgType:
+          type: string
+          description: Message type identifier
+          enum: ["HEARTBEAT", "PING", "PONG"]
+        message:
+          type: string
+          description: Heartbeat message content (typically "ping" or "pong")
+        pingAt:
+          type: integer
+          format: int64
+          description: Timestamp when client sent ping (milliseconds since epoch)
+        receivedPingAt:
+          type: integer
+          format: int64
+          description: Timestamp when server received ping (milliseconds since epoch)
+        pongAt:
+          type: integer
+          format: int64
+          description: Timestamp when server sent pong response (milliseconds since epoch)

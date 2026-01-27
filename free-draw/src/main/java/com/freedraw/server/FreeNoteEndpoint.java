@@ -54,14 +54,18 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
     public void onControl(WebSocketConnection webSocketConnection, ByteBuffer payload) {
     }
 
+    private DraftAction getLastAction(Draft draft) {
+        return draft.getActions().get(draft.getActions().size() - 1);
+    }
+
     @Override
-    public void onMessage(WebSocketConnection webSocketConnection, String message) {
+    public void onData(WebSocketConnection webSocketConnection, String message) {
         try {
             var draftRequest = JSONUtils.fromJSON(message, DraftRequestData.class);
             log.info("Received DraftRequest: {}", message);
             if (draftRequest == null) {
                 log.error("Received null or invalid DraftRequest");
-                webSocketConnection.setResponseFrame(defaultMessageFrame(DEFAULT_MESSAGE_PAYLOAD));
+                webSocketConnection.setResponseFrame(FrameFactory.SERVER.createTextFrame(JSONUtils.toJSONString(DEFAULT_MESSAGE_PAYLOAD)));
                 return;
             }
 
@@ -71,12 +75,12 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
             var responseData = new DraftResponseData(draft.getDraftId(), draft.getDraftName(), lastAction.getShapes());
             responseData.setRequestType(draftRequest.getDraftRequestType());
             log.info("Response: {}", JSONUtils.toJSONString(responseData));
-            
+
             // Send response to the sender
             webSocketConnection.setResponseObject(
                     new CommonResponseObject<>(responseData)
             );
-            
+
             // Broadcast the SAME format to other clients in the room
             broadcastMessage(draft.getDraftId(), new Connection(webSocketConnection.getOutputStream()),
                     FrameUtils.createApplicationFrame(responseData)  // Use responseData instead of lastAction
@@ -85,19 +89,6 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
             log.error("Error in application onMessage logic: ", ex);
             webSocketConnection.setResponseFrame(FrameFactory.SERVER.createTextFrame(JSONUtils.toJSONString(DEFAULT_MESSAGE_PAYLOAD)));
         }
-    }
-
-    private DraftAction getLastAction(Draft draft) {
-        return draft.getActions().get(draft.getActions().size() - 1);
-    }
-
-    private WebSocketFrame defaultMessageFrame(DraftResponseData defaultMessagePayload) {
-        return FrameUtils.createApplicationFrame(defaultMessagePayload);
-    }
-
-    @Override
-    public void onData(WebSocketConnection webSocketConnection, String message) {
-
     }
 
     private void removeConnectionByInputStream(OutputStream outputStream) {
