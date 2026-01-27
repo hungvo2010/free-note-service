@@ -110,11 +110,14 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
     public void onMessage(WebSocketConnection webSocketConnection, String message) {
         var requestMessage = JSONUtils.fromJSON(message, HeartbeatMsg.class);
         if (requestMessage != null && requestMessage.getMsgType() == MsgType.PING) {
-            webSocketConnection.setResponseObject(new CommonResponseObject(HeartbeatMsg.builder()
+            log.info("Received PING message at {}, sending PONG response", requestMessage.getPingAt());
+            webSocketConnection.setResponseObject(new CommonResponseObject<>(HeartbeatMsg.builder()
                     .msgType(MsgType.PONG)
+                    .pingAt(requestMessage.getPingAt())
                     .receivedPingAt(System.currentTimeMillis())
                     .pongAt(System.currentTimeMillis())
                     .build()));
+            return;
         }
         onData(webSocketConnection, message);
     }

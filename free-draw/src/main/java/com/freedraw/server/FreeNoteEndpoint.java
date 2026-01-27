@@ -69,7 +69,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
                 return;
             }
 
-            var draft = processDraftRequest(draftRequest);
+            var draft = draftService.handleDraftRequest(draftRequest);
             var lastAction = getLastAction(draft);
 
             var responseData = new DraftResponseData(draft.getDraftId(), draft.getDraftName(), lastAction.getShapes());
@@ -86,7 +86,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
                     FrameUtils.createApplicationFrame(responseData)  // Use responseData instead of lastAction
             );
         } catch (Exception ex) {
-            log.error("Error in application onMessage logic: ", ex);
+            log.error("Error in application onMessage logic: {}", ex.getMessage());
             webSocketConnection.setResponseFrame(FrameFactory.SERVER.createTextFrame(JSONUtils.toJSONString(DEFAULT_MESSAGE_PAYLOAD)));
         }
     }
@@ -97,15 +97,6 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
 
     private void removeConnection(Room targetRoom, Connection newConnection) {
         targetRoom.remove(newConnection);
-    }
-
-    private Draft processDraftRequest(DraftRequestData draftRequestData) {
-        try {
-            return draftService.handleDraftRequest(draftRequestData);
-        } catch (Exception ex) {
-            log.error("Draft Request handle failed: ", ex);
-            throw ex;
-        }
     }
 
     private void broadcastMessage(String roomId, Connection newConnection, WebSocketFrame clientResponse) {

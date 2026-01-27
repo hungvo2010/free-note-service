@@ -8,6 +8,7 @@ import com.freedraw.exception.DraftNotFoundException;
 import com.freedraw.models.enums.DraftRequestType;
 import com.freedraw.repository.DraftRepository;
 import com.freedraw.repository.InMemDraftRepositoryImpl;
+import com.freenote.app.server.util.CommonUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -37,16 +38,17 @@ public class DraftService {
         var draftId = draftRequestData.getDraftId();
         var requestType = draftRequestData.getDraftRequestType();
 
-        // Handle UPDATE with no draftId - create new draft with shapes
-        if (requestType == DraftRequestType.UPDATE && (Objects.isNull(draftId) || draftId.isEmpty())) {
-            log.info("UPDATE request with no draftId - creating new draft with shapes");
-            return createDraftWithShapes(draftRequestData);
-        }
-
-        // Handle CONNECT with no draftId - return invalid action
-        if (requestType == DraftRequestType.CONNECT && (Objects.isNull(draftId) || draftId.isEmpty())) {
-            log.error("CONNECT request requires draftId");
-            throw new IllegalArgumentException("CONNECT request requires draftId");
+        if (CommonUtils.isNullOrEmpty(draftId)) {
+            // Handle UPDATE with no draftId - create new draft with shapes
+            if (requestType == DraftRequestType.UPDATE) {
+                log.info("UPDATE request with no draftId - creating new draft with shapes");
+                return createDraftWithShapes(draftRequestData);
+            }
+            // Handle CONNECT with no draftId - return invalid action
+            if (requestType == DraftRequestType.CONNECT) {
+                log.error("CONNECT request requires draftId");
+                throw new IllegalArgumentException("CONNECT request requires draftId");
+            }
         }
 
         var draft = draftRepository.getDraftById(draftId);
@@ -68,22 +70,11 @@ public class DraftService {
 
         newDraft.addAction(draftAction);
         draftRepository.save(newDraft);
-        
-        log.info("Created new draft {} with {} unique shapes", 
-                newDraft.getDraftId(), 
+
+        log.info("Created new draft {} with {} unique shapes",
+                newDraft.getDraftId(),
                 draftRequestData.getContent().getShapes().size());
-        
-        return newDraft;
-    }
 
-    private Draft createDraft(DraftRequestData draftRequestData) {
-        var newDraft = new Draft();
-        var draftAction = new DraftAction(draftRequestData.getContent());
-        draftAction.putData("draftId", newDraft.getDraftId());
-        draftAction.putData("content", draftRequestData.getContent());
-
-        newDraft.addAction(draftAction);
-        draftRepository.save(newDraft);
         return newDraft;
     }
 
@@ -125,12 +116,12 @@ public class DraftService {
 
     private DraftAction doRequest(DraftRequestData draftRequestData) {
         DraftRequestType requestType = draftRequestData.getDraftRequestType();
-        
+
         // Handle CONNECT - return all merged shapes
         if (requestType == DraftRequestType.CONNECT) {
             return connectAction(draftRequestData);
         }
-        
+
         // Handle ADD, UPDATE, REMOVE - return action with shapes from content
         return new DraftAction(draftRequestData.getContent());
     }
