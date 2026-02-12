@@ -17,6 +17,7 @@ public class DraftResponseData extends TraceResponseData {
     private String draftId;
     private String draftName;
     private DraftRequestType requestType;
+    private String senderId;
     private DraftResponseContent data;
 
     public DraftResponseData(String draftId, String draftName, List<ShapeData> shapes) {

@@ -16,7 +16,7 @@ import java.util.Set;
 public class RedisRepositoryImpl implements DraftRepository {
     private static final Logger log = LogManager.getLogger(RedisRepositoryImpl.class);
     private static final String DRAFT_COLLECTION_KEY = "free_draw_draft_collections";
-    
+
     private final RedissonClient redissonClient;
 
     public RedisRepositoryImpl() {
@@ -31,22 +31,17 @@ public class RedisRepositoryImpl implements DraftRepository {
             throw new IllegalArgumentException("Draft ID cannot be null or empty");
         }
 
-        try {
-            RMap<String, String> map = redissonClient.getMap(DRAFT_COLLECTION_KEY);
-            String draftJson = map.get(draftId);
-            
-            if (draftJson == null) {
-                log.warn("Draft not found with ID: {}", draftId);
-                throw new DraftNotFoundException("Draft not found with ID: " + draftId);
-            }
-            
-            Draft draft = JSONUtils.fromJSON(draftJson, Draft.class);
-            log.debug("Retrieved draft with ID: {}", draftId);
-            return draft;
-        } catch (Exception e) {
-            log.error("Error retrieving draft with ID {}: {}", draftId, e.getMessage(), e);
-            throw new RuntimeException("Failed to retrieve draft", e);
+        RMap<String, String> map = redissonClient.getMap(DRAFT_COLLECTION_KEY);
+        String draftJson = map.get(draftId);
+
+        if (draftJson == null) {
+            log.warn("Draft not found with ID: {}", draftId);
+            throw new DraftNotFoundException("Draft not found with ID: " + draftId);
         }
+
+        Draft draft = JSONUtils.fromJSON(draftJson, Draft.class);
+        log.debug("Retrieved draft with ID: {}", draftId);
+        return draft;
     }
 
     @Override
@@ -64,10 +59,10 @@ public class RedisRepositoryImpl implements DraftRepository {
         try {
             RMap<String, String> map = redissonClient.getMap(DRAFT_COLLECTION_KEY);
             String draftJson = JSONUtils.toJSONString(draft);
-            
+
             // Use put instead of putIfAbsent to allow updates
             String previousValue = map.put(draft.getDraftId(), draftJson);
-            
+
             if (previousValue == null) {
                 log.info("Created new draft with ID: {}", draft.getDraftId());
             } else {
@@ -84,20 +79,14 @@ public class RedisRepositoryImpl implements DraftRepository {
             log.warn("Attempted to delete draft with null or empty draftId");
             throw new IllegalArgumentException("Draft ID cannot be null or empty");
         }
+        RMap<String, String> map = redissonClient.getMap(DRAFT_COLLECTION_KEY);
+        String removed = map.remove(draftId);
 
-        try {
-            RMap<String, String> map = redissonClient.getMap(DRAFT_COLLECTION_KEY);
-            String removed = map.remove(draftId);
-            
-            if (removed != null) {
-                log.info("Deleted draft with ID: {}", draftId);
-            } else {
-                log.warn("Attempted to delete non-existent draft with ID: {}", draftId);
-                throw new DraftNotFoundException("Draft not found with ID: " + draftId);
-            }
-        } catch (Exception e) {
-            log.error("Error deleting draft with ID {}: {}", draftId, e.getMessage(), e);
-            throw new RuntimeException("Failed to delete draft", e);
+        if (removed != null) {
+            log.info("Deleted draft with ID: {}", draftId);
+        } else {
+            log.warn("Attempted to delete non-existent draft with ID: {}", draftId);
+            throw new DraftNotFoundException("Draft not found with ID: " + draftId);
         }
     }
 
@@ -119,14 +108,14 @@ public class RedisRepositoryImpl implements DraftRepository {
         try {
             RMap<String, String> map = redissonClient.getMap(DRAFT_COLLECTION_KEY);
             List<Draft> drafts = new ArrayList<>();
-            
+
             for (String draftJson : map.values()) {
                 Draft draft = JSONUtils.fromJSON(draftJson, Draft.class);
                 if (draft != null) {
                     drafts.add(draft);
                 }
             }
-            
+
             log.debug("Retrieved {} drafts from Redis", drafts.size());
             return drafts;
         } catch (Exception e) {

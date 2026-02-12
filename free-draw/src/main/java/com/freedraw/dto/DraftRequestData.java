@@ -17,6 +17,7 @@ import lombok.*;
 public class DraftRequestData extends TraceRequestData {
     private String draftId;
     private String draftName;
+    private String senderId;
     private DraftRequestType draftRequestType;
     private DraftRequestContent content = new DraftRequestContent();
 

@@ -1,4 +1,4 @@
-package com.freedraw.server;
+package com.freedraw.endpoint;
 
 import com.freedraw.dto.DraftRequestData;
 import com.freedraw.dto.DraftResponseData;
@@ -74,6 +74,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
 
             var responseData = new DraftResponseData(draft.getDraftId(), draft.getDraftName(), lastAction.getShapes());
             responseData.setRequestType(draftRequest.getDraftRequestType());
+            responseData.setSenderId(draftRequest.getSenderId());
             log.info("Response: {}", JSONUtils.toJSONString(responseData));
 
             // Send response to the sender
@@ -111,29 +112,4 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
     }
 
 
-    public static void main(String[] args) {
-        log.info(String.valueOf(JSONUtils.fromJSON(
-                """
-                        {
-                          "content": {
-                            "type": 1,
-                            "details": {
-                              "op": "update",
-                              "id": 247,
-                              "patch": {
-                                "type": "rectangle",
-                                "data": {
-                                  "id": 247,
-                                  "x": 458,
-                                  "y": 379.609375,
-                                  "width": 599,
-                                  "height": -114
-                                }
-                              }
-                            }
-                          }
-                        }
-                        """,
-                DraftRequestData.class)));
-    }
 }

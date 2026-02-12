@@ -248,6 +248,9 @@ components:
         draftName:
           type: string
           description: Name of the draft
+        senderId:
+          type: string
+          description: Unique identifier for the user sending the request
         requestType:
           type: integer
           description: |-
@@ -277,6 +280,9 @@ components:
         draftName:
           type: string
           description: Name of the draft
+        senderId:
+          type: string
+          description: Unique identifier for the user who sent the original request
         requestType:
           type: integer
           description: |-
