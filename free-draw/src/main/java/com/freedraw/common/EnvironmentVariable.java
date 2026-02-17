@@ -1,4 +1,4 @@
-package com.freenote.app.server.common;
+package com.freedraw.common;
 
 import lombok.experimental.UtilityClass;
 import org.apache.logging.log4j.LogManager;

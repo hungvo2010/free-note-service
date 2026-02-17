@@ -18,16 +18,8 @@ public class ServerBootstrap {
     @Setter
     private int port = 8189;
 
-    public ServerBootstrap(int port) {
-        this.port = port;
-    }
-
     public ServerBootstrap(ServerSocketFactory serverSocketFactory) {
         this.serverSocketFactory = serverSocketFactory;
-    }
-
-    public ServerBootstrap(ExecutorService executorService) {
-        this.executorService = executorService;
     }
 
     public void start(IncomingConnectionHandler handler) throws Exception {

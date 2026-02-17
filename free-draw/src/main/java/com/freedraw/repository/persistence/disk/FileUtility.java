@@ -1,6 +1,6 @@
 package com.freedraw.repository.persistence.disk;
 
-import com.freenote.app.server.common.EnvironmentVariable;
+import com.freedraw.common.EnvironmentVariable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
