@@ -32,6 +32,12 @@ public class SSLSocket implements ServerSocketFactory {
 
         // Create SSL server socket
         SSLServerSocketFactory factory = ctx.getServerSocketFactory();
-        return factory.createServerSocket(port);
+        var serverSocket = (javax.net.ssl.SSLServerSocket) factory.createServerSocket(port);
+        
+        // Don't require client authentication
+        serverSocket.setNeedClientAuth(false);
+        serverSocket.setWantClientAuth(false);
+        
+        return serverSocket;
     }
 }
