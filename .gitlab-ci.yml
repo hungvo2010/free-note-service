@@ -180,6 +180,6 @@ deploy:
         docker run -d --name free_note_service_${CI_COMMIT_SHORT_SHA} -p 8189:8189 --restart always $DOCKER_IMAGE
       "
   rules:
-    # - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
-    #   when: on_success
-    # - when: manual
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: on_success
+    - when: never
