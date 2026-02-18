@@ -175,9 +175,9 @@ deploy:
         aws ecr get-login-password --region eu-west-3 \
         | docker login --username AWS --password-stdin 221082202356.dkr.ecr.eu-west-3.amazonaws.com &&
         docker pull $DOCKER_IMAGE &&
-        docker stop free_note_service 2>/dev/null || true &&
-        docker rm free_note_service 2>/dev/null || true &&
-        docker run -d --name free_note_service -p 8189:8189 --restart always $DOCKER_IMAGE
+        docker ps -a --filter 'name=free_note_service' --format '{{.Names}}' | xargs -r docker stop &&
+        docker ps -a --filter 'name=free_note_service' --format '{{.Names}}' | xargs -r docker rm &&
+        docker run -d --name free_note_service_${CI_COMMIT_SHORT_SHA} -p 8189:8189 --restart always $DOCKER_IMAGE
       "
   rules:
     # - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
