@@ -47,7 +47,7 @@ jacocoTestReport {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'com.freedraw.FreeNoteServer'
+                'Main-Class': 'com.freedraw.SSLFreeNoteServer'
         )
     }
 }
@@ -112,5 +112,5 @@ tasks.register('bootRun', JavaExec) {
     group = 'application'
     description = 'Run main class'
     classpath = sourceSets.main.runtimeClasspath
-    mainClass.set('com.freedraw.FreeNoteServer')
+    mainClass.set('com.freedraw.SSLFreeNoteServer')
 }

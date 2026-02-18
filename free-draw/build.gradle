@@ -51,7 +51,7 @@ tasks.register('bootRun', JavaExec) {
     group = 'application'
     description = 'Run FreeNote WebSocket server'
     classpath = sourceSets.main.runtimeClasspath
-    mainClass.set('com.freedraw.FreeNoteServer')
+    mainClass.set('com.freedraw.SSLFreeNoteServer')
     
     // Optional: pass arguments
     if (project.hasProperty('args')) {
@@ -67,7 +67,7 @@ shadowJar {
     
     manifest {
         attributes(
-            'Main-Class': 'com.freedraw.FreeNoteServer'
+            'Main-Class': 'com.freedraw.SSLFreeNoteServer'
         )
     }
     
