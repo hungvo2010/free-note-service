@@ -175,8 +175,8 @@ deploy:
         aws ecr get-login-password --region eu-west-3 \
         | docker login --username AWS --password-stdin 221082202356.dkr.ecr.eu-west-3.amazonaws.com &&
         docker pull $DOCKER_IMAGE &&
-        docker rm -f forgeblast || true &&
-        docker run -d --name forgeblast -p 8189:8189 --restart always $DOCKER_IMAGE
+        docker rm -f free_note_service || true &&
+        docker run -d --name free_note_service -p 8189:8189 --restart always $DOCKER_IMAGE
       "
   rules:
     # - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
