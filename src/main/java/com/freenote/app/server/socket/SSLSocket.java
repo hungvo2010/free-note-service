@@ -21,11 +21,24 @@ public class SSLSocket implements ServerSocketFactory {
     public ServerSocket createServerSocket(int port) throws Exception {
         KeyStore ks = KeyStore.getInstance("PKCS12");
         var passwordChars = password.toCharArray();
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(keystorePath)) {
-            if (is == null) {
-                throw new FileNotFoundException("Keystore not found in JAR: " + keystorePath);
+        
+        // Try loading from filesystem first, then from classpath
+        InputStream is = null;
+        try {
+            java.io.File file = new java.io.File(keystorePath);
+            if (file.exists()) {
+                is = new java.io.FileInputStream(file);
+            } else {
+                is = getClass().getClassLoader().getResourceAsStream(keystorePath);
+                if (is == null) {
+                    throw new FileNotFoundException("Keystore not found: " + keystorePath);
+                }
             }
             ks.load(is, passwordChars);
+        } finally {
+            if (is != null) {
+                is.close();
+            }
         }
 
         // Init KeyManager with server private key
