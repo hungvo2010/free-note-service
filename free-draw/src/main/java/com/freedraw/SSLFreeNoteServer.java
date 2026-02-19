@@ -31,7 +31,7 @@ public class SSLFreeNoteServer {
     // Main entrypoint
     public static void main(String[] args) throws Exception {
         SSLFreeNoteServer server = new SSLFreeNoteServer(
-                8443,
+                8189,
                 "keystore.p12",
                 "changeit",
                 new IncomingSocketHandlerImpl() // can swap this with WebSocketHandler later
