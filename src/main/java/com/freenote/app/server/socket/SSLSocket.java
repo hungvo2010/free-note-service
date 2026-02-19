@@ -3,7 +3,8 @@ package com.freenote.app.server.socket;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.security.KeyStore;
 
@@ -20,7 +21,12 @@ public class SSLSocket implements ServerSocketFactory {
     public ServerSocket createServerSocket(int port) throws Exception {
         KeyStore ks = KeyStore.getInstance("PKCS12");
         var passwordChars = password.toCharArray();
-        ks.load(new FileInputStream(keystorePath), passwordChars);
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream(keystorePath)) {
+            if (is == null) {
+                throw new FileNotFoundException("Keystore not found in JAR: " + keystorePath);
+            }
+            ks.load(is, passwordChars);
+        }
 
         // Init KeyManager with server private key
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
@@ -33,11 +39,11 @@ public class SSLSocket implements ServerSocketFactory {
         // Create SSL server socket
         SSLServerSocketFactory factory = ctx.getServerSocketFactory();
         var serverSocket = (javax.net.ssl.SSLServerSocket) factory.createServerSocket(port);
-        
+
         // Don't require client authentication
         serverSocket.setNeedClientAuth(false);
         serverSocket.setWantClientAuth(false);
-        
+
         return serverSocket;
     }
 }
