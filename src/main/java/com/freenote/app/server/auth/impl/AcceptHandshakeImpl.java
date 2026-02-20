@@ -15,7 +15,7 @@ import java.util.Objects;
 
 public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
     private static final String UNIVERSAL_WEBSOCKET_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-    private static final Collection<String> ALLOWED_ORIGINS = Arrays.asList(
+    private static final Collection<String> DEFAULT_ALLOWED_ORIGINS = Arrays.asList(
             "http://localhost:3000",
             "http://localhost:63342",
             "http://localhost:8082",
@@ -27,7 +27,21 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
             "http://localhost:8086",
             "http://localhost:8080"
     );
+    private static final Collection<String> ALLOWED_ORIGINS;
     private static final Logger log = LogManager.getLogger(AcceptHandshakeImpl.class);
+
+    static {
+        String additionalOrigins = System.getenv("ALLOWED_ORIGINS");
+        if (additionalOrigins != null && !additionalOrigins.trim().isEmpty()) {
+            Collection<String> combined = new java.util.ArrayList<>(DEFAULT_ALLOWED_ORIGINS);
+            combined.addAll(Arrays.asList(additionalOrigins.split(",")));
+            ALLOWED_ORIGINS = combined;
+            log.info("Loaded additional allowed origins from environment: {}", additionalOrigins);
+        } else {
+            ALLOWED_ORIGINS = DEFAULT_ALLOWED_ORIGINS;
+        }
+        log.info("Allowed origins: {}", ALLOWED_ORIGINS);
+    }
 
     @Override
     public HttpUpgradeResponse handle(HttpUpgradeRequest request) {
