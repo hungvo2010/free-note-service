@@ -10,6 +10,6 @@ WORKDIR /app
 COPY --from=build /app/free-draw/build/libs/*.jar app.jar
 COPY keystore.p12 /app/keystore.p12
 ENV SSL_PORT=8189
-ENV ALLOWED_ORIGINS="https://socket.forgeblastadmin.com,https://app.example.com" 
+ENV ALLOWED_ORIGINS="https://free-note-ui.vercel.app" 
 EXPOSE 8189
 ENTRYPOINT ["java", "-jar", "app.jar"]
