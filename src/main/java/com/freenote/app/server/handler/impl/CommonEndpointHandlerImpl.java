@@ -19,8 +19,10 @@ import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.net.ssl.SSLSocket;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -35,7 +37,7 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
     public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) {
         try {
             var inputStream = inputWrapper.getInputStream();
-            if (inputStream.available() == 0) {
+            if (!isAvailable(inputWrapper.getSocket())) {
                 return false;
             }
             byte[] actualData = getRawBytes(inputStream);
@@ -86,6 +88,13 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
             log.error("Error handling input stream", e);
             return false;
         }
+    }
+
+    private boolean isAvailable(Socket socket) throws IOException {
+        if (socket instanceof SSLSocket) {
+            return socket.getInputStream().read() > 0;
+        }
+        return socket.getInputStream().available() > 0;
     }
 
     private void sendResponse(WebSocketConnection webSocketConnection) throws IOException {

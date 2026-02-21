@@ -48,7 +48,7 @@ public class IncomingSocketHandlerImpl implements IncomingConnectionHandler {
             var pathHandler = getPathHandler(upgradeRequest);
 
             while (!incomingSocket.isClosed()) { // todo: not correct due to incoming socket will not be closed after client disconnects
-                log.warn("todo: not correct due to incoming socket will not be closed after client disconnects");
+//                log.warn("todo: not correct due to incoming socket will not be closed after client disconnects");
                 pathHandler.handle(inputWrapper, output);
             }
             
