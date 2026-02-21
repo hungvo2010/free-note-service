@@ -12,7 +12,8 @@ import java.util.concurrent.Executors;
 
 @AllArgsConstructor
 public class ServerBootstrap {
-    private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private static final int availableProcessors = Runtime.getRuntime().availableProcessors();
+    private ExecutorService executorService = Executors.newFixedThreadPool(availableProcessors);
     private static final Logger log = LogManager.getLogger(ServerBootstrap.class);
     private ServerSocketFactory serverSocketFactory = new RawSocket();
     @Setter
@@ -23,6 +24,7 @@ public class ServerBootstrap {
     }
 
     public void start(IncomingConnectionHandler handler) throws Exception {
+        log.info("Number of available processors: {}", availableProcessors);
         try (var serverSocket = serverSocketFactory.createServerSocket(this.port)) {
             while (!serverSocket.isClosed()) {
                 log.info("Waiting for connection on port {}", this.port);
