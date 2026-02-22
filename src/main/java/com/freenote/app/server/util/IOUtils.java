@@ -96,7 +96,7 @@ public class IOUtils {
             dis.readFully(frameData, offset, (int) payloadLength);
         }
 
-        log.info("Read websocket frame: headerLen={}, payloadLen={}, total={}",
+        log.info("Read websocket frame: headerLen={}, payloadLen={}, total={}, (bytes)",
                 headerLen, payloadLength, totalFrameLength);
 
         return frameData;

@@ -92,9 +92,21 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
 
     private boolean isAvailable(Socket socket) throws IOException {
         if (socket instanceof SSLSocket) {
-            return socket.getInputStream().read() > 0;
+            return nonBlockingRead(socket);
         }
         return socket.getInputStream().available() > 0;
+    }
+
+    private boolean nonBlockingRead(Socket socket) throws IOException {
+        try {
+//            var pushBackStream = new PushbackInputStream(socket.getInputStream());
+//            int b = pushBackStream.read();
+//            if (b < 0) return false;
+//            pushBackStream.unread(b); // wrong, due to use internal buffer, will not affect original input stream
+            return true;
+        } catch (Exception e) {
+            return false; // no data yet, not an error
+        }
     }
 
     private void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
