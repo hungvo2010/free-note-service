@@ -76,6 +76,20 @@ validate-asyncapi:
   rules:
     - when: on_success
 
+spotbugs-check:
+  stage: validate
+  image: gradle:8.5-jdk17
+  script:
+    - echo "Running SpotBugs static analysis..."
+    - ./gradlew spotbugsMain spotbugsTest
+    - echo "✓ SpotBugs analysis passed"
+  artifacts:
+    paths:
+      - "**/build/reports/spotbugs/"
+    expire_in: 1 week
+  rules:
+    - when: on_success
+
 schema-validation-tests:
   stage: test
   image: gradle:8.5-jdk17

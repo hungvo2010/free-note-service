@@ -10,9 +10,60 @@ buildscript {
 plugins {
     id 'java'
     id 'jacoco'
-
     id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id "com.github.spotbugs" version "6.0.26"
 }
+
+import com.github.spotbugs.snom.Effort
+import com.github.spotbugs.snom.Confidence
+
+allprojects {
+    apply plugin: 'com.github.spotbugs'
+
+    spotbugs {
+        ignoreFailures = true
+        showStackTraces = true
+        showProgress = true
+        effort = Effort.valueOf('MAX')
+        reportLevel = Confidence.valueOf('HIGH')
+    }
+
+    tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+        reports {
+            xml.required = true
+            html.required = true
+        }
+        
+        doLast {
+            def reportFile = reports.xml.outputLocation.get().asFile
+            if (reportFile.exists()) {
+                def bugs = new XmlParser().parse(reportFile)
+                def bugCount = bugs.BugInstance.size()
+                
+                // Read from project property if provided, otherwise from deploy/spotbugs-config.properties, fallback to 10
+                def maxErrors = 10
+                if (project.hasProperty('spotbugsMaxErrors')) {
+                    maxErrors = project.property('spotbugsMaxErrors').toInteger()
+                } else {
+                    def configFile = rootProject.file('deploy/spotbugs-config.properties')
+                    if (configFile.exists()) {
+                        def props = new Properties()
+                        configFile.withInputStream { props.load(it) }
+                        maxErrors = props.getProperty('maxErrors')?.toInteger() ?: 10
+                    }
+                }
+                
+                println "SpotBugs found ${bugCount} bugs in ${project.name} (Max allowed: ${maxErrors})"
+                
+                if (bugCount > maxErrors) {
+                    throw new GradleException("SpotBugs found ${bugCount} bugs in ${project.name}, which exceeds the maximum allowed (${maxErrors}).")
+                }
+            }
+        }
+    }
+}
+
+
 
 group = 'com.freenote'
 version = '0.0.1-SNAPSHOT'
