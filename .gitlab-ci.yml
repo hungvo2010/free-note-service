@@ -84,9 +84,11 @@ spotbugs-check:
     - ./gradlew spotbugsMain spotbugsTest
     - echo "✓ SpotBugs analysis passed"
   artifacts:
+    when: always
     paths:
-      - "**/build/reports/spotbugs/"
+      - "**/build/reports/spotbugs/**"
     expire_in: 1 week
+
   rules:
     - when: on_success
 
