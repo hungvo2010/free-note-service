@@ -2,9 +2,12 @@ package com.freenote.app.server.core.v2;
 
 import com.freenote.app.server.auth.AcceptHandshakeHandler;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
-import com.freenote.app.server.core.IncomingSocketHandlerImpl;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
+import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
+import com.freenote.app.server.model.InputWrapper;
+import com.freenote.app.server.model.OutputWrapper;
+import com.freenote.app.server.model.ws.CommonRequestObject;
 import com.freenote.app.server.parser.HttpParser;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +20,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 
 public class NIOIncomingConnectionHandlerImpl implements IncomingConnectionHandlerV2 {
-    private static final Logger log = LogManager.getLogger(IncomingSocketHandlerImpl.class);
+    private static final Logger log = LogManager.getLogger(NIOIncomingConnectionHandlerImpl.class);
     private final AcceptHandshakeHandler handshakeHandler;
     private final HttpParser httpParser;
 
@@ -36,6 +39,29 @@ public class NIOIncomingConnectionHandlerImpl implements IncomingConnectionHandl
         log.info("Received request: {}\n", upgradeRequest);
         writeHandshakeResponse(upgradeRequest, channel.socket().getOutputStream());
 
+        var inputWrapper = buildInputWrapper(channel, upgradeRequest, byteBuffer);
+        var pathHandler = getPathHandler(upgradeRequest);
+
+        var outputWrapper = new OutputWrapper(channel.socket().getOutputStream());
+        while (channel.isConnected()) {
+            pathHandler.handle(inputWrapper, outputWrapper);
+        }
+    }
+
+    private URIHandler getPathHandler(HttpUpgradeRequest upgradeRequest) {
+        return null;
+    }
+
+    private InputWrapper buildInputWrapper(SocketChannel channel, HttpUpgradeRequest upgradeRequest, ByteBuffer byteBuffer) {
+        var request = CommonRequestObject.builder()
+                .origin(upgradeRequest.getOrigin())
+                .socket(channel.socket())
+                .build();
+        return InputWrapper.builder()
+                .socketChannel(channel)
+                .channelBuffer(byteBuffer)
+                .requestObject(request)
+                .build();
     }
 
     private void writeHandshakeResponse(HttpUpgradeRequest request, OutputStream output) throws IOException {
@@ -46,35 +72,4 @@ public class NIOIncomingConnectionHandlerImpl implements IncomingConnectionHandl
             throw new AcceptConnectionException("Handshake failed, connection not accepted");
         }
     }
-
-//    @Override
-//    public void handle(Socket incomingSocket) throws IOException {
-//        var input = incomingSocket.getInputStream();
-//        var output = incomingSocket.getOutputStream();
-//        try {
-//            log.info("Serving incoming socket: {}", incomingSocket.getPort());
-//            var upgradeRequest = this.httpParser.parse(input);
-//
-//            log.info("Received request: {}\n", upgradeRequest);
-//            doHandShake(upgradeRequest, output);
-//
-//            var inputWrapper = buildInputWrapper(incomingSocket, upgradeRequest);
-//            var pathHandler = getPathHandler(upgradeRequest);
-//
-//            while (!incomingSocket.isClosed()) { // todo: not correct due to incoming socket will not be closed after client disconnects
-////                log.warn("todo: not correct due to incoming socket will not be closed after client disconnects");
-//                pathHandler.handle(inputWrapper, output);
-//            }
-//
-//        } catch (ClientDisconnectException | AcceptConnectionException connectionException) {
-//            log.error("Client disconnected => self closed: {}", connectionException.getMessage());
-//            incomingSocket.close();
-//        } catch (Exception e) {
-//            log.error("Error handling socket: ", e);
-//            IOUtils.writeOutPut(
-//                    output,
-//                    FrameFactory.SERVER.createTextFrame("Internal Server Error")
-//            );
-//        }
-//    }
 }

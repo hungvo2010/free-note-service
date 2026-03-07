@@ -9,13 +9,13 @@ import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.model.InputWrapper;
+import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,9 +27,9 @@ public class FragmentedURIHandlerImpl implements URIHandler {
     private final FrameFactory frameFactory = new ServerFrameFactory();
 
     @Override
-    public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) {
+    public boolean handle(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
         var inputStream = inputWrapper.getInputStream();
-        if (inputStream == null || outputStream == null) throw new NullPointerException();
+        if (inputStream == null || outputWrapper == null) throw new NullPointerException();
 
         try {
             var bytes = new byte[70000];
@@ -42,12 +42,12 @@ public class FragmentedURIHandlerImpl implements URIHandler {
             var clientFrame = clientFrames.get(0);
             if (!clientFrame.isFin() && clientFrame.getOpcode() != FrameType.CONTINUATION.getOpCode()) {
                 log.info("Received non-final frame. Continuation expected.");
-                return continuationHandler(clientFrames, inputWrapper, outputStream);
+                return continuationHandler(clientFrames, inputWrapper, outputWrapper);
             } else if (clientFrame.getOpcode() == FrameType.CONTINUATION.getOpCode()) {
                 log.info("Received continuation frame without initial fragmented frame. Ignoring.");
                 return false;
             }
-            IOUtils.writeOutPut(outputStream, frameFactory.createTextFrame(
+            IOUtils.writeOutPut(outputWrapper.outputStream(), frameFactory.createTextFrame(
                     new String(
                             FrameUtil.maskPayload(
                                     clientFrame.getPayloadData(),
@@ -74,7 +74,7 @@ public class FragmentedURIHandlerImpl implements URIHandler {
     }
 
     @Override
-    public boolean continuationHandler(List<WebSocketFrame> clientFrames, InputWrapper inputWrapper, OutputStream outputStream) throws IOException {
+    public boolean continuationHandler(List<WebSocketFrame> clientFrames, InputWrapper inputWrapper, OutputWrapper outputWrapper) throws IOException {
         LargeFrame largeFrame = new LargeFrame();
         var inputStream = inputWrapper.getInputStream();
         try {
@@ -94,13 +94,13 @@ public class FragmentedURIHandlerImpl implements URIHandler {
             } while (!largeFrame.isComplete() || read == -1);
             log.info("Large frame is complete");
             var mergedFrame = largeFrame.getMergedFrame();
-            IOUtils.writeOutPut(outputStream, mergedFrame);
+            IOUtils.writeOutPut(outputWrapper.outputStream(), mergedFrame);
             return true;
         } catch (IOException e) {
             var mergedFrame = largeFrame.getMergedFrame();
             var content = new String(mergedFrame.getPayloadData(), StandardCharsets.UTF_8);
             log.error("Error during continuation handling. Partial content: {}", content, e);
-            IOUtils.writeOutPut(outputStream, mergedFrame);
+            IOUtils.writeOutPut(outputWrapper.outputStream(), mergedFrame);
             return false;
         }
     }

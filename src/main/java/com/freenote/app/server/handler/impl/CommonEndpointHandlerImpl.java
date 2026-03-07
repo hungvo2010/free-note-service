@@ -11,6 +11,7 @@ import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.handler.WebSocketHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.InputWrapper;
+import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.enums.MsgType;
 import com.freenote.app.server.model.ws.CommonResponseObject;
 import com.freenote.app.server.util.FrameUtil;
@@ -21,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.SSLSocket;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -34,11 +34,20 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
     private static final Logger log = LogManager.getLogger(CommonEndpointHandlerImpl.class);
 
     @Override
-    public boolean handle(InputWrapper inputWrapper, OutputStream outputStream) {
+    public boolean handle(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
         try {
             var inputStream = inputWrapper.getInputStream();
-            if (!isAvailable(inputWrapper.getSocket())) {
-                return false;
+            if (inputStream == null) return false;
+            
+            var socket = inputWrapper.getSocket();
+            if (socket != null) {
+                if (!isAvailable(socket)) {
+                    return false;
+                }
+            } else {
+                if (inputStream.available() <= 0) {
+                    return false;
+                }
             }
             byte[] actualData = getRawBytes(inputStream);
             WebSocketFrame frame = FrameFactory.CLIENT.createFrameFromBytes(actualData);
@@ -50,7 +59,7 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
             log.debug("Masking Key: {}", frame.getMaskingKey());
             WebSocketConnection webSocketConnection = WebSocketConnection.builder()
                     .inputStream(inputStream)
-                    .outputStream(outputStream)
+                    .outputWrapper(outputWrapper)
                     .build();
 
             byte[] payload = frame.isMasked() ? FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
@@ -111,10 +120,10 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
 
     private void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
         if (!Objects.isNull(webSocketConnection.getResponseFrame())) {
-            IOUtils.writeOutPut(webSocketConnection.getOutputStream(), webSocketConnection.getResponseFrame());
+            IOUtils.writeOutPut(webSocketConnection.getOutputWrapper().outputStream(), webSocketConnection.getResponseFrame());
         } else if (!Objects.isNull(webSocketConnection.getResponseObject())) {
             IOUtils.writeOutPut(
-                    webSocketConnection.getOutputStream(),
+                    webSocketConnection.getOutputWrapper().outputStream(),
                     FrameFactory.SERVER.createTextFrame(
                             JSONUtils.toJSONString(webSocketConnection.getResponseObject().getResponseData()
                             )));
@@ -123,7 +132,7 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
     }
 
     @Override
-    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputWrapper inputWrapper, OutputStream outputStream) {
+    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputWrapper inputWrapper, OutputWrapper outputWrapper) {
         return false;
     }
 

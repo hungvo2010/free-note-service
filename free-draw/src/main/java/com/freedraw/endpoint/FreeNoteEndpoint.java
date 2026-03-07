@@ -34,7 +34,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
 
     @Override
     public void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote) {
-        removeConnectionByInputStream(webSocketConnection.getOutputStream());
+        removeConnectionByInputStream(webSocketConnection.getOutputWrapper().outputStream());
         throw new ClientDisconnectException("Client sent CLOSE frame");
 
     }
@@ -83,7 +83,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
             );
 
             // Broadcast the SAME format to other clients in the room
-            broadcastMessage(draft.getDraftId(), new Connection(webSocketConnection.getOutputStream()),
+            broadcastMessage(draft.getDraftId(), new Connection(webSocketConnection.getOutputWrapper().outputStream()),
                     FrameUtils.createApplicationFrame(responseData)  // Use responseData instead of lastAction
             );
         } catch (Exception ex) {

@@ -3,6 +3,7 @@ package com.freenote.app.handler;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.handler.impl.FragmentedURIHandlerImpl;
 import com.freenote.app.server.model.InputWrapper;
+import com.freenote.app.server.model.OutputWrapper;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -20,7 +21,7 @@ class ExampleURIHandlerTest {
 
         URIHandler handler = new FragmentedURIHandlerImpl();
 
-        boolean result = handler.handle(new InputWrapper(), output);
+        boolean result = handler.handle(new InputWrapper(), new OutputWrapper(output));
 
         assertFalse(result);
         assertEquals("", output.toString());
@@ -31,7 +32,7 @@ class ExampleURIHandlerTest {
         URIHandler handler = new FragmentedURIHandlerImpl();
 
         assertThrows(NullPointerException.class,
-                () -> handler.handle(null, new ByteArrayOutputStream()));
+                () -> handler.handle(null, new OutputWrapper(new ByteArrayOutputStream())));
         assertThrows(NullPointerException.class,
                 () -> handler.handle(new InputWrapper(), null));
     }

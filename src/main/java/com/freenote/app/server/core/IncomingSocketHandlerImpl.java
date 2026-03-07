@@ -8,6 +8,7 @@ import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.handler.URIHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.InputWrapper;
+import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.TraceRequestData;
 import com.freenote.app.server.model.ws.CommonRequestObject;
 import com.freenote.app.server.parser.HttpParser;
@@ -47,9 +48,10 @@ public class IncomingSocketHandlerImpl implements IncomingConnectionHandler {
             var inputWrapper = buildInputWrapper(incomingSocket, upgradeRequest);
             var pathHandler = getPathHandler(upgradeRequest);
 
+            var outputWrapper = new OutputWrapper(output);
             while (!incomingSocket.isClosed()) { // todo: not correct due to incoming socket will not be closed after client disconnects
 //                log.warn("todo: not correct due to incoming socket will not be closed after client disconnects");
-                pathHandler.handle(inputWrapper, output);
+                pathHandler.handle(inputWrapper, outputWrapper);
             }
             
         } catch (ClientDisconnectException | AcceptConnectionException connectionException) {

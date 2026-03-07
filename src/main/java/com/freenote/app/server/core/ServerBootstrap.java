@@ -1,5 +1,6 @@
 package com.freenote.app.server.core;
 
+import com.freenote.app.server.core.v2.IncomingConnectionHandlerV2;
 import com.freenote.app.server.socket.RawSocket;
 import com.freenote.app.server.socket.ServerSocketFactory;
 import lombok.AllArgsConstructor;
@@ -39,5 +40,9 @@ public class ServerBootstrap {
                 });
             }
         }
+    }
+
+    public void start(IncomingConnectionHandlerV2 handler) {
+        
     }
 }
