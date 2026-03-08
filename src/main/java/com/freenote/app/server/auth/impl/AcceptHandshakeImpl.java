@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
@@ -27,10 +28,51 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
             "http://localhost:8086",
             "http://localhost:8080"
     );
-    private static final Collection<String> ALLOWED_ORIGINS;
+    private static Collection<String> ALLOWED_ORIGINS;
     private static final Logger log = LogManager.getLogger(AcceptHandshakeImpl.class);
 
     static {
+        loadAllowedOriginsFromEnvs();
+    }
+
+    @Override
+    public HttpUpgradeResponse handle(HttpUpgradeRequest request) {
+        try {
+            return acceptUpgradeRequest(request);
+        } catch (Exception e) {
+            return new HttpUpgradeResponse();
+        }
+    }
+
+    private HttpUpgradeResponse acceptUpgradeRequest(HttpUpgradeRequest request) throws NoSuchAlgorithmException {
+        var rejectHandShake = isRejectHandShake(request);
+        if (rejectHandShake) {
+            log.warn("Handshake not approved for request: {}", request);
+            return HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE;
+        }
+        log.info("Received WebSocket upgrade request: {}", request);
+        var socketAccept = Base64.getEncoder().encodeToString(
+                MessageDigest.getInstance("SHA-1")
+                        .digest((request.getSecWebSocketKey() + UNIVERSAL_WEBSOCKET_GUID).getBytes(StandardCharsets.UTF_8)));
+        log.info("WebSocket handshake accepted with Sec-WebSocket-Accept: {}", socketAccept);
+        return HttpUpgradeResponse.builder()
+                .statusCode("101")
+                .statusText("Switching Protocols")
+                .version("HTTP/1.1")
+                .upgrade("websocket")
+                .connection("Upgrade")
+                .secWebSocketAccept(socketAccept)
+                .httpUpgradeRequest(request)
+                .build();
+    }
+
+    private boolean isRejectHandShake(HttpUpgradeRequest request) {
+        return Objects.isNull(request.getSecWebSocketKey())
+                || Objects.isNull(request.getSecWebSocketVersion())
+                || !ALLOWED_ORIGINS.contains(request.getOrigin());
+    }
+
+    private static void loadAllowedOriginsFromEnvs() {
         String additionalOrigins = System.getenv("ALLOWED_ORIGINS");
         if (additionalOrigins != null && !additionalOrigins.trim().isEmpty()) {
             Collection<String> combined = new java.util.ArrayList<>(DEFAULT_ALLOWED_ORIGINS);
@@ -41,38 +83,5 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
             ALLOWED_ORIGINS = DEFAULT_ALLOWED_ORIGINS;
         }
         log.info("Allowed origins: {}", ALLOWED_ORIGINS);
-    }
-
-    @Override
-    public HttpUpgradeResponse handle(HttpUpgradeRequest request) {
-        try {
-            var rejectHandShake = isRejectHandShake(request);
-            if (rejectHandShake) {
-                log.warn("Handshake not approved for request: {}", request);
-                return HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE;
-            }
-            log.info("Received WebSocket upgrade request: {}", request);
-            var socketAccept = Base64.getEncoder().encodeToString(
-                    MessageDigest.getInstance("SHA-1")
-                            .digest((request.getSecWebSocketKey() + UNIVERSAL_WEBSOCKET_GUID).getBytes(StandardCharsets.UTF_8)));
-            log.info("WebSocket handshake accepted with Sec-WebSocket-Accept: {}", socketAccept);
-            return HttpUpgradeResponse.builder()
-                    .statusCode("101")
-                    .statusText("Switching Protocols")
-                    .version("HTTP/1.1")
-                    .upgrade("websocket")
-                    .connection("Upgrade")
-                    .secWebSocketAccept(socketAccept)
-                    .httpUpgradeRequest(request)
-                    .build();
-        } catch (Exception e) {
-            return new HttpUpgradeResponse();
-        }
-    }
-
-    private boolean isRejectHandShake(HttpUpgradeRequest request) {
-        return Objects.isNull(request.getSecWebSocketKey())
-                || Objects.isNull(request.getSecWebSocketVersion())
-                || !ALLOWED_ORIGINS.contains(request.getOrigin());
     }
 }
