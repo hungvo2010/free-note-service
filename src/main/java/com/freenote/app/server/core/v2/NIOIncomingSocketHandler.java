@@ -20,45 +20,70 @@ import java.nio.charset.StandardCharsets;
 
 import static generated.URIHandlerRegistry.getInstanceByURI;
 
-public class NIOIncomingConnectionHandlerImpl implements IncomingConnectionHandlerV2 {
-    private static final Logger log = LogManager.getLogger(NIOIncomingConnectionHandlerImpl.class);
+public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
+    private static final Logger log = LogManager.getLogger(NIOIncomingSocketHandler.class);
     private final AcceptHandshakeHandler handshakeHandler;
     private final HttpParser httpParser;
 
-    public NIOIncomingConnectionHandlerImpl() {
-        this.handshakeHandler = new AcceptHandshakeImpl();
-        this.httpParser = new HttpParserImpl();
+    public NIOIncomingSocketHandler(AcceptHandshakeHandler handshakeHandler, HttpParser httpParser) {
+        this.handshakeHandler = handshakeHandler;
+        this.httpParser = httpParser;
+    }
+
+    public NIOIncomingSocketHandler() {
+        this(new AcceptHandshakeImpl(), new HttpParserImpl());
     }
 
     @Override
     public void handle(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
+        if (!readFromChannel(channel, byteBuffer)) return;
+        
+        routeToHandler(channel, byteBuffer, upgradeRequest);
+    }
+
+    @Override
+    public HttpUpgradeRequest handShake(SocketChannel channel, ByteBuffer byteBuffer) throws IOException {
+        if (!readFromChannel(channel, byteBuffer)) return null;
+
+        var upgradeRequest = parseUpgradeRequest(byteBuffer);
+        performHandshake(channel, byteBuffer, upgradeRequest);
+        
+        return upgradeRequest;
+    }
+
+    private boolean readFromChannel(SocketChannel channel, ByteBuffer byteBuffer) throws IOException {
         byteBuffer.clear();
-        int read = channel.read(byteBuffer);
-        if (read == -1) {
+        if (channel.read(byteBuffer) == -1) {
             channel.close();
-            return;
+            return false;
         }
+        return true;
+    }
+
+    private HttpUpgradeRequest parseUpgradeRequest(ByteBuffer byteBuffer) {
+        return this.httpParser.parse(byteBuffer);
+    }
+
+    private void performHandshake(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest request) throws IOException {
+        log.info("Performing handshake for: {}", request);
+        var handShakeResp = this.handshakeHandler.handle(request);
+        var outputBytes = handShakeResp.toString().getBytes(StandardCharsets.UTF_8);
+        
+        writeResponse(channel, outputBytes);
+    }
+
+    private void writeResponse(SocketChannel channel, byte[] data) throws IOException {
+        ByteBuffer respBuffer = ByteBuffer.wrap(data);
+        while (respBuffer.hasRemaining()) {
+            channel.write(respBuffer);
+        }
+    }
+
+    private void routeToHandler(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
         var pathHandler = getPathHandler(upgradeRequest);
         var inputWrapper = buildInputWrapper(channel, upgradeRequest, byteBuffer);
         var outputWrapper = new OutputWrapper(channel.socket().getOutputStream());
         pathHandler.handle(inputWrapper, outputWrapper);
-    }
-    @Override
-    public HttpUpgradeRequest handShake(SocketChannel channel, ByteBuffer byteBuffer) throws IOException {
-        byteBuffer.clear();
-        int read = channel.read(byteBuffer);
-        if (read == -1) {
-            channel.close();
-            return null;
-        }
-
-        var upgradeRequest = this.httpParser.parse(byteBuffer);
-
-        log.info("Received request: {}\n", upgradeRequest);
-
-        var inputWrapper = buildInputWrapper(channel, upgradeRequest, byteBuffer);
-        writeHandshakeResponse(upgradeRequest, inputWrapper);
-        return upgradeRequest;
     }
 
     private URIHandler getPathHandler(HttpUpgradeRequest upgradeRequest) {
@@ -80,28 +105,5 @@ public class NIOIncomingConnectionHandlerImpl implements IncomingConnectionHandl
                 .channelBuffer(byteBuffer)
                 .requestObject(request)
                 .build();
-    }
-
-    private void writeHandshakeResponse(HttpUpgradeRequest request, InputWrapper inputWrapper) throws IOException {
-        var handShakeResp = this.handshakeHandler.handle(request);
-        var outputBytes = handShakeResp.toString().getBytes(StandardCharsets.UTF_8);
-        var buffer = inputWrapper.getChannelBuffer();
-
-        // 1. Xóa trạng thái cũ (đưa position về 0, limit về capacity)
-        // để chuẩn bị ghi dữ liệu phản hồi vào buffer [3, 4]
-        buffer.clear();
-
-        // 2. Nạp dữ liệu mới vào buffer
-        buffer.put(outputBytes);
-
-        // 3. Chuyển buffer sang "chế độ đọc" (flip) để Channel có thể lấy dữ liệu ra [3, 7]
-        buffer.flip();
-
-        // 4. Ghi dữ liệu vào SocketChannel
-        // Sử dụng vòng lặp để đảm bảo ghi hết dữ liệu nếu là non-blocking [5]
-        var socketChannel = inputWrapper.getSocketChannel();
-        while (buffer.hasRemaining()) {
-            socketChannel.write(buffer);
-        }
     }
 }

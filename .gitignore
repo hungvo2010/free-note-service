@@ -151,3 +151,5 @@ replay_pid*
 /.gradle/
 /.idea/
 free-draw/src/main/resources/redis.properties
+/socket-fullchain.pem
+/socket-privkey.pem

@@ -1,6 +1,6 @@
 package com.freedraw;
 
-import com.freenote.app.server.core.IncomingSocketHandlerImpl;
+import com.freenote.app.server.core.IncomingSocketHandler;
 import com.freenote.app.server.core.WebSocketServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +17,7 @@ public class FreeNoteServer {
         WebSocketServer server = WebSocketServer.builder()
                 .port(port)
                 .useSSL(false)
-                .handler(new IncomingSocketHandlerImpl())
+                .handler(new IncomingSocketHandler())
                 .build();
         server.start();
     }

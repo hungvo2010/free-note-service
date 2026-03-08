@@ -20,7 +20,7 @@ public class WebSocketServer {
     @Builder.Default
     private String keystorePassword = "changeit";
     @Builder.Default
-    private IncomingConnectionHandler handler = new IncomingSocketHandlerImpl();
+    private IncomingConnectionHandler handler = new IncomingSocketHandler();
 
     public void start() throws Exception {
         log.info("Starting WebSocket Server on port {} (SSL: {})", port, useSSL);
