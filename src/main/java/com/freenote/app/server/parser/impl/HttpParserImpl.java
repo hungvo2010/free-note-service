@@ -5,10 +5,7 @@ import com.freenote.app.server.parser.HttpParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -34,7 +31,20 @@ public class HttpParserImpl implements HttpParser {
 
     @Override
     public HttpUpgradeRequest parse(ByteBuffer byteBuffer) {
-        return null;
+        if (byteBuffer.position() > 0) {
+            byteBuffer.flip();
+        }
+
+        if (!byteBuffer.hasRemaining()) {
+            return new HttpUpgradeRequest();
+        }
+
+        try (InputStream inputStream = com.freenote.app.server.util.IOUtils.newInputStream(byteBuffer)) {
+            return parse(inputStream);
+        } catch (IOException e) {
+            log.error("Failed to parse WebSocket upgrade request from ByteBuffer", e);
+            return new HttpUpgradeRequest();
+        }
     }
 
     private Map<String, String> parseRequestEndpoint(BufferedReader reader) throws IOException {

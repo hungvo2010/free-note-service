@@ -14,10 +14,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
+
+import static generated.URIHandlerRegistry.getInstanceByURI;
 
 public class NIOIncomingConnectionHandlerImpl implements IncomingConnectionHandlerV2 {
     private static final Logger log = LogManager.getLogger(NIOIncomingConnectionHandlerImpl.class);
@@ -30,26 +31,43 @@ public class NIOIncomingConnectionHandlerImpl implements IncomingConnectionHandl
     }
 
     @Override
-    public void handle(SocketChannel channel) throws IOException {
-        channel.configureBlocking(false);
-        var byteBuffer = ByteBuffer.allocateDirect(2048);
+    public void handle(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
+        byteBuffer.clear();
+        int read = channel.read(byteBuffer);
+        if (read == -1) {
+            channel.close();
+            return;
+        }
+        var pathHandler = getPathHandler(upgradeRequest);
+        var inputWrapper = buildInputWrapper(channel, upgradeRequest, byteBuffer);
+        var outputWrapper = new OutputWrapper(channel.socket().getOutputStream());
+        pathHandler.handle(inputWrapper, outputWrapper);
+    }
+    @Override
+    public HttpUpgradeRequest handShake(SocketChannel channel, ByteBuffer byteBuffer) throws IOException {
+        byteBuffer.clear();
+        int read = channel.read(byteBuffer);
+        if (read == -1) {
+            channel.close();
+            return null;
+        }
 
         var upgradeRequest = this.httpParser.parse(byteBuffer);
 
         log.info("Received request: {}\n", upgradeRequest);
-        writeHandshakeResponse(upgradeRequest, channel.socket().getOutputStream());
 
         var inputWrapper = buildInputWrapper(channel, upgradeRequest, byteBuffer);
-        var pathHandler = getPathHandler(upgradeRequest);
-
-        var outputWrapper = new OutputWrapper(channel.socket().getOutputStream());
-        while (channel.isConnected()) {
-            pathHandler.handle(inputWrapper, outputWrapper);
-        }
+        writeHandshakeResponse(upgradeRequest, inputWrapper);
+        return upgradeRequest;
     }
 
     private URIHandler getPathHandler(HttpUpgradeRequest upgradeRequest) {
-        return null;
+        var pathHandler = (URIHandler) (getInstanceByURI(upgradeRequest.getPath()));
+        if (pathHandler == null) {
+            log.warn("No handler found for URI: {}", upgradeRequest.getPath());
+            throw new AcceptConnectionException("No handler for URI: " + upgradeRequest.getPath());
+        }
+        return pathHandler;
     }
 
     private InputWrapper buildInputWrapper(SocketChannel channel, HttpUpgradeRequest upgradeRequest, ByteBuffer byteBuffer) {
@@ -64,12 +82,26 @@ public class NIOIncomingConnectionHandlerImpl implements IncomingConnectionHandl
                 .build();
     }
 
-    private void writeHandshakeResponse(HttpUpgradeRequest request, OutputStream output) throws IOException {
+    private void writeHandshakeResponse(HttpUpgradeRequest request, InputWrapper inputWrapper) throws IOException {
         var handShakeResp = this.handshakeHandler.handle(request);
-        output.write(handShakeResp.toString().getBytes(StandardCharsets.UTF_8));
-        output.flush();
-        if (!handShakeResp.getStatusCode().equals("101")) {
-            throw new AcceptConnectionException("Handshake failed, connection not accepted");
+        var outputBytes = handShakeResp.toString().getBytes(StandardCharsets.UTF_8);
+        var buffer = inputWrapper.getChannelBuffer();
+
+        // 1. Xóa trạng thái cũ (đưa position về 0, limit về capacity)
+        // để chuẩn bị ghi dữ liệu phản hồi vào buffer [3, 4]
+        buffer.clear();
+
+        // 2. Nạp dữ liệu mới vào buffer
+        buffer.put(outputBytes);
+
+        // 3. Chuyển buffer sang "chế độ đọc" (flip) để Channel có thể lấy dữ liệu ra [3, 7]
+        buffer.flip();
+
+        // 4. Ghi dữ liệu vào SocketChannel
+        // Sử dụng vòng lặp để đảm bảo ghi hết dữ liệu nếu là non-blocking [5]
+        var socketChannel = inputWrapper.getSocketChannel();
+        while (buffer.hasRemaining()) {
+            socketChannel.write(buffer);
         }
     }
 }

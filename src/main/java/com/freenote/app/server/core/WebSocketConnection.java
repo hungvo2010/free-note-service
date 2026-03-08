@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.io.InputStream;
+import java.nio.channels.SocketChannel;
 
 @Data
 @Builder
@@ -18,4 +19,5 @@ public class WebSocketConnection {
     private CommonResponseObject responseObject;
     private WebSocketFrame requestFrame;
     private WebSocketFrame responseFrame;
+    private SocketChannel socketChannel;
 }

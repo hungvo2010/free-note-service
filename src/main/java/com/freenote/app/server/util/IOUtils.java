@@ -101,4 +101,21 @@ public class IOUtils {
 
         return frameData;
     }
+
+    public static InputStream newInputStream(java.nio.ByteBuffer byteBuffer) {
+        return new InputStream() {
+            @Override
+            public int read() {
+                return byteBuffer.hasRemaining() ? byteBuffer.get() & 0xFF : -1;
+            }
+
+            @Override
+            public int read(byte[] b, int off, int len) {
+                if (!byteBuffer.hasRemaining()) return -1;
+                int toRead = Math.min(len, byteBuffer.remaining());
+                byteBuffer.get(b, off, toRead);
+                return toRead;
+            }
+        };
+    }
 }

@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 import java.nio.ByteBuffer;
 
 @WebSocketEndpoint("/echo")
-public class NewEchoHandlerImpl extends CommonEndpointHandlerImpl {
+public class NewEchoHandlerImpl extends NIOCommonEndpointHandlerImpl {
     private static final Logger log = LogManager.getLogger(NewEchoHandlerImpl.class);
 
     @Override
@@ -22,15 +22,5 @@ public class NewEchoHandlerImpl extends CommonEndpointHandlerImpl {
     @Override
     public void onPing(WebSocketConnection webSocketConnection, ByteBuffer payload) {
         webSocketConnection.setResponseFrame(FrameFactory.SERVER.createPongFrame());
-    }
-
-    @Override
-    public void onData(WebSocketConnection webSocketConnection, String message) {
-
-    }
-
-    @Override
-    public void onControl(WebSocketConnection webSocketConnection, ByteBuffer payload) {
-
     }
 }
