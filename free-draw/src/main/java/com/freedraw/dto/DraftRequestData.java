@@ -25,4 +25,12 @@ public class DraftRequestData extends TraceRequestData {
     public void setDraftRequestType(int value) {
         this.draftRequestType = DraftRequestType.fromCode(value);
     }
+
+    public boolean isNewUpdate() {
+        return draftRequestType == DraftRequestType.UPDATE && (draftId == null || draftId.isEmpty());
+    }
+
+    public boolean isConnect() {
+        return draftRequestType == DraftRequestType.CONNECT;
+    }
 }

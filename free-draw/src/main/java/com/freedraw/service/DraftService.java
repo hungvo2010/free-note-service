@@ -1,128 +1,77 @@
 package com.freedraw.service;
 
 import com.freedraw.dto.DraftRequestData;
-import com.freedraw.dto.ShapeData;
 import com.freedraw.entities.Draft;
 import com.freedraw.entities.DraftAction;
 import com.freedraw.exception.DraftNotFoundException;
-import com.freedraw.models.enums.DraftRequestType;
 import com.freedraw.repository.DraftRepository;
-import com.freedraw.repository.InMemDraftRepositoryImpl;
-import com.freenote.app.server.util.CommonUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 public class DraftService {
     private static final Logger log = LogManager.getLogger(DraftService.class);
     private final DraftRepository draftRepository;
 
-    /**
-     * Default constructor - creates its own repository instance
-     */
-    public DraftService() {
-        this.draftRepository = new InMemDraftRepositoryImpl();
-    }
-
-    /**
-     * Constructor for dependency injection (testing or custom configuration)
-     */
+    // Standard Clean Code Constructor Injection [7]
     public DraftService(DraftRepository draftRepository) {
         this.draftRepository = draftRepository;
     }
 
-    public Draft handleDraftRequest(DraftRequestData draftRequestData) {
-        var draftId = draftRequestData.getDraftId();
-        var requestType = draftRequestData.getDraftRequestType();
+    public Draft handleDraftRequest(DraftRequestData data) {
+        try {
+            return processRequest(data);
+        } catch (Exception e) {
+            handleFailure(e);
+            throw e;
+        }
+    }
 
-        if (CommonUtils.isNullOrEmpty(draftId)) {
-            // Handle UPDATE with no draftId - create new draft with shapes
-            if (requestType == DraftRequestType.UPDATE) {
-                log.info("UPDATE request with no draftId - creating new draft with shapes");
-                return createDraftWithShapes(draftRequestData);
-            }
-            // Handle CONNECT with no draftId - return invalid action
-            if (requestType == DraftRequestType.CONNECT) {
-                log.error("CONNECT request requires draftId");
-                throw new IllegalArgumentException("CONNECT request requires draftId");
-            }
+    private Draft processRequest(DraftRequestData data) {
+        // Apply Guard Clauses for flatter logic [11]
+        if (data.isNewUpdate()) {
+            return createAndSaveNewDraft(data);
         }
 
-        var draft = draftRepository.getDraftById(draftId);
-        if (Objects.isNull(draft)) {
-            throw new DraftNotFoundException("Draft with ID " + draftId + " not found.");
-        }
-
-        var draftAction = doRequest(draftRequestData);
-        draft.addAction(draftAction);
+        validateExistingRequest(data);
+        
+        Draft draft = getDraftOrThrow(data.getDraftId());
+        applyActionToDraft(draft, data);
+        
         draftRepository.save(draft);
         return draft;
     }
 
-    private Draft createDraftWithShapes(DraftRequestData draftRequestData) {
-        var newDraft = new Draft();
-        var draftAction = new DraftAction(draftRequestData.getContent());
-        draftAction.putData("draftId", newDraft.getDraftId());
-        draftAction.putData("content", draftRequestData.getContent());
-
-        newDraft.addAction(draftAction);
-        draftRepository.save(newDraft);
-
-        log.info("Created new draft {} with {} unique shapes",
-                newDraft.getDraftId(),
-                draftRequestData.getContent().getShapes().size());
-
-        return newDraft;
-    }
-
-
-    private DraftAction connectAction(DraftRequestData draftRequestData) {
-        var requestDraftId = draftRequestData.getDraftId();
-        var draft = getDraftOrThrow(requestDraftId);
-
-        var mergedShapes = mergeShapesByPrecedence(draft);
-
-        log.info("Connected draft {} with {} unique shapes (merged from {} actions)",
-                requestDraftId, mergedShapes.size(), draft.getActions().size());
-
-        return new DraftAction(mergedShapes);
-    }
-
-    /**
-     * Merge shapes from all actions, with later actions taking precedence for same shapeId
-     */
-    private List<ShapeData> mergeShapesByPrecedence(Draft draft) {
-        var shapeMap = new java.util.LinkedHashMap<String, com.freedraw.dto.ShapeData>();
-
-        for (var action : draft.getActions()) {
-            for (var shape : action.getShapes()) {
-                shapeMap.put(shape.getShapeId(), shape);
-            }
+    private void validateExistingRequest(DraftRequestData data) {
+        if (data.getDraftId() == null || data.getDraftId().isEmpty()) {
+            throw new IllegalArgumentException("Draft ID is required for existing draft request");
         }
-
-        return new ArrayList<>(shapeMap.values());
     }
 
-    private Draft getDraftOrThrow(String draftId) {
-        var draft = draftRepository.getDraftById(draftId);
-        if (Objects.isNull(draft)) {
-            throw new DraftNotFoundException("Draft with ID " + draftId + " not found.");
+    private void applyActionToDraft(Draft draft, DraftRequestData data) {
+        // Logic for merging shapes now resides IN Draft or DraftAction [3]
+        DraftAction action = (data.isConnect()) ? 
+            draft.generateMergedAction() : // Move Method: Draft merges its own shapes
+            new DraftAction(data.getContent());
+
+        draft.addAction(action);
+    }
+
+    private Draft createAndSaveNewDraft(DraftRequestData data) {
+        Draft draft = Draft.createNew(data.getContent()); // Static Factory Method [14]
+        draftRepository.save(draft);
+        return draft;
+    }
+
+    private Draft getDraftOrThrow(String id) {
+        Draft draft = draftRepository.getDraftById(id);
+        if (draft == null) {
+            throw new DraftNotFoundException("Draft ID: " + id);
         }
         return draft;
     }
 
-    private DraftAction doRequest(DraftRequestData draftRequestData) {
-        DraftRequestType requestType = draftRequestData.getDraftRequestType();
-
-        // Handle CONNECT - return all merged shapes
-        if (requestType == DraftRequestType.CONNECT) {
-            return connectAction(draftRequestData);
-        }
-
-        // Handle ADD, UPDATE, REMOVE - return action with shapes from content
-        return new DraftAction(draftRequestData.getContent());
+    // Single responsibility error handling [12]
+    private void handleFailure(Exception e) {
+        log.error("Failed to handle draft request", e);
     }
 }
