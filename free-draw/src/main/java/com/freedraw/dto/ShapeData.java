@@ -14,7 +14,7 @@ import java.util.Map;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ShapeData {
+public class    ShapeData {
     private String shapeId;
     private String type; // rectangle, circle, line, text, etc.
     private Map<String, Object> content = new HashMap<>();

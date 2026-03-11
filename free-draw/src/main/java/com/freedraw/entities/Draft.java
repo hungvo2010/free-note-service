@@ -3,7 +3,6 @@ package com.freedraw.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.freenote.app.server.util.JSONUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -45,7 +44,7 @@ public class Draft {
     }
 
 
-    public static void main(String[] args) throws JsonProcessingException {
+    public static void main(String[] args) {
         Draft draft = new Draft();
         DraftAction action = new DraftAction();
         draft.addAction(action);

@@ -8,7 +8,6 @@ import com.freedraw.models.core.Connection;
 import com.freedraw.models.core.Room;
 import com.freedraw.models.core.RoomManager;
 import com.freedraw.service.DraftService;
-import com.freedraw.utils.FrameUtils;
 import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.core.WebSocketConnection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
@@ -17,6 +16,7 @@ import com.freenote.app.server.frames.control.PongFrame;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.handler.impl.CommonEndpointHandlerImpl;
 import com.freenote.app.server.model.ws.CommonResponseObject;
+import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -84,7 +84,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
 
             // Broadcast the SAME format to other clients in the room
             broadcastMessage(draft.getDraftId(), new Connection(webSocketConnection.getOutputWrapper().outputStream()),
-                    FrameUtils.createApplicationFrame(responseData)  // Use responseData instead of lastAction
+                    FrameUtil.createApplicationFrame(responseData)  // Use responseData instead of lastAction
             );
         } catch (Exception ex) {
             log.error("Error in application onMessage logic: {}", ex.getMessage());
