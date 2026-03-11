@@ -7,6 +7,7 @@ import com.freedraw.entities.DraftAction;
 import com.freedraw.models.core.Connection;
 import com.freedraw.models.core.Room;
 import com.freedraw.models.core.RoomManager;
+import com.freedraw.repository.InMemDraftRepositoryImpl;
 import com.freedraw.service.DraftService;
 import com.freedraw.utils.FrameUtils;
 import com.freenote.annotations.WebSocketEndpoint;
@@ -29,7 +30,7 @@ import java.util.List;
 public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
     private static final Logger log = LogManager.getLogger(FreeNoteEndpoint.class);
     private static final DraftResponseData DEFAULT_MESSAGE_PAYLOAD = new DraftResponseData();
-    private final DraftService draftService = new DraftService();
+    private final DraftService draftService = new DraftService(new InMemDraftRepositoryImpl());
     private final RoomManager roomManager = RoomManager.getInstance();
 
     @Override

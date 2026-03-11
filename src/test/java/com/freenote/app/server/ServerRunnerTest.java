@@ -74,13 +74,8 @@ class ServerRunnerTest {
 
         var serverThread = new Thread(() -> {
             try {
-                var futures = SimpleServer.run(8189);
+                SimpleServer.run(8189);
                 pipeOutputStream.flush();
-                // Wait for first future to complete
-                if (!futures.isEmpty()) {
-                    futures.get(0).get();
-                    log.info("First connection handled");
-                }
             } catch (Exception ex) {
                 log.error("Failed to start server", ex);
             }
