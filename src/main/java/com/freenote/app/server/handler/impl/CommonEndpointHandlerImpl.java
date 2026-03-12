@@ -20,13 +20,11 @@ import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.net.ssl.SSLSocket;
 import java.io.IOException;
-import java.net.Socket;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Objects;
 
 public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocketHandler {
     private static final Logger log = LogManager.getLogger(CommonEndpointHandlerImpl.class);
@@ -34,36 +32,13 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
     @Override
     public boolean handle(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
         try {
-            var inputStream = inputWrapper.getInputStream();
-            if (inputStream == null) return false;
+            var inputStream = validateInputStream(inputWrapper);
 
-            var socket = inputWrapper.getSocket();
-//            if (socket != null) {
-//                if (!isAvailable(socket)) {
-//                    return false;
-//                }
-//            } else {
-//                if (inputStream.available() <= 0) {
-//                    return false;
-//                }
-//            }
             byte[] actualData = getRawBytes(inputWrapper);
             WebSocketFrame frame = FrameFactory.CLIENT.createFrameFromBytes(actualData);
 
-            log.debug("FIN: {}", frame.isFin());
-            log.debug("Opcode: {} - {}", frame.getOpcode(), FrameType.fromHexValue(frame.getOpcode()));
-            log.debug("Masked: {}", frame.isMasked());
-            log.debug("Payload Length: {}", frame.getPayloadLength());
-            log.debug("Masking Key: {}", frame.getMaskingKey());
-            WebSocketConnection webSocketConnection = WebSocketConnection.builder()
-                    .inputStream(inputStream)
-                    .outputWrapper(outputWrapper)
-                    .socketChannel(inputWrapper.getSocketChannel())
-                    .build();
-
-            byte[] payload = frame.isMasked() ? FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
-            String content = new String(payload, StandardCharsets.UTF_8);
-            log.debug("Payload: {}", content);
+            logFrameProperties(frame);
+            WebSocketConnection webSocketConnection = buildWebSocketConnection(inputWrapper, outputWrapper);
 
             switch (FrameType.fromHexValue(frame.getOpcode())) {
                 case PING:
@@ -73,7 +48,7 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
                     onPong(webSocketConnection, null);
                     break;
                 case TEXT:
-                    onMessage(webSocketConnection, content);
+                    onMessage(webSocketConnection, getContent(frame));
                     break;
                 case BINARY:
                     onMessage(webSocketConnection, ByteBuffer.wrap(FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey())));
@@ -98,40 +73,46 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
         }
     }
 
-    private boolean isAvailable(Socket socket) throws IOException {
-        if (socket instanceof SSLSocket) {
-            return nonBlockingRead(socket);
-        }
-        return socket.getInputStream().available() > 0;
+    private WebSocketConnection buildWebSocketConnection(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
+        return WebSocketConnection.builder()
+                .inputWrapper(inputWrapper)
+                .outputWrapper(outputWrapper)
+                .socketChannel(inputWrapper.getSocketChannel())
+                .build();
+    }
+
+    private String getContent(WebSocketFrame frame) {
+        byte[] payload = frame.isMasked() ? FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
+        return new String(payload, StandardCharsets.UTF_8);
+    }
+
+    private void logFrameProperties(WebSocketFrame frame) {
+        log.debug("FIN: {}", frame.isFin());
+        log.debug("Opcode: {} - {}", frame.getOpcode(), FrameType.fromHexValue(frame.getOpcode()));
+        log.debug("Masked: {}", frame.isMasked());
+        log.debug("Payload Length: {}", frame.getPayloadLength());
+        log.debug("Masking Key: {}", frame.getMaskingKey());
+        log.debug("Payload: {}", getContent(frame));
+    }
+
+    private InputStream validateInputStream(InputWrapper inputWrapper) {
+        var inputStream = getInputStream(inputWrapper);
+        if (inputStream == null) throw new RuntimeException("Input stream is null");
+        return inputStream;
+    }
+
+    private InputStream getInputStream(InputWrapper inputWrapper) {
+        var inputStream = inputWrapper.getInputStream();
+        if (inputStream == null) return null;
+        return inputStream;
     }
 
     protected byte[] getRawBytes(InputWrapper inputWrapper) throws IOException {
         return IOUtils.getRawBytes(inputWrapper.getInputStream());
     }
 
-    private boolean nonBlockingRead(Socket socket) throws IOException {
-        try {
-//            var pushBackStream = new PushbackInputStream(socket.getInputStream());
-//            int b = pushBackStream.read();
-//            if (b < 0) return false;
-//            pushBackStream.unread(b); // wrong, due to use internal buffer, will not affect original input stream
-            return true;
-        } catch (Exception e) {
-            return false; // no data yet, not an error
-        }
-    }
-
     protected void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
-        if (!Objects.isNull(webSocketConnection.getResponseFrame())) {
-            IOUtils.writeOutPut(webSocketConnection.getOutputWrapper().outputStream(), webSocketConnection.getResponseFrame());
-        } else if (!Objects.isNull(webSocketConnection.getResponseObject())) {
-            IOUtils.writeOutPut(
-                    webSocketConnection.getOutputWrapper().outputStream(),
-                    FrameFactory.SERVER.createTextFrame(
-                            JSONUtils.toJSONString(webSocketConnection.getResponseObject().getResponseData()
-                            )));
-        }
-
+        webSocketConnection.sendCurrentResponse();
     }
 
     @Override

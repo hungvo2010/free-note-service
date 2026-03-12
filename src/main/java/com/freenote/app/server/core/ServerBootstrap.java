@@ -71,7 +71,7 @@ public class ServerBootstrap {
                 try {
                     startThreadSelector(selector, handler);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    log.error("Error in server thread", e);
                 }
             });
             try {
@@ -111,10 +111,10 @@ public class ServerBootstrap {
                         state.setUpgradeRequest(upgradeRequest);
                     } else {
                         log.info("Subsequent read from {}", channel.getRemoteAddress());
-                        handler.handle(channel, state.getByteBuffer(), state.getUpgradeRequest());
+                        handler.handleInComingMessage(channel, state.getByteBuffer(), state.getUpgradeRequest());
                     }
                 }
-                keyIterator.remove(); // BẮT BUỘC xóa thẻ đã xử lý
+                keyIterator.remove();
             }
         }
     }

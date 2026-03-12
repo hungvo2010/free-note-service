@@ -66,7 +66,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
             log.info("Received DraftRequest: {}", message);
             if (draftRequest == null) {
                 log.error("Received null or invalid DraftRequest");
-                webSocketConnection.setResponseFrame(FrameFactory.SERVER.createTextFrame(JSONUtils.toJSONString(DEFAULT_MESSAGE_PAYLOAD)));
+                webSocketConnection.setResponseObject(new CommonResponseObject<>(DEFAULT_MESSAGE_PAYLOAD));
                 return;
             }
 
@@ -89,7 +89,7 @@ public class FreeNoteEndpoint extends CommonEndpointHandlerImpl {
             );
         } catch (Exception ex) {
             log.error("Error in application onMessage logic: {}", ex.getMessage());
-            webSocketConnection.setResponseFrame(FrameFactory.SERVER.createTextFrame(JSONUtils.toJSONString(DEFAULT_MESSAGE_PAYLOAD)));
+            webSocketConnection.setResponseObject(new CommonResponseObject<>(DEFAULT_MESSAGE_PAYLOAD));
         }
     }
 

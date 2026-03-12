@@ -35,7 +35,7 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
     }
 
     @Override
-    public void handle(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
+    public void handleInComingMessage(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
         if (!readFromChannel(channel, byteBuffer)) return;
         
         routeToHandler(channel, byteBuffer, upgradeRequest);
@@ -46,7 +46,7 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
         if (!readFromChannel(channel, byteBuffer)) return null;
 
         var upgradeRequest = parseUpgradeRequest(byteBuffer);
-        performHandshake(channel, byteBuffer, upgradeRequest);
+        performHandshake(channel, upgradeRequest);
         
         return upgradeRequest;
     }
@@ -64,7 +64,7 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
         return this.httpParser.parse(byteBuffer);
     }
 
-    private void performHandshake(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest request) throws IOException {
+    private void performHandshake(SocketChannel channel, HttpUpgradeRequest request) throws IOException {
         log.info("Performing handshake for: {}", request);
         var handShakeResp = this.handshakeHandler.handle(request);
         var outputBytes = handShakeResp.toString().getBytes(StandardCharsets.UTF_8);

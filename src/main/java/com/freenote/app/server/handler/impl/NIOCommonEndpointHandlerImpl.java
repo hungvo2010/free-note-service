@@ -40,12 +40,12 @@ public class NIOCommonEndpointHandlerImpl extends CommonEndpointHandlerImpl {
         }
 
         byte[] dataToWrite = null;
-        if (!Objects.isNull(webSocketConnection.getResponseFrame())) {
+        if (webSocketConnection.hasResponseFrame()) {
             try (var baos = new ByteArrayOutputStream()) {
                 IOUtils.writeOutPut(baos, webSocketConnection.getResponseFrame());
                 dataToWrite = baos.toByteArray();
             }
-        } else if (!Objects.isNull(webSocketConnection.getResponseObject())) {
+        } else if (webSocketConnection.hasResponseObject()) {
             try (var baos = new ByteArrayOutputStream()) {
                 IOUtils.writeOutPut(
                         baos,
