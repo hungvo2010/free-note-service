@@ -8,69 +8,46 @@ import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.handler.URIHandler;
+import com.freenote.app.server.handler.WebSocketFrameDispatcher;
 import com.freenote.app.server.handler.WebSocketHandler;
 import com.freenote.app.server.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.enums.MsgType;
 import com.freenote.app.server.model.ws.CommonResponseObject;
-import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocketHandler {
-    private static final Logger log = LogManager.getLogger(CommonEndpointHandlerImpl.class);
+public abstract class AbstractEndpointHandlerImpl implements URIHandler, WebSocketHandler {
+    private static final Logger log = LogManager.getLogger(AbstractEndpointHandlerImpl.class);
 
     @Override
     public boolean handle(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
         try {
-            var inputStream = validateInputStream(inputWrapper);
-
-            byte[] actualData = getRawBytes(inputWrapper);
-            WebSocketFrame frame = FrameFactory.CLIENT.createFrameFromBytes(actualData);
-
-            logFrameProperties(frame);
-            WebSocketConnection webSocketConnection = buildWebSocketConnection(inputWrapper, outputWrapper);
-
-            switch (FrameType.fromHexValue(frame.getOpcode())) {
-                case PING:
-                    onPing(webSocketConnection, null);
-                    break;
-                case PONG:
-                    onPong(webSocketConnection, null);
-                    break;
-                case TEXT:
-                    onMessage(webSocketConnection, getContent(frame));
-                    break;
-                case BINARY:
-                    onMessage(webSocketConnection, ByteBuffer.wrap(FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey())));
-                    break;
-                case CLOSE:
-                    onClose(webSocketConnection, 0, "", true);
-                    break;
-                case CONTINUATION:
-                    onContinue(webSocketConnection, null);
-                    break;
-                default:
-                    log.error("Unknown frame type: {}", frame.getOpcode());
-                    break;
-
-            }
-
-            sendResponse(webSocketConnection);
+            serveConnection(inputWrapper, outputWrapper);
             return true;
         } catch (IOException e) {
             log.error("Error handling input stream", e);
             return false;
         }
+    }
+
+    private void serveConnection(InputWrapper inputWrapper, OutputWrapper outputWrapper) throws IOException {
+        byte[] actualData = getRawBytes(inputWrapper);
+        WebSocketFrame wsFrame = FrameFactory.CLIENT.createFrameFromBytes(actualData);
+
+        logFrameProperties(wsFrame);
+        WebSocketConnection webSocketConnection = buildWebSocketConnection(inputWrapper, outputWrapper);
+
+        WebSocketFrameDispatcher.dispatch(this, webSocketConnection, wsFrame);
+
+        sendResponse(webSocketConnection);
     }
 
     private WebSocketConnection buildWebSocketConnection(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
@@ -81,30 +58,13 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
                 .build();
     }
 
-    private String getContent(WebSocketFrame frame) {
-        byte[] payload = frame.isMasked() ? FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
-        return new String(payload, StandardCharsets.UTF_8);
-    }
-
     private void logFrameProperties(WebSocketFrame frame) {
         log.debug("FIN: {}", frame.isFin());
         log.debug("Opcode: {} - {}", frame.getOpcode(), FrameType.fromHexValue(frame.getOpcode()));
         log.debug("Masked: {}", frame.isMasked());
         log.debug("Payload Length: {}", frame.getPayloadLength());
         log.debug("Masking Key: {}", frame.getMaskingKey());
-        log.debug("Payload: {}", getContent(frame));
-    }
-
-    private InputStream validateInputStream(InputWrapper inputWrapper) {
-        var inputStream = getInputStream(inputWrapper);
-        if (inputStream == null) throw new RuntimeException("Input stream is null");
-        return inputStream;
-    }
-
-    private InputStream getInputStream(InputWrapper inputWrapper) {
-        var inputStream = inputWrapper.getInputStream();
-        if (inputStream == null) return null;
-        return inputStream;
+        log.debug("Payload: {}", WebSocketFrameDispatcher.getContent(frame));
     }
 
     protected byte[] getRawBytes(InputWrapper inputWrapper) throws IOException {
@@ -123,21 +83,29 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, String message) {
         var requestMessage = JSONUtils.fromJSON(message, HeartbeatMsg.class);
-        if (requestMessage != null && requestMessage.getMsgType() == MsgType.PING) {
+        if (isAppPing(requestMessage)) {
             log.info("Received PING message at {}, sending PONG response", requestMessage.getPingAt());
-            webSocketConnection.setResponseObject(new CommonResponseObject<>(HeartbeatMsg.builder()
-                    .msgType(MsgType.PONG)
-                    .pingAt(requestMessage.getPingAt())
-                    .receivedPingAt(System.currentTimeMillis())
-                    .pongAt(System.currentTimeMillis())
-                    .build()));
+            webSocketConnection.setResponseObject(buildAppPong(requestMessage));
             return;
         }
         onData(webSocketConnection, message);
     }
 
+    private CommonResponseObject<HeartbeatMsg> buildAppPong(HeartbeatMsg requestMessage) {
+        return new CommonResponseObject<>(HeartbeatMsg.builder()
+                .msgType(MsgType.PONG)
+                .pingAt(requestMessage.getPingAt())
+                .receivedPingAt(System.currentTimeMillis())
+                .pongAt(System.currentTimeMillis())
+                .build());
+    }
+
+    private boolean isAppPing(HeartbeatMsg requestMessage) {
+        return requestMessage != null && requestMessage.getMsgType() == MsgType.PING;
+    }
+
     public void onData(WebSocketConnection webSocketConnection, String message) {
-        webSocketConnection.setResponseFrame(FrameFactory.SERVER.createTextFrame(message));
+        webSocketConnection.sendText(message);
     }
 
     @Override
@@ -146,6 +114,7 @@ public abstract class CommonEndpointHandlerImpl implements URIHandler, WebSocket
     }
 
     protected void onBinaryMessage(WebSocketConnection webSocketConnection, ByteBuffer message) {
+        log.info("Received binary message of length {}, sender: {}", message.remaining(), webSocketConnection.getRemoteAddress());
     }
 
 

@@ -11,6 +11,7 @@ import com.freenote.app.server.util.JSONUtils;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.SocketChannel;
@@ -55,5 +56,46 @@ public class WebSocketConnection {
 
     public InputStream getInputStream() {
         return this.inputWrapper.getInputStream();
+    }
+
+    public void sendText(String message) {
+        setResponseFrame(FrameFactory.SERVER.createTextFrame(message));
+    }
+
+    public byte[] getPayloadBytes() throws IOException {
+        byte[] dataToWrite = new byte[0];
+        if (hasResponseFrame()) {
+            dataToWrite = getFromResponseFrame();
+        } else if (hasResponseObject()) {
+            dataToWrite = getFromResponseObject();
+        }
+        return dataToWrite;
+    }
+
+
+    private byte[] getFromResponseObject() throws IOException {
+        byte[] dataToWrite;
+        try (var baos = new ByteArrayOutputStream()) {
+            IOUtils.writeOutPut(
+                    baos,
+                    FrameFactory.SERVER.createTextFrame(
+                            JSONUtils.toJSONString(getResponseObject().getResponseData()
+                            )));
+            dataToWrite = baos.toByteArray();
+        }
+        return dataToWrite;
+    }
+
+    private byte[] getFromResponseFrame() throws IOException {
+        byte[] dataToWrite;
+        try (var baos = new ByteArrayOutputStream()) {
+            IOUtils.writeOutPut(baos, getResponseFrame());
+            dataToWrite = baos.toByteArray();
+        }
+        return dataToWrite;
+    }
+
+    public Object getRemoteAddress() {
+        return this.getInputWrapper().getSocket().getRemoteSocketAddress();
     }
 }

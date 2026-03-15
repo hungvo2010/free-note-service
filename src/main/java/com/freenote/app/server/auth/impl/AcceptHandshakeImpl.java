@@ -1,6 +1,7 @@
 package com.freenote.app.server.auth.impl;
 
 import com.freenote.app.server.auth.AcceptHandshakeHandler;
+import com.freenote.app.server.exceptions.HandshakeException;
 import com.freenote.app.server.http.HttpUpgradeRequest;
 import com.freenote.app.server.http.HttpUpgradeResponse;
 import org.apache.logging.log4j.LogManager;
@@ -40,21 +41,32 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
         try {
             return acceptUpgradeRequest(request);
         } catch (Exception e) {
-            return new HttpUpgradeResponse();
+            return HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE;
         }
     }
 
-    private HttpUpgradeResponse acceptUpgradeRequest(HttpUpgradeRequest request) throws NoSuchAlgorithmException {
+    private HttpUpgradeResponse acceptUpgradeRequest(HttpUpgradeRequest request) {
+        throwIfRejectHandshake(request);
+        return buildApproveResponse(request);
+    }
+
+    private void throwIfRejectHandshake(HttpUpgradeRequest request) {
         var rejectHandShake = isRejectHandShake(request);
         if (rejectHandShake) {
             log.warn("Handshake not approved for request: {}", request);
-            return HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE;
+            throw new HandshakeException(String.format("Handshake not approved for request: %s", request));
         }
+    }
+
+    private String getSocketAcceptKey(HttpUpgradeRequest request) {
         log.info("Received WebSocket upgrade request: {}", request);
-        var socketAccept = Base64.getEncoder().encodeToString(
-                MessageDigest.getInstance("SHA-1")
-                        .digest((request.getSecWebSocketKey() + UNIVERSAL_WEBSOCKET_GUID).getBytes(StandardCharsets.UTF_8)));
+        var socketAccept = generateAcceptKey(request);
         log.info("WebSocket handshake accepted with Sec-WebSocket-Accept: {}", socketAccept);
+        return socketAccept;
+    }
+
+    private HttpUpgradeResponse buildApproveResponse(HttpUpgradeRequest request) {
+        var socketAccept = getSocketAcceptKey(request);
         return HttpUpgradeResponse.builder()
                 .statusCode("101")
                 .statusText("Switching Protocols")
@@ -64,6 +76,17 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
                 .secWebSocketAccept(socketAccept)
                 .httpUpgradeRequest(request)
                 .build();
+    }
+
+    private static String generateAcceptKey(HttpUpgradeRequest request) {
+        try {
+            return Base64.getEncoder().encodeToString(
+                    MessageDigest.getInstance("SHA-1")
+                            .digest((request.getSecWebSocketKey() + UNIVERSAL_WEBSOCKET_GUID).getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException e) {
+            log.error("SHA-1 algorithm not found for generating Sec-WebSocket-Accept key", e);
+            throw new HandshakeException("SHA-1 algorithm not found for generating Sec-WebSocket-Accept key", e);
+        }
     }
 
     private boolean isRejectHandShake(HttpUpgradeRequest request) {
