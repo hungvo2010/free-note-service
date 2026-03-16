@@ -48,7 +48,7 @@ public class IOUtils {
         if (extLen == 2) {
             ext = new byte[2];
             dis.readFully(ext);
-            payloadLength = ((ext[0] & 0xFF) << 8) | (ext[1] & 0xFF);
+            payloadLength = convertBytesToDecimal(ext);
         } else if (extLen == 8) {
             ext = new byte[8];
             dis.readFully(ext);
@@ -56,11 +56,7 @@ public class IOUtils {
             if ((ext[0] & 0x80) != 0) {
                 throw new IOException("Invalid 64-bit payload length (MSB set)");
             }
-            long len = 0L;
-            for (int i = 0; i < 8; i++) {
-                len = (len << 8) | (ext[i] & 0xFF);
-            }
-            payloadLength = len;
+            payloadLength = convertBytesToDecimal(ext);
         } else {
             payloadLength = payloadLen7;
         }
@@ -100,6 +96,14 @@ public class IOUtils {
                 headerLen, payloadLength, totalFrameLength);
 
         return frameData;
+    }
+
+    private static long convertBytesToDecimal(byte[] ext) {
+        long len = 0L;
+        for (byte b : ext) {
+            len = (len << 8) | (b & 0xFF);
+        }
+        return len;
     }
 
     public static InputStream newInputStream(java.nio.ByteBuffer byteBuffer) {

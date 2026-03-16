@@ -14,7 +14,7 @@ import com.freenote.app.server.core.WebSocketConnection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.frames.control.PongFrame;
-import com.freenote.app.server.handler.impl.AbstractEndpointHandlerImpl;
+import com.freenote.app.server.handler.impl.AbstractEndpointFrameEndpointHandlerImpl;
 import com.freenote.app.server.model.ws.CommonResponseObject;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.JSONUtils;
@@ -26,7 +26,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 @WebSocketEndpoint("/freeNote")
-public class FreeNoteEndpoint extends AbstractEndpointHandlerImpl {
+public class FreeNoteEndpoint extends AbstractEndpointFrameEndpointHandlerImpl {
     private static final Logger log = LogManager.getLogger(FreeNoteEndpoint.class);
     private static final DraftResponseData DEFAULT_MESSAGE_PAYLOAD = new DraftResponseData();
     private final DraftService draftService = new DraftService(new InMemDraftRepositoryImpl());

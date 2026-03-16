@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 @Log4j2
-public class NIOCommonEndpointHandlerImpl extends AbstractEndpointHandlerImpl {
+public class NIOCommonEndpointFrameEndpointHandlerImpl extends AbstractEndpointFrameEndpointHandlerImpl {
 
     @Override
     public byte[] getRawBytes(InputWrapper inputWrapper) {

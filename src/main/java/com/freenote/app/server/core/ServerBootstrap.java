@@ -2,6 +2,7 @@ package com.freenote.app.server.core;
 
 import com.freenote.app.server.core.v2.HandShakeState;
 import com.freenote.app.server.core.v2.IncomingConnectionHandlerV2;
+import com.freenote.app.server.model.LegacyIOWrapper;
 import com.freenote.app.server.socket.RawSocket;
 import com.freenote.app.server.socket.ServerSocketFactory;
 import lombok.AllArgsConstructor;
@@ -46,7 +47,7 @@ public class ServerBootstrap {
                 log.info("Accepted connection from {}", socket.getRemoteSocketAddress());
                 this.executorService.submit(() -> {
                     try {
-                        handler.handle(socket);
+                        handler.handle(new LegacyIOWrapper(socket));
                     } catch (Exception e) {
                         log.error("Error handling connection", e);
                     }

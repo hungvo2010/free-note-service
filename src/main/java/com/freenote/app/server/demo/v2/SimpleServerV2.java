@@ -1,4 +1,4 @@
-package com.freenote.app.server.demo;
+package com.freenote.app.server.demo.v2;
 
 import com.freenote.app.server.core.v2.NIOIncomingSocketHandler;
 import com.freenote.app.server.core.v2.WebSocketServerV2;

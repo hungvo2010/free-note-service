@@ -1,4 +1,4 @@
-package com.freenote.app.server.handler;
+package com.freenote.app.server.handler.frames;
 
 import com.freenote.app.server.core.WebSocketConnection;
 import com.freenote.app.server.frames.FrameType;
@@ -22,7 +22,7 @@ public class WebSocketFrameDispatcher {
 
     @FunctionalInterface
     public interface FrameHandlerAction {
-        void accept(WebSocketHandler handler, WebSocketConnection connection, WebSocketFrame frame) throws IOException;
+        void accept(WebSocketFrameHandler handler, WebSocketConnection connection, WebSocketFrame frame) throws IOException;
     }
 
     private static final Map<FrameType, FrameHandlerAction> HANDLERS = new EnumMap<>(FrameType.class);
@@ -44,12 +44,12 @@ public class WebSocketFrameDispatcher {
      * @param frame      The WebSocketFrame to process.
      * @throws IOException If an I/O error occurs during processing.
      */
-    public static void dispatch(WebSocketHandler handler, WebSocketConnection connection, WebSocketFrame frame) throws IOException {
+    public static void dispatch(WebSocketFrameHandler handler, WebSocketConnection connection, WebSocketFrame frame) throws IOException {
         FrameType type = FrameType.fromHexValue(frame.getOpcode());
         HANDLERS.getOrDefault(type, WebSocketFrameDispatcher::handleUnknown).accept(handler, connection, frame);
     }
 
-    private static void handleUnknown(WebSocketHandler handler, WebSocketConnection connection, WebSocketFrame frame) {
+    private static void handleUnknown(WebSocketFrameHandler handler, WebSocketConnection connection, WebSocketFrame frame) {
         log.error("Unknown frame type: {}", frame.getOpcode());
     }
 

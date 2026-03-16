@@ -1,6 +1,6 @@
 package com.freenote.app.server.handler.impl;
 
-import com.freenote.app.server.handler.URIHandler;
+import com.freenote.app.server.handler.URIEndpointHandler;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.util.FrameUtil;
@@ -17,13 +17,13 @@ import static org.mockito.Mockito.when;
 
 class EchoHandlerTest {
 
-    private URIHandler uriHandler;
+    private URIEndpointHandler uriHandler;
     private ByteArrayInputStream inputStream;
     private ByteArrayOutputStream outputStream;
 
     @BeforeEach
     void setUp() {
-        uriHandler = new NewEchoHandlerImpl();
+        uriHandler = new NewEchoFrameEndpointHandlerImpl();
         outputStream = new ByteArrayOutputStream();
     }
 

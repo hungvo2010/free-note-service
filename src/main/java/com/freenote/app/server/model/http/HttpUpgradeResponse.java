@@ -1,4 +1,4 @@
-package com.freenote.app.server.http;
+package com.freenote.app.server.model.http;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

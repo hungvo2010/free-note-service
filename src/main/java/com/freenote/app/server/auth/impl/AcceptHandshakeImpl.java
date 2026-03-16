@@ -2,8 +2,8 @@ package com.freenote.app.server.auth.impl;
 
 import com.freenote.app.server.auth.AcceptHandshakeHandler;
 import com.freenote.app.server.exceptions.HandshakeException;
-import com.freenote.app.server.http.HttpUpgradeRequest;
-import com.freenote.app.server.http.HttpUpgradeResponse;
+import com.freenote.app.server.model.http.HttpUpgradeRequest;
+import com.freenote.app.server.model.http.HttpUpgradeResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

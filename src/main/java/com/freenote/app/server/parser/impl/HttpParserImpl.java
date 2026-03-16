@@ -1,6 +1,6 @@
 package com.freenote.app.server.parser.impl;
 
-import com.freenote.app.server.http.HttpUpgradeRequest;
+import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.parser.HttpParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

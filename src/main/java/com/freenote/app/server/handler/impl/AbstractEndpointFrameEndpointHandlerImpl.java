@@ -7,15 +7,15 @@ import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.frames.factory.FrameFactory;
-import com.freenote.app.server.handler.URIHandler;
-import com.freenote.app.server.handler.WebSocketFrameDispatcher;
-import com.freenote.app.server.handler.WebSocketHandler;
-import com.freenote.app.server.http.HttpUpgradeRequest;
+import com.freenote.app.server.handler.URIEndpointHandler;
+import com.freenote.app.server.handler.frames.WebSocketFrameDispatcher;
+import com.freenote.app.server.handler.frames.WebSocketFrameHandler;
+import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.enums.MsgType;
 import com.freenote.app.server.model.ws.CommonResponseObject;
-import com.freenote.app.server.util.IOUtils;
+import com.freenote.app.server.util.FullFrameParser;
 import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,8 +24,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-public abstract class AbstractEndpointHandlerImpl implements URIHandler, WebSocketHandler {
-    private static final Logger log = LogManager.getLogger(AbstractEndpointHandlerImpl.class);
+public abstract class AbstractEndpointFrameEndpointHandlerImpl implements URIEndpointHandler, WebSocketFrameHandler {
+    private static final Logger log = LogManager.getLogger(AbstractEndpointFrameEndpointHandlerImpl.class);
+    private final FullFrameParser frameParser = new FullFrameParser();
 
     @Override
     public boolean handle(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
@@ -46,8 +47,7 @@ public abstract class AbstractEndpointHandlerImpl implements URIHandler, WebSock
         WebSocketConnection webSocketConnection = buildWebSocketConnection(inputWrapper, outputWrapper);
 
         WebSocketFrameDispatcher.dispatch(this, webSocketConnection, wsFrame);
-
-        sendResponse(webSocketConnection);
+        webSocketConnection.sendCurrentResponse();
     }
 
     private WebSocketConnection buildWebSocketConnection(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
@@ -68,7 +68,7 @@ public abstract class AbstractEndpointHandlerImpl implements URIHandler, WebSock
     }
 
     protected byte[] getRawBytes(InputWrapper inputWrapper) throws IOException {
-        return IOUtils.getRawBytes(inputWrapper.getInputStream());
+        return frameParser.getRawBytes(inputWrapper.getInputStream());
     }
 
     protected void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
