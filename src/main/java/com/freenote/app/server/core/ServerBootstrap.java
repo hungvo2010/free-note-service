@@ -116,27 +116,24 @@ public class ServerBootstrap {
 
     private void handleSelectedKey(Selector selector, IncomingConnectionHandlerV2 handler, SelectionKey key) throws IOException {
         if (key.isAcceptable()) {
-            handleNewConnectionEvent(selector, key);
+            handleNewConnectionEvent(selector, (ServerSocketChannel) key.channel());
         } else if (key.isReadable()) {
             handleReadableEvent(handler, key);
         }
     }
 
-    private void handleNewConnectionEvent(Selector selector, SelectionKey key) throws IOException {
-        ServerSocketChannel server = (ServerSocketChannel) key.channel();
+    private void handleNewConnectionEvent(Selector selector, ServerSocketChannel server) throws IOException {
         SocketChannel client = server.accept();
         if (client != null) {
             client.configureBlocking(false);
             ConnectionState state = new HandShakeState();
             client.register(selector, SelectionKey.OP_READ, state);
-            log.info("Accepted connection from {}", client.getRemoteAddress());
         }
     }
 
     private void handleReadableEvent(IncomingConnectionHandlerV2 handler, SelectionKey key) throws IOException {
-        var channel = (SocketChannel) key.channel();
         ConnectionState state = (ConnectionState) key.attachment();
-        state.handle(handler, channel, key);
+        state.handle(handler, (SocketChannel) key.channel(), key);
     }
 
 }

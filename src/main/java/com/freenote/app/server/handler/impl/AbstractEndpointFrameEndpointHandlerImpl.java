@@ -47,7 +47,7 @@ public abstract class AbstractEndpointFrameEndpointHandlerImpl implements URIEnd
         WebSocketConnection webSocketConnection = buildWebSocketConnection(inputWrapper, outputWrapper);
 
         WebSocketFrameDispatcher.dispatch(this, webSocketConnection, wsFrame);
-        webSocketConnection.sendCurrentResponse();
+        sendResponse(webSocketConnection);
     }
 
     private WebSocketConnection buildWebSocketConnection(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
