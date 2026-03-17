@@ -1,7 +1,9 @@
 package com.freenote.app.server.core;
 
-import com.freenote.app.server.core.v2.HandShakeState;
+import com.freenote.app.server.core.v2.ConnectionState;
+import com.freenote.app.server.core.v2.HandshakeState;
 import com.freenote.app.server.core.v2.IncomingConnectionHandlerV2;
+import com.freenote.app.server.exceptions.SelectorInterruptException;
 import com.freenote.app.server.socket.RawSocket;
 import com.freenote.app.server.socket.ServerSocketFactory;
 import lombok.AllArgsConstructor;
@@ -11,20 +13,22 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import static com.freenote.app.server.util.RuntimeUtils.getAvailableProcessors;
+import static com.freenote.app.server.util.RuntimeUtils.logServerInitialization;
+
 @AllArgsConstructor
 public class ServerBootstrap {
-    private static final int availableProcessors = Runtime.getRuntime().availableProcessors();
-    private ExecutorService executorService = Executors.newFixedThreadPool(availableProcessors);
+    private ExecutorService executorService = Executors.newFixedThreadPool(getAvailableProcessors());
+
+
     private static final Logger log = LogManager.getLogger(ServerBootstrap.class);
     private ServerSocketFactory serverSocketFactory = new RawSocket();
     @Setter
@@ -38,7 +42,7 @@ public class ServerBootstrap {
     }
 
     public void start(IncomingConnectionHandler handler) throws Exception {
-        printNumberProcessors();
+        logServerInitialization();
         try (var serverSocket = serverSocketFactory.createServerSocket(this.port)) {
             while (!serverSocket.isClosed()) {
                 log.info("Waiting for connection on port {}", this.port);
@@ -55,36 +59,47 @@ public class ServerBootstrap {
         }
     }
 
-    private static void printNumberProcessors() {
-        log.info("Number of available processors: {}", availableProcessors);
+
+    public void start(IncomingConnectionHandlerV2 handler) throws Exception {
+        var selector = openSelector();
+        try (var serverSocketChannel = tryOpenSocketChannel()) {
+            registerAcceptEvent(serverSocketChannel, selector);
+            logServerInitialization();
+            startBusyWaitingSelector(handler, selector);
+        }
+
     }
 
-    public void start(IncomingConnectionHandlerV2 handler) throws IOException {
-        var selector = Selector.open();
-        try (var serverSocketChannel = ServerSocketChannel.open()) {
-            serverSocketChannel.configureBlocking(false);
-            serverSocketChannel.bind(new InetSocketAddress(this.port));
-            log.info("Starting server on port {}", this.port);
-            serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+    private Selector openSelector() throws IOException {
+        return Selector.open();
+    }
 
-            Future future = this.executorService.submit(() -> {
-                try {
-                    startThreadSelector(selector, handler);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+    private void startBusyWaitingSelector(IncomingConnectionHandlerV2 handler, Selector selector) throws ExecutionException, InterruptedException {
+        Future blockChannel = this.executorService.submit(() -> {
             try {
-                printNumberProcessors();
-                future.get();
-            } catch (Exception e) {
-                log.error("Error in server thread", e);
+                startThreadSelector(selector, handler);
+            } catch (IOException e) {
+                log.info("Error starting thread selector", e);
+                throw new SelectorInterruptException("Thread for readiness selection are interrupted", e);
             }
-        }
+        });
+        blockChannel.get();
+    }
+
+    private void registerAcceptEvent(ServerSocketChannel serverSocketChannel, Selector selector) throws ClosedChannelException {
+        serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+    }
+
+    private ServerSocketChannel tryOpenSocketChannel() throws IOException {
+        var serverSocketChannel = ServerSocketChannel.open();
+        serverSocketChannel.configureBlocking(false);
+        serverSocketChannel.bind(new InetSocketAddress(this.port));
+        log.info("Starting server on port {}", this.port);
+        return serverSocketChannel;
     }
 
     private void startThreadSelector(Selector selector, IncomingConnectionHandlerV2 handler) throws IOException {
-        while (true) {
+        while (selector.isOpen()) {
             int numReadyChannels = selector.select();
             if (numReadyChannels == 0) continue;
 
@@ -92,30 +107,35 @@ public class ServerBootstrap {
             Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
             while (keyIterator.hasNext()) {
                 SelectionKey key = keyIterator.next();
-                if (key.isAcceptable()) {
-                    ServerSocketChannel server = (ServerSocketChannel) key.channel();
-                    SocketChannel client = server.accept();
-                    if (client != null) {
-                        client.configureBlocking(false);
-                        HandShakeState state = new HandShakeState();
-                        client.register(selector, SelectionKey.OP_READ, state);
-                        System.out.println("Accepted connection from " + client.getRemoteAddress());
-                    }
-                } else if (key.isReadable()) {
-                    var channel = (SocketChannel) key.channel();
-                    HandShakeState state = (HandShakeState) key.attachment();
-                    if (state.isFirstRead()) {
-                        state.setFirstRead(false);
-                        log.info("First read from {}, performing handshake", channel.getRemoteAddress());
-                        var upgradeRequest = handler.handShake(channel, state.getByteBuffer());
-                        state.setUpgradeRequest(upgradeRequest);
-                    } else {
-                        log.info("Subsequent read from {}", channel.getRemoteAddress());
-                        handler.handle(channel, state.getByteBuffer(), state.getUpgradeRequest());
-                    }
-                }
-                keyIterator.remove(); // BẮT BUỘC xóa thẻ đã xử lý
+                handleSelectedKey(selector, handler, key);
+                keyIterator.remove();
             }
         }
     }
+
+    private void handleSelectedKey(Selector selector, IncomingConnectionHandlerV2 handler, SelectionKey key) throws IOException {
+        if (key.isAcceptable()) {
+            handleNewConnectionEvent(selector, key);
+        } else if (key.isReadable()) {
+            handleReadableEvent(handler, key);
+        }
+    }
+
+    private void handleNewConnectionEvent(Selector selector, SelectionKey key) throws IOException {
+        ServerSocketChannel server = (ServerSocketChannel) key.channel();
+        SocketChannel client = server.accept();
+        if (client != null) {
+            client.configureBlocking(false);
+            ConnectionState state = new HandshakeState();
+            client.register(selector, SelectionKey.OP_READ, state);
+            log.info("Accepted connection from {}", client.getRemoteAddress());
+        }
+    }
+
+    private void handleReadableEvent(IncomingConnectionHandlerV2 handler, SelectionKey key) throws IOException {
+        var channel = (SocketChannel) key.channel();
+        ConnectionState state = (ConnectionState) key.attachment();
+        state.handle(handler, channel, key);
+    }
+
 }
