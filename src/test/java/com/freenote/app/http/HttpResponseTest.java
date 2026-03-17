@@ -1,6 +1,6 @@
 package com.freenote.app.http;
 
-import com.freenote.app.server.http.HttpUpgradeResponse;
+import com.freenote.app.server.model.http.HttpUpgradeResponse;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

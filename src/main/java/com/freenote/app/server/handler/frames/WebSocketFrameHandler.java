@@ -1,12 +1,12 @@
-package com.freenote.app.server.handler;
+package com.freenote.app.server.handler.frames;
 
 import com.freenote.app.server.core.WebSocketConnection;
-import com.freenote.app.server.http.HttpUpgradeRequest;
+import com.freenote.app.server.model.http.HttpUpgradeRequest;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public interface WebSocketHandler {
+public interface WebSocketFrameHandler {
     void onMessage(WebSocketConnection webSocketConnection, String message) throws IOException;
 
     void onMessage(WebSocketConnection webSocketConnection, ByteBuffer message);

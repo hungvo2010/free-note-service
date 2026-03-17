@@ -1,6 +1,8 @@
 package com.freenote.app.server.util;
 
 import com.freenote.app.server.exceptions.InvalidFrameException;
+import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.frames.factory.FrameFactory;
 import lombok.experimental.UtilityClass;
 
 import java.util.Arrays;
@@ -48,6 +50,11 @@ public class FrameUtil {
             result[i] = (byte) (payload[i] ^ maskingKey[i % 4]); // XOR each byte with the masking key
         }
         return result;
+    }
+
+    public static WebSocketFrame createApplicationFrame(Object payload) {
+        var textPayload = JSONUtils.toJSONString(payload);
+        return FrameFactory.SERVER.createTextFrame(textPayload);
     }
 
     public Supplier<Integer> getPayloadLengthSupplier(byte[] frame) {

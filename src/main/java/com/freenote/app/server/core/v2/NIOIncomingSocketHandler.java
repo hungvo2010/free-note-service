@@ -3,8 +3,8 @@ package com.freenote.app.server.core.v2;
 import com.freenote.app.server.auth.AcceptHandshakeHandler;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
-import com.freenote.app.server.handler.URIHandler;
-import com.freenote.app.server.http.HttpUpgradeRequest;
+import com.freenote.app.server.handler.URIEndpointHandler;
+import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.ws.CommonRequestObject;
@@ -35,7 +35,7 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
     }
 
     @Override
-    public void handle(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
+    public void handleInComingMessage(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
         if (!readFromChannel(channel, byteBuffer)) return;
         
         routeToHandler(channel, byteBuffer, upgradeRequest);
@@ -46,7 +46,7 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
         if (!readFromChannel(channel, byteBuffer)) return null;
 
         var upgradeRequest = parseUpgradeRequest(byteBuffer);
-        performHandshake(channel, byteBuffer, upgradeRequest);
+        performHandshake(channel, upgradeRequest);
         
         return upgradeRequest;
     }
@@ -64,7 +64,7 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
         return this.httpParser.parse(byteBuffer);
     }
 
-    private void performHandshake(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest request) throws IOException {
+    private void performHandshake(SocketChannel channel, HttpUpgradeRequest request) throws IOException {
         log.info("Performing handshake for: {}", request);
         var handShakeResp = this.handshakeHandler.handle(request);
         var outputBytes = handShakeResp.toString().getBytes(StandardCharsets.UTF_8);
@@ -86,8 +86,8 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
         pathHandler.handle(inputWrapper, outputWrapper);
     }
 
-    private URIHandler getPathHandler(HttpUpgradeRequest upgradeRequest) {
-        var pathHandler = (URIHandler) (getInstanceByURI(upgradeRequest.getPath()));
+    private URIEndpointHandler getPathHandler(HttpUpgradeRequest upgradeRequest) {
+        var pathHandler = (URIEndpointHandler) (getInstanceByURI(upgradeRequest.getPath()));
         if (pathHandler == null) {
             log.warn("No handler found for URI: {}", upgradeRequest.getPath());
             throw new AcceptConnectionException("No handler for URI: " + upgradeRequest.getPath());

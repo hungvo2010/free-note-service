@@ -67,7 +67,7 @@ public class Draft {
     }
 
 
-    public static void main(String[] args) throws JsonProcessingException {
+    public static void main(String[] args) {
         Draft draft = new Draft();
         DraftAction action = new DraftAction();
         draft.addAction(action);

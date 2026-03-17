@@ -50,7 +50,7 @@ public class ServerBootstrap {
                 log.info("Accepted connection from {}", socket.getRemoteSocketAddress());
                 this.executorService.submit(() -> {
                     try {
-                        handler.handle(socket);
+                        handler.handle(new LegacyIOWrapper(socket));
                     } catch (Exception e) {
                         log.error("Error handling connection", e);
                     }

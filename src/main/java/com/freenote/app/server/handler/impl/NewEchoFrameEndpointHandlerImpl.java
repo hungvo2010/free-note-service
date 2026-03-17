@@ -1,17 +1,16 @@
-package com.freedraw.endpoint;
+package com.freenote.app.server.handler.impl;
 
 import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.core.WebSocketConnection;
 import com.freenote.app.server.frames.factory.FrameFactory;
-import com.freenote.app.server.handler.impl.NIOCommonEndpointHandlerImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.ByteBuffer;
 
 @WebSocketEndpoint("/echo")
-public class NewEchoHandlerImpl extends NIOCommonEndpointHandlerImpl {
-    private static final Logger log = LogManager.getLogger(NewEchoHandlerImpl.class);
+public class NewEchoFrameEndpointHandlerImpl extends AbstractEndpointFrameEndpointHandlerImpl {
+    private static final Logger log = LogManager.getLogger(NewEchoFrameEndpointHandlerImpl.class);
 
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, String message) {
@@ -23,15 +22,5 @@ public class NewEchoHandlerImpl extends NIOCommonEndpointHandlerImpl {
     @Override
     public void onPing(WebSocketConnection webSocketConnection, ByteBuffer payload) {
         webSocketConnection.setResponseFrame(FrameFactory.SERVER.createPongFrame());
-    }
-
-    @Override
-    public void onData(WebSocketConnection webSocketConnection, String message) {
-
-    }
-
-    @Override
-    public void onControl(WebSocketConnection webSocketConnection, ByteBuffer payload) {
-
     }
 }

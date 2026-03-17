@@ -7,7 +7,7 @@ import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.factory.ServerFrameFactory;
-import com.freenote.app.server.handler.URIHandler;
+import com.freenote.app.server.handler.URIEndpointHandler;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.util.FrameUtil;
@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @WebSocketEndpoint("/update")
-public class FragmentedURIHandlerImpl implements URIHandler {
-    private static final Logger log = LogManager.getLogger(FragmentedURIHandlerImpl.class);
+public class FragmentedURIEndpointHandlerImpl implements URIEndpointHandler {
+    private static final Logger log = LogManager.getLogger(FragmentedURIEndpointHandlerImpl.class);
     private final FrameFactory frameFactory = new ServerFrameFactory();
 
     @Override

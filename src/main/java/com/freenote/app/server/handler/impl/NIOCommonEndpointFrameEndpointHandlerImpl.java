@@ -1,20 +1,17 @@
 package com.freenote.app.server.handler.impl;
 
 import com.freenote.app.server.core.WebSocketConnection;
-import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.util.IOUtils;
-import com.freenote.app.server.util.JSONUtils;
 import lombok.extern.log4j.Log4j2;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.Objects;
+import java.nio.channels.SocketChannel;
 
 @Log4j2
-public class NIOCommonEndpointHandlerImpl extends CommonEndpointHandlerImpl {
+public class NIOCommonEndpointFrameEndpointHandlerImpl extends AbstractEndpointFrameEndpointHandlerImpl {
 
     @Override
     public byte[] getRawBytes(InputWrapper inputWrapper) {
@@ -38,29 +35,21 @@ public class NIOCommonEndpointHandlerImpl extends CommonEndpointHandlerImpl {
             super.sendResponse(webSocketConnection);
             return;
         }
+        byte[] dataToWrite = getDataToWrite(webSocketConnection);
 
-        byte[] dataToWrite = null;
-        if (!Objects.isNull(webSocketConnection.getResponseFrame())) {
-            try (var baos = new ByteArrayOutputStream()) {
-                IOUtils.writeOutPut(baos, webSocketConnection.getResponseFrame());
-                dataToWrite = baos.toByteArray();
-            }
-        } else if (!Objects.isNull(webSocketConnection.getResponseObject())) {
-            try (var baos = new ByteArrayOutputStream()) {
-                IOUtils.writeOutPut(
-                        baos,
-                        FrameFactory.SERVER.createTextFrame(
-                                JSONUtils.toJSONString(webSocketConnection.getResponseObject().getResponseData()
-                                )));
-                dataToWrite = baos.toByteArray();
-            }
-        }
+        writeToChannel(socketChannel, dataToWrite);
+    }
 
+    private void writeToChannel(SocketChannel socketChannel, byte[] dataToWrite) throws IOException {
         if (dataToWrite != null) {
             ByteBuffer buffer = ByteBuffer.wrap(dataToWrite);
             while (buffer.hasRemaining()) {
                 socketChannel.write(buffer);
             }
         }
+    }
+
+    private byte[] getDataToWrite(WebSocketConnection webSocketConnection) throws IOException {
+        return webSocketConnection.getPayloadBytes();
     }
 }

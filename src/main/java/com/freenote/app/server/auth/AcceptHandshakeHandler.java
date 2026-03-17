@@ -1,7 +1,7 @@
 package com.freenote.app.server.auth;
 
-import com.freenote.app.server.http.HttpUpgradeRequest;
-import com.freenote.app.server.http.HttpUpgradeResponse;
+import com.freenote.app.server.model.http.HttpUpgradeRequest;
+import com.freenote.app.server.model.http.HttpUpgradeResponse;
 
 public interface AcceptHandshakeHandler {
     HttpUpgradeResponse handle(HttpUpgradeRequest request);
