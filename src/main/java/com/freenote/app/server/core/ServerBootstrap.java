@@ -4,6 +4,7 @@ import com.freenote.app.server.core.v2.ConnectionState;
 import com.freenote.app.server.core.v2.HandshakeState;
 import com.freenote.app.server.core.v2.IncomingConnectionHandlerV2;
 import com.freenote.app.server.exceptions.SelectorInterruptException;
+import com.freenote.app.server.model.LegacyIOWrapper;
 import com.freenote.app.server.socket.RawSocket;
 import com.freenote.app.server.socket.ServerSocketFactory;
 import lombok.AllArgsConstructor;
