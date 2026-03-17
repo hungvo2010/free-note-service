@@ -1,7 +1,7 @@
 package com.freenote.app.server.core;
 
 import com.freenote.app.server.core.v2.ConnectionState;
-import com.freenote.app.server.core.v2.HandshakeState;
+import com.freenote.app.server.core.v2.HandShakeState;
 import com.freenote.app.server.core.v2.IncomingConnectionHandlerV2;
 import com.freenote.app.server.exceptions.SelectorInterruptException;
 import com.freenote.app.server.model.LegacyIOWrapper;
@@ -42,7 +42,7 @@ public class ServerBootstrap {
     public ServerBootstrap() {
     }
 
-    public void start(IncomingConnectionHandler handler) throws Exception {
+    public void start(LegacyIncomingConnectionHandler handler) throws Exception {
         logServerInitialization();
         try (var serverSocket = serverSocketFactory.createServerSocket(this.port)) {
             while (!serverSocket.isClosed()) {
@@ -127,7 +127,7 @@ public class ServerBootstrap {
         SocketChannel client = server.accept();
         if (client != null) {
             client.configureBlocking(false);
-            ConnectionState state = new HandshakeState();
+            ConnectionState state = new HandShakeState();
             client.register(selector, SelectionKey.OP_READ, state);
             log.info("Accepted connection from {}", client.getRemoteAddress());
         }

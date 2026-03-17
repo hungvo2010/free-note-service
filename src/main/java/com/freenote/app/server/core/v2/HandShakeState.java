@@ -17,7 +17,7 @@ import java.nio.channels.SocketChannel;
 @NoArgsConstructor
 @Setter
 @Log4j2
-public class HandshakeState implements ConnectionState {
+public class HandShakeState implements ConnectionState {
     private ByteBuffer byteBuffer = ByteBuffer.allocateDirect(2048);
 
     @Override
