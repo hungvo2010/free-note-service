@@ -23,7 +23,8 @@ public class ProcessingState implements ConnectionState {
         } catch (ClientDisconnectException e) {
             log.warn("Received CLOSE frame. Close channel from remote address: {}", channel.getRemoteAddress());
             channel.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
+            channel.close();
             log.warn("[ProcessingState] Exception in handling new messages: {}", e.getMessage());
         }
     }
