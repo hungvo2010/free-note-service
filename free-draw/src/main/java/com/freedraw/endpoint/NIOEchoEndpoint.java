@@ -10,8 +10,8 @@ import org.apache.logging.log4j.Logger;
 import java.nio.ByteBuffer;
 
 @WebSocketEndpoint("/echo")
-public class NewEchoFrameEndpointHandlerImpl extends NIOCommonEndpointFrameEndpointHandlerImpl {
-    private static final Logger log = LogManager.getLogger(NewEchoFrameEndpointHandlerImpl.class);
+public class NIOEchoEndpoint extends NIOCommonEndpointFrameEndpointHandlerImpl {
+    private static final Logger log = LogManager.getLogger(NIOEchoEndpoint.class);
 
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, String message) {

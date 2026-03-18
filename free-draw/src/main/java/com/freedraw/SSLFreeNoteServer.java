@@ -1,6 +1,6 @@
 package com.freedraw;
 
-import com.freenote.app.server.core.DefaultIncomingConnectionHandler;
+import com.freenote.app.server.core.DefaultLegacyIncomingConnectionHandler;
 import com.freenote.app.server.core.WebSocketServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,7 +20,7 @@ public class SSLFreeNoteServer {
                 .useSSL(true)
                 .keystorePath(keystorePath)
                 .keystorePassword(keystorePassword)
-                .handler(new DefaultIncomingConnectionHandler())
+                .handler(new DefaultLegacyIncomingConnectionHandler())
                 .build();
         server.start();
     }
