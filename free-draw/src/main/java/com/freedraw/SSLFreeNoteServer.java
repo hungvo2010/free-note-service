@@ -1,7 +1,7 @@
 package com.freedraw;
 
-import com.freenote.app.server.core.DefaultLegacyIncomingConnectionHandler;
-import com.freenote.app.server.core.WebSocketServer;
+import com.freenote.app.server.core.v2.NIOIncomingSocketHandler;
+import com.freenote.app.server.core.v2.WebSocketServerV2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,12 +15,12 @@ public class SSLFreeNoteServer {
 
         log.info("Starting SSL server with keystore: {}", keystorePath);
 
-        WebSocketServer server = WebSocketServer.builder()
+        WebSocketServerV2 server = WebSocketServerV2.builder()
                 .port(port)
                 .useSSL(true)
                 .keystorePath(keystorePath)
                 .keystorePassword(keystorePassword)
-                .handler(new DefaultLegacyIncomingConnectionHandler())
+                .handler(new NIOIncomingSocketHandler())
                 .build();
         server.start();
     }
