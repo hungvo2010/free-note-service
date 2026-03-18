@@ -36,14 +36,14 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
 
     @Override
     public void handleInComingMessage(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
-        if (!readFromChannel(channel, byteBuffer)) return;
+        if (emptyReadFromChannel(channel, byteBuffer)) return;
         
         routeToHandler(channel, byteBuffer, upgradeRequest);
     }
 
     @Override
     public HttpUpgradeRequest handShake(SocketChannel channel, ByteBuffer byteBuffer) throws IOException {
-        if (!readFromChannel(channel, byteBuffer)) return null;
+        if (emptyReadFromChannel(channel, byteBuffer)) return null;
 
         var upgradeRequest = parseUpgradeRequest(byteBuffer);
         performHandshake(channel, upgradeRequest);
@@ -51,13 +51,13 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
         return upgradeRequest;
     }
 
-    private boolean readFromChannel(SocketChannel channel, ByteBuffer byteBuffer) throws IOException {
+    private boolean emptyReadFromChannel(SocketChannel channel, ByteBuffer byteBuffer) throws IOException {
         byteBuffer.clear();
         if (channel.read(byteBuffer) == -1) {
             channel.close();
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private HttpUpgradeRequest parseUpgradeRequest(ByteBuffer byteBuffer) {
