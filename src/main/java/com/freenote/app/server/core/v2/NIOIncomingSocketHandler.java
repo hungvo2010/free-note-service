@@ -4,9 +4,9 @@ import com.freenote.app.server.auth.AcceptHandshakeHandler;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.handler.URIEndpointHandler;
-import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
+import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.ws.CommonRequestObject;
 import com.freenote.app.server.parser.HttpParser;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
@@ -36,8 +36,8 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
 
     @Override
     public void handleInComingMessage(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
+        log.info("Subsequent read from {}", channel.getRemoteAddress());
         if (emptyReadFromChannel(channel, byteBuffer)) return;
-        
         routeToHandler(channel, byteBuffer, upgradeRequest);
     }
 
@@ -47,7 +47,7 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
 
         var upgradeRequest = parseUpgradeRequest(byteBuffer);
         performHandshake(channel, upgradeRequest);
-        
+
         return upgradeRequest;
     }
 
@@ -68,7 +68,7 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
         log.info("Performing handshake for: {}", request);
         var handShakeResp = this.handshakeHandler.handle(request);
         var outputBytes = handShakeResp.toString().getBytes(StandardCharsets.UTF_8);
-        
+
         writeResponse(channel, outputBytes);
     }
 
