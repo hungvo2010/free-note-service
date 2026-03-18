@@ -21,10 +21,15 @@ public class HandShakeState implements ConnectionState {
 
     @Override
     public void handle(IncomingConnectionHandlerV2 handler, SocketChannel channel, SelectionKey key) throws IOException {
-        log.info("Performing handshake for {}", channel.getRemoteAddress());
-        var upgradeRequest = handler.handShake(channel, byteBuffer);
-        if (upgradeRequest != null) {
-            key.attach(new ProcessingState(upgradeRequest, byteBuffer));
+        try {
+            log.info("Performing handshake for {}", channel.getRemoteAddress());
+            var upgradeRequest = handler.handShake(channel, byteBuffer);
+            if (upgradeRequest != null) {
+                key.attach(new ProcessingState(upgradeRequest, byteBuffer));
+            }
+        } catch (Exception e) {
+            log.error("Handshake failed: ", e);
+            channel.close();
         }
     }
 }

@@ -80,7 +80,7 @@ public class ServerBootstrap {
             try {
                 startThreadSelector(selector, handler);
             } catch (IOException e) {
-                log.info("Error starting thread selector", e);
+                log.info("Error during runtime of thread selector", e);
                 throw new SelectorInterruptException("Thread for readiness selection are interrupted", e);
             }
         });
