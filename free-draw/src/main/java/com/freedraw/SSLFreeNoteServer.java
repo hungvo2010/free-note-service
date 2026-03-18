@@ -17,9 +17,7 @@ public class SSLFreeNoteServer {
 
         WebSocketServerV2 server = WebSocketServerV2.builder()
                 .port(port)
-                .useSSL(true)
-                .keystorePath(keystorePath)
-                .keystorePassword(keystorePassword)
+                .useSSL(false)
                 .handler(new NIOIncomingSocketHandler())
                 .build();
         server.start();
