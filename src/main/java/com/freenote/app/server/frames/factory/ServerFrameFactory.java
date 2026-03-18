@@ -1,11 +1,9 @@
 package com.freenote.app.server.frames.factory;
 
 import com.freenote.app.server.frames.FrameType;
+import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
-import com.freenote.app.server.frames.control.CloseFrame;
-import com.freenote.app.server.frames.control.PingFrame;
-import com.freenote.app.server.frames.control.PongFrame;
 
 public class ServerFrameFactory implements FrameFactory {
     @Override
@@ -20,17 +18,17 @@ public class ServerFrameFactory implements FrameFactory {
 
     @Override
     public WebSocketFrame createPingFrame() {
-        return new PingFrame();
+        return ControlFrame.ping();
     }
 
     @Override
     public WebSocketFrame createPongFrame() {
-        return new PongFrame();
+        return ControlFrame.pong();
     }
 
     @Override
     public WebSocketFrame createCloseFrame(int code, String reason) {
-        return new CloseFrame();
+        return ControlFrame.close();
     }
 
     @Override

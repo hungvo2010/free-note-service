@@ -1,11 +1,13 @@
 package com.freenote.app.server.frames.base;
 
+import com.freenote.app.server.frames.FrameType;
+
 import java.io.IOException;
 import java.io.ObjectOutput;
 
 public class ControlFrame extends WebSocketFrame {
     public ControlFrame() {
-        throw new UnsupportedOperationException("ControlFrame must be instantiated with an opCode.");
+        throw new UnsupportedOperationException();
     }
 
     public ControlFrame(short opCode) {
@@ -18,17 +20,44 @@ public class ControlFrame extends WebSocketFrame {
 
     public ControlFrame(short opCode, boolean isMasked) {
         super(opCode, isMasked);
+        this.setFin(true);
+    }
+
+    public static ControlFrame ping() {
+        return new ControlFrame(FrameType.PING.getOpCode());
+    }
+
+    public static ControlFrame pong() {
+        return new ControlFrame(FrameType.PONG.getOpCode());
+    }
+
+    public static ControlFrame close() {
+        return new ControlFrame(FrameType.CLOSE.getOpCode());
     }
 
     @Override
     protected void parsePayloadLength(byte[] bytes) {
-        isMasked = false;
-        payloadLength = 0;
+        isMasked = (bytes[1] & 0x80) != 0;
+        payloadLength = bytes[1] & 0x7F;
     }
 
     @Override
     public void parseMaskingKey(byte[] bytes) {
-        // Control frames do not use masking keys, so this method does nothing.
+        if (isMasked) {
+            maskingKey = new byte[4];
+            System.arraycopy(bytes, 2, maskingKey, 0, 4);
+        }
+    }
+
+    @Override
+    protected void parsePayload(byte[] bytes) {
+        if (payloadLength > 0) {
+            int headerOffset = 2 + (isMasked ? 4 : 0);
+            payloadData = new byte[(int) payloadLength];
+            System.arraycopy(bytes, headerOffset, payloadData, 0, (int) payloadLength);
+        } else {
+            payloadData = new byte[0];
+        }
     }
 
     @Override
@@ -40,21 +69,18 @@ public class ControlFrame extends WebSocketFrame {
 
     @Override
     public int getTotalFrameLength() {
-        return 2;
+        return 2 + (isMasked ? 4 : 0) + (int) payloadLength;
     }
 
     @Override
     public void writePayloadLength(ObjectOutput out) {
-        // note: control frames do not have a payload length
+        // note: control frames do not have a separate payload length field usually, it's in the mask byte
     }
 
     @Override
-    public void writePayload(ObjectOutput out) {
-        // note: control frames do not have a payload
-    }
-
-    @Override
-    protected void parsePayload(byte[] bytes) {
-        // Control frames do not have a payload, so this method does nothing.
+    public void writePayload(ObjectOutput out) throws IOException {
+        if (payloadLength > 0 && payloadData != null) {
+            out.write(payloadData);
+        }
     }
 }

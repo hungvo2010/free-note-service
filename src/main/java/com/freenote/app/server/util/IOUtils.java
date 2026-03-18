@@ -1,5 +1,6 @@
 package com.freenote.app.server.util;
 
+import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.io.NoHeaderObjectOutputStream;
 import lombok.experimental.UtilityClass;
@@ -22,6 +23,14 @@ public class IOUtils {
     }
 
     private static final Logger log = LogManager.getLogger(IOUtils.class);
+
+    public static byte[] createRawFrame(byte[] payload, FrameType frameType) {
+        byte[] frame = new byte[payload.length + 2];
+        frame[0] = frameType.getHexValue();
+        frame[1] = (byte) payload.length;
+        System.arraycopy(payload, 0, frame, 2, payload.length);
+        return frame;
+    }
 
     public static byte[] getRawBytes(InputStream inputStream) throws IOException {
         DataInputStream dis = (inputStream instanceof DataInputStream)

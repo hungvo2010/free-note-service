@@ -12,8 +12,8 @@ import com.freedraw.service.DraftService;
 import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.core.WebSocketConnection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
+import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.frames.base.WebSocketFrame;
-import com.freenote.app.server.frames.control.PongFrame;
 import com.freenote.app.server.handler.impl.AbstractEndpointFrameEndpointHandlerImpl;
 import com.freenote.app.server.model.ws.CommonResponseObject;
 import com.freenote.app.server.util.FrameUtil;
@@ -47,7 +47,7 @@ public class FreeNoteEndpoint extends AbstractEndpointFrameEndpointHandlerImpl {
 
     @Override
     public void onPing(WebSocketConnection webSocketConnection, ByteBuffer payload) {
-        webSocketConnection.setResponseFrame(new PongFrame());
+        webSocketConnection.setResponseFrame(ControlFrame.pong());
     }
 
     @Override
