@@ -3,6 +3,10 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
+        maven {
+            url "https://central.sonatype.com/repository/maven-snapshots/"
+        }
+        gradlePluginPortal()
     }
 }
 
@@ -14,11 +18,19 @@ plugins {
     id "com.github.spotbugs" version "6.0.26"
 }
 
-import com.github.spotbugs.snom.Effort
+
 import com.github.spotbugs.snom.Confidence
+import com.github.spotbugs.snom.Effort
 
 allprojects {
     apply plugin: 'com.github.spotbugs'
+
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://central.sonatype.com/repository/maven-snapshots/"
+        }
+    }
 
     spotbugs {
         ignoreFailures = true
@@ -33,13 +45,13 @@ allprojects {
             xml.required = true
             html.required = true
         }
-        
+
         doLast {
             def reportFile = reports.xml.outputLocation.get().asFile
             if (reportFile.exists()) {
                 def bugs = new XmlParser().parse(reportFile)
                 def bugCount = bugs.BugInstance.size()
-                
+
                 // Read from project property if provided, otherwise from deploy/spotbugs-config.properties, fallback to 10
                 def maxErrors = 10
                 if (project.hasProperty('spotbugsMaxErrors')) {
@@ -52,9 +64,9 @@ allprojects {
                         maxErrors = props.getProperty('maxErrors')?.toInteger() ?: 10
                     }
                 }
-                
+
                 println "SpotBugs found ${bugCount} bugs in ${project.name} (Max allowed: ${maxErrors})"
-                
+
                 if (bugCount > maxErrors) {
                     throw new GradleException("SpotBugs found ${bugCount} bugs in ${project.name}, which exceeds the maximum allowed (${maxErrors}).")
                 }
@@ -64,16 +76,11 @@ allprojects {
 }
 
 
-
 group = 'com.freenote'
 version = '0.0.1-SNAPSHOT'
 
 java {
     sourceCompatibility = '17'
-}
-
-repositories {
-    mavenCentral()
 }
 
 test {
@@ -143,6 +150,10 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
     implementation("com.fasterxml.jackson.core:jackson-core:2.20.0")
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
+
+    // Observability
+    implementation platform("io.opentelemetry:opentelemetry-bom:1.61.0-SNAPSHOT")
+    implementation('io.opentelemetry:opentelemetry-api')
 }
 
 java {
