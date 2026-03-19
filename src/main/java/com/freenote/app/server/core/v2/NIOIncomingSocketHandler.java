@@ -35,14 +35,14 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
     }
 
     @Override
-    public void handleInComingMessage(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
+    public void handleInComingMessage(ReadableContext channel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
         log.info("Subsequent read from {}", channel.getRemoteAddress());
         if (emptyReadFromChannel(channel, byteBuffer)) return;
         routeToHandler(channel, byteBuffer, upgradeRequest);
     }
 
     @Override
-    public HttpUpgradeRequest handShake(SocketChannel channel, ByteBuffer byteBuffer) throws IOException {
+    public HttpUpgradeRequest handShake(ReadableContext channel, ByteBuffer byteBuffer) throws IOException {
         if (emptyReadFromChannel(channel, byteBuffer)) return null;
 
         var upgradeRequest = parseUpgradeRequest(byteBuffer);
