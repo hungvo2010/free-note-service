@@ -3,7 +3,6 @@ package com.freedraw.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.freedraw.dto.DraftRequestContent;
 import com.freedraw.dto.ShapeData;
 import com.freenote.app.server.util.JSONUtils;
