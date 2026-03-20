@@ -20,15 +20,29 @@
             </Policies>
             <DefaultRolloverStrategy max="1" />
         </RollingFile>
+
+        <RollingFile name="OtelLog"
+                     fileName="${APP_LOG_ROOT}/otel.log"
+                     filePattern="${APP_LOG_ROOT}/otel-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}" />
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB" />
+            </Policies>
+        </RollingFile>
     </Appenders>
 
     <Loggers>
-        <Logger name="com.howtodoinjava.app" additivity="false">
+        <Logger name="io.opentelemetry" level="info" additivity="false">
+            <AppenderRef ref="OtelLog"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+
+        <Logger name="com.trial" level="info" additivity="false">
             <AppenderRef ref="appLog"/>
             <AppenderRef ref="Console"/>
         </Logger>
 
-        <Root level="debug">
+        <Root level="info">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="appLog"/>
         </Root>

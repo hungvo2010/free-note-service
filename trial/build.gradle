@@ -16,12 +16,15 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
 
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-web") {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+    implementation("org.springframework.boot:spring-boot-starter-log4j2")
 }
 
 test {
     useJUnitPlatform()
-    environment "JAVA_TOOL_OPTIONS", "-javaagent:opentelemetry-javaagent.jar"
+    environment "JAVA_TOOL_OPTIONS", "-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dotel.javaagent.logging=application -javaagent:opentelemetry-javaagent.jar"
     environment "OTEL_TRACES_EXPORTER", "logging"
     environment "OTEL_METRICS_EXPORTER", "logging"
     environment "OTEL_LOGS_EXPORTER", "logging"
@@ -33,7 +36,11 @@ tasks.register('trialBootRun', Exec) {
     description = "Builds and runs the bootJar with OpenTelemetry agent."
     dependsOn tasks.named('bootJar')
 
-    commandLine "java", "-javaagent:opentelemetry-javaagent.jar", "-jar", tasks.named('bootJar').get().archiveFile.get().asFile.absolutePath
+    commandLine "java",
+            "-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager",
+            "-Dotel.javaagent.logging=application",
+            "-javaagent:opentelemetry-javaagent.jar",
+            "-jar", tasks.named('bootJar').get().archiveFile.get().asFile.absolutePath
 
     environment "OTEL_TRACES_EXPORTER", "logging"
     environment "OTEL_METRICS_EXPORTER", "logging"
