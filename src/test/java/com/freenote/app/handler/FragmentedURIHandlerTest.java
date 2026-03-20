@@ -4,8 +4,9 @@ import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.DataFrame;
-import com.freenote.app.server.handler.impl.FragmentedURIHandlerImpl;
+import com.freenote.app.server.handler.impl.FragmentedURIEndpointHandlerImpl;
 import com.freenote.app.server.model.InputWrapper;
+import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,14 +23,14 @@ import static org.mockito.Mockito.*;
 class FragmentedURIHandlerTest {
     private static final Logger log = LogManager.getLogger(FragmentedURIHandlerTest.class);
     private final FrameFactory clientFactory = new ClientFrameFactory();
-    private final FragmentedURIHandlerImpl handler = new FragmentedURIHandlerImpl();
+    private final FragmentedURIEndpointHandlerImpl handler = new FragmentedURIEndpointHandlerImpl();
 
     @Test
     void givenMockEOFInputStream_whenParseToContinuationFrame_thenSuccess() throws IOException {
         var mockOutputStream = mock(OutputStream.class);
         var wrapper = mock(InputWrapper.class);
         when(wrapper.getInputStream().read(any(byte[].class))).thenReturn(-1);
-        assertFalse(handler.handle(wrapper, mockOutputStream));
+        assertFalse(handler.handle(wrapper, new OutputWrapper(mockOutputStream)));
     }
 
     @Test
@@ -50,7 +51,7 @@ class FragmentedURIHandlerTest {
 
         Thread newThread = new Thread(() -> {
             try {
-                var result = handler.handle(new InputWrapper(inputStream, mock(Socket.class)), outputStream);
+                var result = handler.handle(new InputWrapper(mock(Socket.class)), new OutputWrapper(outputStream));
                 log.info("Result: {}", result);
                 atomicBoolean.set(result);
             } catch (Throwable t) {
@@ -78,7 +79,7 @@ class FragmentedURIHandlerTest {
         IOUtils.writeOutPut(pipedOutputStream, someFrame);
 
         var outputStream = new ByteArrayOutputStream();
-        var result = handler.handle(new InputWrapper(inputStream, mock(Socket.class)), outputStream);
+        var result = handler.handle(new InputWrapper(mock(Socket.class)), new OutputWrapper(outputStream));
 
         assertFalse(result);
     }
@@ -93,7 +94,7 @@ class FragmentedURIHandlerTest {
         IOUtils.writeOutPut(pipedOutputStream, someFrame);
 
         var outputStream = new ByteArrayOutputStream();
-        var result = handler.handle(new InputWrapper(inputStream, mock(Socket.class)), outputStream);
+        var result = handler.handle(new InputWrapper(mock(Socket.class)), new OutputWrapper(outputStream));
 
         assertTrue(result);
     }
@@ -110,7 +111,7 @@ class FragmentedURIHandlerTest {
         var outputStream = mock(OutputStream.class);
         doThrow(new IOException("Simulated write error")).when(outputStream).write(any(byte[].class));
 
-        var result = handler.handle(new InputWrapper(inputStream, mock(Socket.class)), outputStream);
+        var result = handler.handle(new InputWrapper(mock(Socket.class)), new OutputWrapper(outputStream));
 
         assertFalse(result);
     }

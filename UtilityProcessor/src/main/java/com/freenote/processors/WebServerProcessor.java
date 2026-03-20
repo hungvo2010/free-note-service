@@ -1,6 +1,6 @@
 package com.freenote.processors;
 
-import com.freenote.annotations.URIHandlerImplementation;
+import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.exceptions.URIHandlerException;
 import com.google.auto.service.AutoService;
 
@@ -31,13 +31,13 @@ public class WebServerProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         try {
-            var elementsAnnotatedWith = roundEnv.getElementsAnnotatedWith(URIHandlerImplementation.class);
+            var elementsAnnotatedWith = roundEnv.getElementsAnnotatedWith(WebSocketEndpoint.class);
             for (var element : elementsAnnotatedWith) {
                 if (!(element instanceof TypeElement)) {
                     messager.printMessage(Diagnostic.Kind.ERROR, "WebSocketServer annotation can only be applied to classes.");
                     return true;
                 }
-                URIHandlerImplementation annotation = element.getAnnotation(URIHandlerImplementation.class);
+                WebSocketEndpoint annotation = element.getAnnotation(WebSocketEndpoint.class);
                 String path = annotation.value();
                 if (path.isEmpty()) {
                     messager.printMessage(Diagnostic.Kind.ERROR, "WebSocketServer path cannot be empty.", element);
@@ -62,7 +62,7 @@ public class WebServerProcessor extends AbstractProcessor {
 
     private boolean isMatchSignature(Element element) {
         try {
-            URIHandlerImplementation annotation = element.getAnnotation(URIHandlerImplementation.class);
+            WebSocketEndpoint annotation = element.getAnnotation(WebSocketEndpoint.class);
             ExecutableElement method = (ExecutableElement) element;
             List<? extends VariableElement> params = method.getParameters();
             checkIncludeRequireMethods(annotation, method, params);
@@ -72,17 +72,12 @@ public class WebServerProcessor extends AbstractProcessor {
         }
     }
 
-    private void checkIncludeRequireMethods(URIHandlerImplementation annotation, ExecutableElement method, List<? extends VariableElement> params) throws URIHandlerException {
-        // name
-        if (!method.getSimpleName().contentEquals("handle")) {
-            throw new URIHandlerException(annotation.value(), "WebSocketServer method '%s' must be named 'handle'.");
-        }
-
+    private void checkIncludeRequireMethods(WebSocketEndpoint annotation, ExecutableElement method, List<? extends VariableElement> params) throws URIHandlerException {
         this.messager.printMessage(Diagnostic.Kind.NOTE, "Checking method: " + method.getSimpleName() + " with return type: " + method.getReturnType().getKind());
         // return type
-        if (!method.getReturnType().getKind().toString().equals(Boolean.class.getSimpleName().toUpperCase())) {
-            throw new URIHandlerException(annotation.value(), String.format("WebSocketServer method '%s' must return boolean.", method.getSimpleName().toString()));
-        }
+//        if (!method.getReturnType().getKind().toString().equals(Boolean.class.getSimpleName().toUpperCase())) {
+//            throw new URIHandlerException(annotation.value(), String.format("WebSocketServer method '%s' must return boolean.", method.getSimpleName().toString()));
+//        }
 
         if (params.size() != 2) {
             throw new URIHandlerException(annotation.value(), "WebSocketServer method '%s' must have exactly two parameters: InputStream and OutputStream.");
@@ -97,7 +92,7 @@ public class WebServerProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        return Set.of(URIHandlerImplementation.class.getCanonicalName());
+        return Set.of(WebSocketEndpoint.class.getCanonicalName());
     }
 
     @Override

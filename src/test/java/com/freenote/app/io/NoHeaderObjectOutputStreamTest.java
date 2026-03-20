@@ -1,6 +1,6 @@
 package com.freenote.app.io;
 
-import io.NoHeaderObjectOutputStream;
+import com.freenote.app.server.io.NoHeaderObjectOutputStream;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;

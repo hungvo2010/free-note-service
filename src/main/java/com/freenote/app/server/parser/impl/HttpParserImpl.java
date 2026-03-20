@@ -1,16 +1,15 @@
 package com.freenote.app.server.parser.impl;
 
-import com.freenote.app.server.http.HttpUpgradeRequest;
+import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.parser.HttpParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Map;
 
 public class HttpParserImpl implements HttpParser {
     private static final Logger log = LogManager.getLogger(HttpParserImpl.class);
@@ -18,18 +17,50 @@ public class HttpParserImpl implements HttpParser {
     public HttpUpgradeRequest parse(InputStream inputStream) {
         try {
             var reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-            var requestBuilder = parseRequestEndpoint(reader);
+            var endpointHeaders = parseRequestEndpoint(reader);
+            var paramHeaders = parseHeaders(reader);
+            paramHeaders.putAll(endpointHeaders);
 
-            requestBuilder = parseHeaders(reader, requestBuilder);
-
-            return requestBuilder.build();
+            return setHeadersToRequest(paramHeaders);
         } catch (Exception e) {
             log.error("Failed to parse WebSocket upgrade request", e);
             return new HttpUpgradeRequest();
         }
+
     }
 
-    private HttpUpgradeRequest.HttpUpgradeRequestBuilder parseHeaders(BufferedReader reader, HttpUpgradeRequest.HttpUpgradeRequestBuilder requestBuilder) throws IOException {
+    @Override
+    public HttpUpgradeRequest parse(ByteBuffer byteBuffer) {
+        if (byteBuffer.position() > 0) {
+            byteBuffer.flip();
+        }
+
+        if (!byteBuffer.hasRemaining()) {
+            return new HttpUpgradeRequest();
+        }
+
+        try (InputStream inputStream = com.freenote.app.server.util.IOUtils.newInputStream(byteBuffer)) {
+            return parse(inputStream);
+        } catch (IOException e) {
+            log.error("Failed to parse WebSocket upgrade request from ByteBuffer", e);
+            return new HttpUpgradeRequest();
+        }
+    }
+
+    private Map<String, String> parseRequestEndpoint(BufferedReader reader) throws IOException {
+        // First line: GET /path HTTP/1.1
+        var requestLine = reader.readLine();
+        if (requestLine == null) throw new IOException("Empty request");
+        var requestEndpoint = requestLine.split(" ");
+
+        return Map.of(
+                "method", requestEndpoint[0],
+                "uri", requestEndpoint[1],
+                "version", requestEndpoint[2]
+        );
+    }
+
+    private Map<String, String> parseHeaders(BufferedReader reader) throws IOException {
         var headers = new HashMap<String, String>();
         String line;
         while ((line = reader.readLine()) != null && !line.isEmpty()) {
@@ -39,6 +70,13 @@ public class HttpParserImpl implements HttpParser {
             headers.put(name, value);
         }
 
+        return headers;
+    }
+
+    private HttpUpgradeRequest setHeadersToRequest(Map<String, String> headers) {
+        var requestBuilder = HttpUpgradeRequest.builder();
+
+
         requestBuilder.secWebSocketKey(headers.get("Sec-WebSocket-Key"));
         requestBuilder.secWebSocketVersion(headers.get("Sec-WebSocket-Version"));
         requestBuilder.secWebSocketExtensions(headers.get("Sec-WebSocket-Extensions"));
@@ -47,19 +85,10 @@ public class HttpParserImpl implements HttpParser {
         requestBuilder.host(headers.get("Host"));
         requestBuilder.origin(headers.get("Origin"));
 
-        return requestBuilder;
-    }
+        requestBuilder.method(headers.get("method"));
+        requestBuilder.path(headers.get("uri"));
+        requestBuilder.version(headers.get("version"));
 
-    private HttpUpgradeRequest.HttpUpgradeRequestBuilder parseRequestEndpoint(BufferedReader reader) throws IOException {
-        var requestBuilder = HttpUpgradeRequest.builder();
-
-        // First line: GET /path HTTP/1.1
-        var requestLine = reader.readLine();
-        if (requestLine == null) throw new IOException("Empty request");
-        var requestEndpoint = requestLine.split(" ");
-        requestBuilder.method(requestEndpoint[0]);
-        requestBuilder.uri(requestEndpoint[1]);
-        requestBuilder.version(requestEndpoint[2]);
-        return requestBuilder;
+        return requestBuilder.build();
     }
 }

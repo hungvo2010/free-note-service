@@ -2,9 +2,10 @@ package com.freenote.app.handler;
 
 import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
-import com.freenote.app.server.handler.URIHandler;
-import com.freenote.app.server.handler.impl.EchoHandlerImpl;
+import com.freenote.app.server.handler.URIEndpointHandler;
+import com.freenote.app.server.handler.impl.NewEchoFrameEndpointHandlerImpl;
 import com.freenote.app.server.model.InputWrapper;
+import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.util.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ class URIHandlerTest {
         clientFrameFactory = new ClientFrameFactory();
     }
 
-    private final URIHandler mockURIHandler = new EchoHandlerImpl();
+    private final URIEndpointHandler mockURIHandler = new NewEchoFrameEndpointHandlerImpl();
 
     @Test
     void givenWebSocketFrameInputStream_whenHandled_thenEchoesToOutputStream() throws IOException {
@@ -39,7 +40,7 @@ class URIHandlerTest {
         var bytes = byteArrayOutputStream.toByteArray();
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        mockURIHandler.handle(new InputWrapper(in), out);
+        mockURIHandler.handle(new InputWrapper(), new OutputWrapper(out));
         String result = new String(Arrays.copyOfRange(out.toByteArray(), 2, 2 + "Hello World".length())); // Skip the first two bytes which are the frame type and length
         assertEquals("Hello World", result);
     }
@@ -50,7 +51,7 @@ class URIHandlerTest {
         when(in.read(any(byte[].class))).thenReturn(-1);
         when(in.read()).thenReturn(-1);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        var result = mockURIHandler.handle(new InputWrapper(in), out);
+        var result = mockURIHandler.handle(new InputWrapper(), new OutputWrapper(out));
         assertFalse(result, "Expected handle to return false on end of input stream");
     }
 }

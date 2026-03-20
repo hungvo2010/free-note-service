@@ -1,6 +1,6 @@
 package com.freenote.app.server;
 
-import com.freenote.app.server.example.SimpleServer;
+import com.freenote.app.server.demo.SimpleServer;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
@@ -74,13 +74,8 @@ class ServerRunnerTest {
 
         var serverThread = new Thread(() -> {
             try {
-                var futures = SimpleServer.run(8189);
+                SimpleServer.run(8189);
                 pipeOutputStream.flush();
-                // Wait for first future to complete
-                if (!futures.isEmpty()) {
-                    futures.get(0).get();
-                    log.info("First connection handled");
-                }
             } catch (Exception ex) {
                 log.error("Failed to start server", ex);
             }

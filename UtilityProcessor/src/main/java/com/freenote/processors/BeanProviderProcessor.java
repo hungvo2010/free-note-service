@@ -1,6 +1,6 @@
 package com.freenote.processors;
 
-import com.freenote.annotations.URIHandlerImplementation;
+import com.freenote.annotations.WebSocketEndpoint;
 import com.google.auto.service.AutoService;
 
 import javax.annotation.processing.*;
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.freenote.utils.LogUtils.error;
+import static com.freenote.utils.LogUtils.info;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
@@ -39,19 +40,22 @@ public class BeanProviderProcessor extends AbstractProcessor {
         List<AnnotatedClass> annotatedClasses = new ArrayList<>();
 
         // Collect all annotated classes
-        for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(URIHandlerImplementation.class)) {
+        for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(WebSocketEndpoint.class)) {
             if (annotatedElement.getKind() != ElementKind.CLASS) {
-                error(this.messager, annotatedElement, 
+                error(this.messager, annotatedElement,
                         "@URIHandlerImplementation can only be applied to classes");
                 continue;
             }
 
             TypeElement classElement = (TypeElement) annotatedElement;
-            URIHandlerImplementation annotation = classElement.getAnnotation(URIHandlerImplementation.class);
+            WebSocketEndpoint annotation = classElement.getAnnotation(WebSocketEndpoint.class);
 
             String className = classElement.getSimpleName().toString();
             String qualifiedName = classElement.getQualifiedName().toString();
             String value = annotation.value();
+
+            info(this.messager, classElement,
+                    "Found @WebSocketEndpoint on " + qualifiedName + " with value: " + value);
 
             annotatedClasses.add(new AnnotatedClass(className, qualifiedName, value));
 
@@ -217,7 +221,7 @@ public class BeanProviderProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        return Set.of(URIHandlerImplementation.class.getCanonicalName());
+        return Set.of(WebSocketEndpoint.class.getCanonicalName());
     }
 
     private static class AnnotatedClass {

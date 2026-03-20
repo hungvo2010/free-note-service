@@ -26,17 +26,17 @@ public class ClientFrameFactory implements FrameFactory {
 
     @Override
     public WebSocketFrame createPingFrame() {
-        return new ControlFrame(FrameType.PING.getOpCode(), true);
+        return ControlFrame.ping();
     }
 
     @Override
     public WebSocketFrame createPongFrame() {
-        return new ControlFrame(FrameType.PONG.getOpCode(), true);
+        return ControlFrame.pong();
     }
 
     @Override
     public WebSocketFrame createCloseFrame(int code, String reason) {
-        return new ControlFrame(FrameType.CLOSE.getOpCode(), true);
+        return ControlFrame.close();
     }
 
     @Override

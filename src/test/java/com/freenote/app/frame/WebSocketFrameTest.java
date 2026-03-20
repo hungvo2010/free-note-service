@@ -2,9 +2,10 @@ package com.freenote.app.frame;
 
 import com.freenote.app.server.exceptions.InvalidFrameException;
 import com.freenote.app.server.frames.factory.ServerFrameFactory;
-import com.freenote.app.server.frames.FrameType;
+import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.frames.base.DataFrame;
-import com.freenote.app.server.frames.control.PongFrame;
+import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.util.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class WebSocketFrameTest {
-    private static ServerFrameFactory serverFrameFactory = null;
+    static ServerFrameFactory serverFrameFactory = null;
 
     @BeforeAll
     static void setup() {
@@ -27,7 +28,7 @@ class WebSocketFrameTest {
         var pingFrame = serverFrameFactory.createPingFrame();
         assertEquals(FrameType.PING.getOpCode(), pingFrame.getOpcode());
         assertEquals(0, pingFrame.getPayloadLength());
-        var pongFrame = new PongFrame();
+        var pongFrame = ControlFrame.pong();
         assertEquals(FrameType.PONG.getOpCode(), pongFrame.getOpcode());
         assertFalse(pingFrame.isMasked());
     }

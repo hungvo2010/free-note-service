@@ -11,7 +11,7 @@ import static com.freenote.app.server.util.FrameUtil.getMaskingKeyStartSupplier;
 
 public class DataFrame extends WebSocketFrame {
 
-    private static final int DEFAULT_MASKING_KEY_LENGTH = 4;
+    public static final int DEFAULT_MASKING_KEY_LENGTH = 4;
     private static final int MAX_PAYLOAD_LENGTH_2_BYTES = 65536;
     private static final int MAX_PAYLOAD_LENGTH_7_BITS = 126;
 

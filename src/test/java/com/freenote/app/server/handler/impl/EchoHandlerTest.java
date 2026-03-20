@@ -1,7 +1,8 @@
 package com.freenote.app.server.handler.impl;
 
-import com.freenote.app.server.handler.URIHandler;
+import com.freenote.app.server.handler.URIEndpointHandler;
 import com.freenote.app.server.model.InputWrapper;
+import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.util.FrameUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,23 +17,23 @@ import static org.mockito.Mockito.when;
 
 class EchoHandlerTest {
 
-    private URIHandler uriHandler;
+    private URIEndpointHandler uriHandler;
     private ByteArrayInputStream inputStream;
     private ByteArrayOutputStream outputStream;
 
     @BeforeEach
     void setUp() {
-        uriHandler = new EchoHandlerImpl();
+        uriHandler = new NewEchoFrameEndpointHandlerImpl();
         outputStream = new ByteArrayOutputStream();
     }
 
     @Test
-    void testHandle_SuccessfulEcho_UnmaskedFrame() {
+    void testHandle_SuccessfulEcho_UnmaskedFrame() throws IOException {
         // Create an input stream with unmasked text frame data
         byte[] frameData = createSimpleTextFrame("Hello World");
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(InputWrapper.builder().inputStream(inputStream).build(), new OutputWrapper(outputStream));
 
         assertTrue(result);
         assertTrue(outputStream.size() > 0);
@@ -50,24 +51,24 @@ class EchoHandlerTest {
         byte[] frameData = createMaskedTextFrame(message, maskingKey);
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(InputWrapper.builder().inputStream(inputStream).build(), new OutputWrapper(outputStream));
 
         assertTrue(result);
         assertTrue(outputStream.size() > 0);
     }
 
     @Test
-    void testHandle_EmptyInputStream() {
+    void testHandle_EmptyInputStream() throws IOException {
         inputStream = new ByteArrayInputStream(new byte[0]);
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(InputWrapper.builder().inputStream(inputStream).build(), new OutputWrapper(outputStream));
 
         assertFalse(result);
         assertEquals(0, outputStream.size());
     }
 
     @Test
-    void testHandle_EndOfStreamReached() {
+    void testHandle_EndOfStreamReached() throws IOException {
         // Create input stream that returns -1 immediately
         inputStream = new ByteArrayInputStream(new byte[1]) {
             @Override
@@ -95,13 +96,13 @@ class EchoHandlerTest {
             }
         };
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(InputWrapper.builder().inputStream(inputStream).build(), new OutputWrapper(outputStream));
 
         assertFalse(result);
     }
 
     @Test
-    void testHandle_IOException() {
+    void testHandle_IOException() throws IOException {
         // Create input stream that throws IOException
         inputStream = new ByteArrayInputStream(new byte[]{0x01}) {
             @Override
@@ -110,7 +111,7 @@ class EchoHandlerTest {
             }
         };
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(InputWrapper.builder().inputStream(inputStream).build(), new OutputWrapper(outputStream));
 
         assertFalse(result);
     }
@@ -129,7 +130,7 @@ class EchoHandlerTest {
             }
         };
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), errorOutputStream);
+        boolean result = uriHandler.handle(InputWrapper.builder().inputStream(inputStream).build(), new OutputWrapper(errorOutputStream));
 
         assertFalse(result);
     }
@@ -150,7 +151,7 @@ class EchoHandlerTest {
 
         inputStream = new ByteArrayInputStream(combinedFrames.toByteArray());
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(InputWrapper.builder().inputStream(inputStream).build(), new OutputWrapper(outputStream));
 
         assertTrue(result);
         assertTrue(outputStream.size() > 0);
@@ -167,7 +168,7 @@ class EchoHandlerTest {
         byte[] frameData = createSimpleTextFrame(largeMessage.toString());
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(InputWrapper.builder().inputStream(inputStream).build(), new OutputWrapper(outputStream));
 
         assertTrue(result);
         assertTrue(outputStream.size() > 0);
@@ -181,7 +182,7 @@ class EchoHandlerTest {
         byte[] frameData = createFrameWithOpcode(message, (byte) 0x02); // Binary frame
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(InputWrapper.builder().inputStream(inputStream).build(), new OutputWrapper(outputStream));
 
         assertTrue(result);
     }
@@ -192,7 +193,7 @@ class EchoHandlerTest {
         byte[] frameData = createFragmentedFrame(message);
         inputStream = new ByteArrayInputStream(frameData);
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(InputWrapper.builder().inputStream(inputStream).build(), new OutputWrapper(outputStream));
 
         assertTrue(result);
     }
@@ -203,7 +204,7 @@ class EchoHandlerTest {
         when(inputStream.available()).thenReturn(1);
         when(inputStream.read(any(byte[].class))).thenReturn(0);
 
-        boolean result = uriHandler.handle(new InputWrapper(inputStream), outputStream);
+        boolean result = uriHandler.handle(InputWrapper.builder().inputStream(inputStream).build(), new OutputWrapper(outputStream));
 
         assertTrue(result);
     }

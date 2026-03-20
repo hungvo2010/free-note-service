@@ -2,8 +2,8 @@ package com.freenote.app;
 
 import com.freenote.annotations.Singleton;
 import com.freenote.annotations.URIHandleAnnotation;
+import com.freenote.app.server.handler.URIEndpointHandler;
 import com.freenote.exceptions.TwoSingletonException;
-import com.freenote.app.server.handler.URIHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,7 +18,7 @@ import java.util.*;
 
 public class WSLauncher {
     private static final Logger logger = LogManager.getLogger(WSLauncher.class);
-    public static final Map<String, Class<URIHandler>> ALL_URI_HANDLERS = new HashMap<>();
+    public static final Map<String, Class<URIEndpointHandler>> ALL_URI_HANDLERS = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
         launch(args);
@@ -74,7 +74,7 @@ public class WSLauncher {
                 logger.error(String.format("Class %s does not have a handle method with the correct signature.", clazz.getName()));
                 return;
             }
-            ALL_URI_HANDLERS.put(clazz.getAnnotation(URIHandleAnnotation.class).path(), (Class<URIHandler>) clazz);
+            ALL_URI_HANDLERS.put(clazz.getAnnotation(URIHandleAnnotation.class).path(), (Class<URIEndpointHandler>) clazz);
         } catch (NoSuchMethodException e) {
             System.err.println("Class " + clazz.getName() + " does not have a handle method with the correct signature.");
             e.printStackTrace();
