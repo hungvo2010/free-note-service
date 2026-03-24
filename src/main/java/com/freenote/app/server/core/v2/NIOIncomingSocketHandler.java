@@ -35,10 +35,10 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
     }
 
     @Override
-    public void handleInComingMessage(ReadableContext context, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
+    public void handleInComingMessage(ReadableContext context, HttpUpgradeRequest upgradeRequest) throws IOException {
         log.info("Subsequent read from {}", context.getRemoteAddress());
-        if (emptyReadFromChannel(context.getChannel(), byteBuffer)) return;
-        routeToHandler(context.getChannel(), byteBuffer, upgradeRequest);
+        if (emptyReadFromChannel(context.getChannel(), context.getByteBuffer())) return;
+        routeToHandler(context.getChannel(), context.getByteBuffer(), upgradeRequest);
     }
 
     @Override

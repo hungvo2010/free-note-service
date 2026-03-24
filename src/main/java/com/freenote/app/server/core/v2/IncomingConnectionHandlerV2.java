@@ -6,6 +6,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public interface IncomingConnectionHandlerV2 {
-    void handleInComingMessage(ReadableContext socketChannel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException;
+    void handleInComingMessage(ReadableContext socketChannel, HttpUpgradeRequest upgradeRequest) throws IOException;
     HttpUpgradeRequest handShake(ReadableContext socketChannel, ByteBuffer byteBuffer) throws IOException;
 }

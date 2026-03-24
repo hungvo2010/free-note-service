@@ -17,7 +17,8 @@ public class ProcessingState implements ConnectionState {
     @Override
     public void handle(IncomingConnectionHandlerV2 handler, ReadableContext context) throws IOException {
         try {
-            handler.handleInComingMessage(context, byteBuffer, request);
+            context.setByteBuffer(byteBuffer);
+            handler.handleInComingMessage(context, request);
         } catch (ClientDisconnectException e) {
             context.closeChannel();
         } catch (IOException e) {

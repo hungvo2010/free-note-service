@@ -1,9 +1,6 @@
 package com.freenote.app.server.core;
 
-import com.freenote.app.server.core.v2.ConnectionState;
-import com.freenote.app.server.core.v2.HandShakeState;
-import com.freenote.app.server.core.v2.IncomingConnectionHandlerV2;
-import com.freenote.app.server.core.v2.ReadableContext;
+import com.freenote.app.server.core.v2.*;
 import com.freenote.app.server.exceptions.SelectorInterruptException;
 import com.freenote.app.server.model.LegacyIOWrapper;
 import com.freenote.app.server.socket.RawSocket;
@@ -12,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import otel.GlobalOpenTelemetryManualInstrumentationUsage;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -35,12 +33,20 @@ public class ServerBootstrap {
     private ServerSocketFactory serverSocketFactory = new RawSocket();
     @Setter
     private int port = 8189;
+    private GlobalOpenTelemetryManualInstrumentationUsage sampleTelemetry = new GlobalOpenTelemetryManualInstrumentationUsage();
 
     public ServerBootstrap(ServerSocketFactory serverSocketFactory) {
         this.serverSocketFactory = serverSocketFactory;
+        initTelemetry();
     }
 
     public ServerBootstrap() {
+        initTelemetry();
+    }
+
+    private void initTelemetry() {
+        sampleTelemetry.globalOpenTelemetryUsage();
+        sampleTelemetry.providersUsage();
     }
 
     public void start(LegacyIncomingConnectionHandler handler) throws Exception {
@@ -134,7 +140,30 @@ public class ServerBootstrap {
 
     private void handleReadableEvent(IncomingConnectionHandlerV2 handler, SelectionKey key) throws IOException {
         ConnectionState state = (ConnectionState) key.attachment();
-        state.handle(handler, new ReadableContext((SocketChannel) key.channel(), key));
+        var tracingContext = buildTraceContext(state);
+
+        try {
+            state.handle(
+                    handler,
+                    ReadableContext.builder()
+                            .tracingContext(tracingContext)
+                            .channel((SocketChannel) key.channel())
+                            .key(key)
+                            .build()
+            );
+        } finally {
+            if (tracingContext != null && tracingContext.getSpan() != null) {
+                tracingContext.getSpan().end();
+            }
+        }
+    }
+
+    private TracingContext buildTraceContext(ConnectionState state) {
+        String spanName = state instanceof HandShakeState ? "WebSocket.Handshake" : "WebSocket.Message";
+        var span = sampleTelemetry.getTracer().spanBuilder(spanName).startSpan();
+        return TracingContext.builder()
+                .span(span)
+                .build();
     }
 
 }
