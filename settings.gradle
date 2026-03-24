@@ -3,3 +3,5 @@ include(":UtilityProcessor")
 include 'free-draw'
 include 'unrelated'
 include 'trial'
+include 'observability'
+

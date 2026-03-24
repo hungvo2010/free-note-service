@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
@@ -19,5 +20,9 @@ public class ReadableContext {
 
     public void setState(ProcessingState processingState) {
         this.key.attach(processingState);
+    }
+
+    public SocketAddress getRemoteAddress() throws IOException {
+        return this.channel.getRemoteAddress();
     }
 }

@@ -3,6 +3,7 @@ package com.freenote.app.server.core;
 import com.freenote.app.server.core.v2.ConnectionState;
 import com.freenote.app.server.core.v2.HandShakeState;
 import com.freenote.app.server.core.v2.IncomingConnectionHandlerV2;
+import com.freenote.app.server.core.v2.ReadableContext;
 import com.freenote.app.server.exceptions.SelectorInterruptException;
 import com.freenote.app.server.model.LegacyIOWrapper;
 import com.freenote.app.server.socket.RawSocket;
@@ -133,7 +134,7 @@ public class ServerBootstrap {
 
     private void handleReadableEvent(IncomingConnectionHandlerV2 handler, SelectionKey key) throws IOException {
         ConnectionState state = (ConnectionState) key.attachment();
-        state.handle(handler, (SocketChannel) key.channel(), key);
+        state.handle(handler, new ReadableContext((SocketChannel) key.channel(), key));
     }
 
 }

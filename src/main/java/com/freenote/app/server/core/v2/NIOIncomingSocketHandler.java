@@ -35,18 +35,18 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
     }
 
     @Override
-    public void handleInComingMessage(ReadableContext channel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
-        log.info("Subsequent read from {}", channel.getRemoteAddress());
-        if (emptyReadFromChannel(channel, byteBuffer)) return;
-        routeToHandler(channel, byteBuffer, upgradeRequest);
+    public void handleInComingMessage(ReadableContext context, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
+        log.info("Subsequent read from {}", context.getRemoteAddress());
+        if (emptyReadFromChannel(context.getChannel(), byteBuffer)) return;
+        routeToHandler(context.getChannel(), byteBuffer, upgradeRequest);
     }
 
     @Override
-    public HttpUpgradeRequest handShake(ReadableContext channel, ByteBuffer byteBuffer) throws IOException {
-        if (emptyReadFromChannel(channel, byteBuffer)) return null;
+    public HttpUpgradeRequest handShake(ReadableContext context, ByteBuffer byteBuffer) throws IOException {
+        if (emptyReadFromChannel(context.getChannel(), byteBuffer)) return null;
 
         var upgradeRequest = parseUpgradeRequest(byteBuffer);
-        performHandshake(channel, upgradeRequest);
+        performHandshake(context.getChannel(), upgradeRequest);
 
         return upgradeRequest;
     }
