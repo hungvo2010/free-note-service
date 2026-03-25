@@ -9,6 +9,8 @@ repositories {
     mavenCentral()
 }
 
+def otelVersion = "1.60.1"
+
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -16,9 +18,17 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.34'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
 
-    implementation("io.opentelemetry:opentelemetry-context:1.60.1")
-    implementation platform("io.opentelemetry:opentelemetry-bom:1.61.0-SNAPSHOT")
-    implementation('io.opentelemetry:opentelemetry-api')
+    implementation platform("io.opentelemetry:opentelemetry-bom:${otelVersion}")
+    implementation "io.opentelemetry:opentelemetry-api"
+    implementation "io.opentelemetry:opentelemetry-sdk"
+    implementation "io.opentelemetry:opentelemetry-context"
+    implementation "io.opentelemetry:opentelemetry-exporter-otlp"
+    implementation "io.opentelemetry:opentelemetry-sdk-extension-jaeger-remote-sampler"
+    implementation "io.opentelemetry:opentelemetry-exporter-logging"
+    implementation "io.opentelemetry:opentelemetry-exporter-logging-otlp"
+
+    // This artifact is legacy and not part of the 1.60.1 BOM
+    implementation("io.opentelemetry:opentelemetry-sdk-extension-resources:1.19.0")
 }
 
 test {

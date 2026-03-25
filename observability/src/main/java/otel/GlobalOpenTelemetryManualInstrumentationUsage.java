@@ -9,6 +9,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.*;
 import lombok.Getter;
+import otel.sdk.OpenTelemetrySdkConfig;
 
 import java.util.Arrays;
 
@@ -26,6 +27,10 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
     private Tracer tracer;
 
     private OpenTelemetry openTelemetry;
+
+    static {
+        GlobalOpenTelemetry.set(OpenTelemetrySdkConfig.create());
+    }
 
     public void globalOpenTelemetryUsage() {
         openTelemetry = GlobalOpenTelemetry.isSet() ? GlobalOpenTelemetry.get() : initializeOpenTelemetry();
@@ -58,7 +63,7 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
         logger = loggerProvider.loggerBuilder(SCOPE_NAME).setInstrumentationVersion(SCOPE_VERSION).setSchemaUrl(SCOPE_SCHEMA_URL).build();
     }
 
-    public static void spanUsage(Tracer tracer) {
+    public Span spanUsage(Tracer tracer, String spanName) {
 
         // Get a span builder by providing the span name
 
@@ -66,7 +71,7 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
 
                 tracer
 
-                        .spanBuilder("span name")
+                        .spanBuilder(spanName)
 
                         // Set span kind
 
@@ -159,11 +164,9 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
         }
 
         // Finally, end the span
-
-        span.end();
+        return span;
 
     }
-
 
 
     private static SpanContext exampleLinkContext() {

@@ -160,7 +160,7 @@ public class ServerBootstrap {
 
     private TracingContext buildTraceContext(ConnectionState state) {
         String spanName = state instanceof HandShakeState ? "WebSocket.Handshake" : "WebSocket.Message";
-        var span = sampleTelemetry.getTracer().spanBuilder(spanName).startSpan();
+        var span = sampleTelemetry.spanUsage(sampleTelemetry.getTracer(), spanName);
         return TracingContext.builder()
                 .span(span)
                 .build();
