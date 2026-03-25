@@ -8,6 +8,7 @@ import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.*;
+import io.opentelemetry.semconv.NetworkAttributes;
 import lombok.Getter;
 import otel.sdk.OpenTelemetrySdkConfig;
 
@@ -25,18 +26,23 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
     private Meter meter;
     @Getter
     private Tracer tracer;
-
     private OpenTelemetry openTelemetry;
+
+    public static GlobalOpenTelemetryManualInstrumentationUsage sampleTelemetry;
 
     static {
         GlobalOpenTelemetry.set(OpenTelemetrySdkConfig.create());
+        sampleTelemetry = new GlobalOpenTelemetryManualInstrumentationUsage();
     }
 
     public void globalOpenTelemetryUsage() {
-        openTelemetry = GlobalOpenTelemetry.isSet() ? GlobalOpenTelemetry.get() : initializeOpenTelemetry();
     }
 
-    public OpenTelemetry initializeOpenTelemetry() {
+    public GlobalOpenTelemetryManualInstrumentationUsage() {
+        this.openTelemetry = GlobalOpenTelemetry.isSet() ? GlobalOpenTelemetry.get() : initializeOpenTelemetry();
+    }
+
+    public static OpenTelemetry initializeOpenTelemetry() {
         return GlobalOpenTelemetry.getOrNoop();
     }
 
@@ -77,45 +83,43 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
 
                         .setSpanKind(SpanKind.INTERNAL)
 
-                        // Set attributes
+                        // Set attributes using Semantic Conventions for standard data
+                        .setAttribute(NetworkAttributes.NETWORK_TRANSPORT, "tcp")
 
-                        .setAttribute(AttributeKey.stringKey("com.acme.string-key"), "value")
+                        // Set custom attributes using the app.* namespace for business logic
+                        .setAttribute(AttributeKey.stringKey("app.sample.string_key"), "value")
 
-                        .setAttribute(AttributeKey.booleanKey("com.acme.bool-key"), true)
+                        .setAttribute(AttributeKey.booleanKey("app.sample.enabled"), true)
 
-                        .setAttribute(AttributeKey.longKey("com.acme.long-key"), 1L)
+                        .setAttribute(AttributeKey.longKey("app.sample.retry_count"), 1L)
 
-                        .setAttribute(AttributeKey.doubleKey("com.acme.double-key"), 1.1)
+                        .setAttribute(AttributeKey.doubleKey("app.sample.threshold"), 1.1)
 
                         .setAttribute(
 
-                                AttributeKey.stringArrayKey("com.acme.string-array-key"),
+                                AttributeKey.stringArrayKey("app.sample.tags"),
 
                                 Arrays.asList("value1", "value2"))
 
                         .setAttribute(
 
-                                AttributeKey.booleanArrayKey("come.acme.bool-array-key"),
+                                AttributeKey.booleanArrayKey("app.sample.flags"),
 
                                 Arrays.asList(true, false))
 
                         .setAttribute(
 
-                                AttributeKey.longArrayKey("come.acme.long-array-key"), Arrays.asList(1L, 2L))
+                                AttributeKey.longArrayKey("app.sample.indices"), Arrays.asList(1L, 2L))
 
                         .setAttribute(
 
-                                AttributeKey.doubleArrayKey("come.acme.double-array-key"), Arrays.asList(1.1, 2.2))
+                                AttributeKey.doubleArrayKey("app.sample.ranges"), Arrays.asList(1.1, 2.2))
 
-                        // Optionally omit initializing AttributeKey
+                        // Optionally omit initializing AttributeKey (still follow app.* naming)
 
-                        .setAttribute("com.acme.string-key", "value")
+                        .setAttribute("app.sample.short_key", "value")
 
-                        .setAttribute("com.acme.bool-key", true)
-
-                        .setAttribute("come.acme.long-key", 1L)
-
-                        .setAttribute("come.acme.double-key", 1.1)
+                        .setAttribute("app.sample.is_test", true)
 
                         // Uncomment to optionally explicitly set the parent span context. If omitted, the
 
@@ -136,12 +140,12 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
         if (span.isRecording()) {
 
             // Update the span name with information not available when starting
-
-            span.updateName("new span name");
+            // Following the lower-case dot-separated naming convention
+            span.updateName("sample.updated_operation");
 
             // Add additional attributes not available when starting
 
-            span.setAttribute("com.acme.string-key2", "value");
+            span.setAttribute("app.sample.late_binding_key", "value");
 
             // Add additional span links not available when starting
 

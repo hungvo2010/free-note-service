@@ -10,6 +10,8 @@ import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.ws.CommonRequestObject;
 import com.freenote.app.server.parser.HttpParser;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,6 +21,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 
 import static generated.URIHandlerRegistry.getInstanceByURI;
+import static otel.GlobalOpenTelemetryManualInstrumentationUsage.sampleTelemetry;
 
 public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
     private static final Logger log = LogManager.getLogger(NIOIncomingSocketHandler.class);
@@ -37,8 +40,27 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
     @Override
     public void handleInComingMessage(ReadableContext context, HttpUpgradeRequest upgradeRequest) throws IOException {
         log.info("Subsequent read from {}", context.getRemoteAddress());
+        var newMessageSpan = buildMessageSpan(context, upgradeRequest);
         if (emptyReadFromChannel(context.getChannel(), context.getByteBuffer())) return;
         routeToHandler(context.getChannel(), context.getByteBuffer(), upgradeRequest);
+        newMessageSpan.end();
+    }
+
+    private Span buildMessageSpan(ReadableContext context, HttpUpgradeRequest upgradeRequest) {
+        var parentSpan = this.getParentSpan(context);
+        Context parentContext = Context.current().with(parentSpan);
+        var childSpan = sampleTelemetry.getTracer()
+                .spanBuilder("ws.message")
+                .setParent(parentContext)
+                .setAttribute("origin", upgradeRequest.getOrigin())
+                .setAttribute("path", upgradeRequest.getPath())
+                .setAttribute("uri", upgradeRequest.getUri())
+                .startSpan();
+        return childSpan;
+    }
+
+    private Span getParentSpan(ReadableContext context) {
+        return context.getTracingContext().getSpan();
     }
 
     @Override

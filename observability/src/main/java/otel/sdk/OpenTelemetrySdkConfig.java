@@ -13,9 +13,9 @@ public class OpenTelemetrySdkConfig {
 
                 .setTracerProvider(SdkTracerProviderConfig.create(resource))
 
-//                .setMeterProvider(SdkMeterProviderConfig.create(resource))
-//
-//                .setLoggerProvider(SdkLoggerProviderConfig.create(resource))
+                .setMeterProvider(SdkMeterProviderConfig.create(resource))
+
+        //                .setLoggerProvider(SdkLoggerProviderConfig.create(resource))
 
                 .setPropagators(ContextPropagatorsConfig.create())
 

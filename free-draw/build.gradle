@@ -6,6 +6,8 @@ plugins {
 group = 'com.freenote'
 version = '0.0.1-SNAPSHOT'
 
+def otelVersion = "1.60.1"
+
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -26,6 +28,8 @@ dependencies {
     implementation(project(":"))
     implementation(project(":UtilityProcessor"))
     implementation(project(":observability"))
+    implementation platform("io.opentelemetry:opentelemetry-bom:${otelVersion}")
+    implementation "io.opentelemetry:opentelemetry-api"
 
     // Apicurio Registry Client
     implementation("io.apicurio:apicurio-registry-client:2.6.13.Final")

@@ -9,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import otel.GlobalOpenTelemetryManualInstrumentationUsage;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -23,6 +22,7 @@ import java.util.concurrent.Future;
 
 import static com.freenote.app.server.util.RuntimeUtils.getAvailableProcessors;
 import static com.freenote.app.server.util.RuntimeUtils.logServerInitialization;
+import static otel.GlobalOpenTelemetryManualInstrumentationUsage.sampleTelemetry;
 
 @AllArgsConstructor
 public class ServerBootstrap {
@@ -33,8 +33,6 @@ public class ServerBootstrap {
     private ServerSocketFactory serverSocketFactory = new RawSocket();
     @Setter
     private int port = 8189;
-    private GlobalOpenTelemetryManualInstrumentationUsage sampleTelemetry = new GlobalOpenTelemetryManualInstrumentationUsage();
-
     public ServerBootstrap(ServerSocketFactory serverSocketFactory) {
         this.serverSocketFactory = serverSocketFactory;
         initTelemetry();
@@ -159,8 +157,14 @@ public class ServerBootstrap {
     }
 
     private TracingContext buildTraceContext(ConnectionState state) {
-        String spanName = state instanceof HandShakeState ? "WebSocket.Handshake" : "WebSocket.Message";
-        var span = sampleTelemetry.spanUsage(sampleTelemetry.getTracer(), spanName);
+        String spanName = state instanceof HandShakeState ? "websocket.handshake" : "websocket.message";
+        var span = sampleTelemetry.getTracer().spanBuilder(spanName)
+                .setAttribute("server.address", "localhost")
+                .setAttribute("server.port", (long) this.port)
+                .setAttribute("network.transport", "tcp")
+                .setAttribute("app.websocket.state", state.getClass().getSimpleName())
+                .startSpan();
+        
         return TracingContext.builder()
                 .span(span)
                 .build();
