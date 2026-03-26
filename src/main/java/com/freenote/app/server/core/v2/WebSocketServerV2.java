@@ -18,7 +18,7 @@ public class WebSocketServerV2 {
     @Builder.Default
     private String keystorePassword = "changeit";
     @Builder.Default
-    private IncomingConnectionHandlerV2 handler = new NIOIncomingSocketHandler();
+    private ModernIncomingConnectionHandler handler = new NIOModernIncomingSocketHandler();
 
     public void start() throws Exception {
         log.info("Starting NIO WebSocket Server on port {} (SSL: {})", port, useSSL);

@@ -15,7 +15,7 @@ public class ProcessingState implements ConnectionState {
     private final ByteBuffer byteBuffer;
 
     @Override
-    public void handle(IncomingConnectionHandlerV2 handler, ReadableContext context) throws IOException {
+    public void handle(ModernIncomingConnectionHandler handler, ReadableContext context) throws IOException {
         try {
             context.setByteBuffer(byteBuffer);
             handler.handleInComingMessage(context, request);

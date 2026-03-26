@@ -23,17 +23,17 @@ import java.nio.charset.StandardCharsets;
 import static generated.URIHandlerRegistry.getInstanceByURI;
 import static otel.GlobalOpenTelemetryManualInstrumentationUsage.sampleTelemetry;
 
-public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
-    private static final Logger log = LogManager.getLogger(NIOIncomingSocketHandler.class);
+public class NIOModernIncomingSocketHandler implements ModernIncomingConnectionHandler {
+    private static final Logger log = LogManager.getLogger(NIOModernIncomingSocketHandler.class);
     private final AcceptHandshakeHandler handshakeHandler;
     private final HttpParser httpParser;
 
-    public NIOIncomingSocketHandler(AcceptHandshakeHandler handshakeHandler, HttpParser httpParser) {
+    public NIOModernIncomingSocketHandler(AcceptHandshakeHandler handshakeHandler, HttpParser httpParser) {
         this.handshakeHandler = handshakeHandler;
         this.httpParser = httpParser;
     }
 
-    public NIOIncomingSocketHandler() {
+    public NIOModernIncomingSocketHandler() {
         this(new AcceptHandshakeImpl(), new HttpParserImpl());
     }
 
@@ -75,7 +75,10 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
     private boolean emptyReadFromChannel(SocketChannel channel, ByteBuffer byteBuffer) throws IOException {
         byteBuffer.clear();
         if (channel.read(byteBuffer) == -1) {
-            channel.close();
+            if (channel.isOpen()) {
+                channel.close();
+                sampleTelemetry.decrementConcurrentUsers();
+            }
             return true;
         }
         return false;

@@ -35,16 +35,9 @@ public class ServerBootstrap {
     private int port = 8189;
     public ServerBootstrap(ServerSocketFactory serverSocketFactory) {
         this.serverSocketFactory = serverSocketFactory;
-        initTelemetry();
     }
 
     public ServerBootstrap() {
-        initTelemetry();
-    }
-
-    private void initTelemetry() {
-        sampleTelemetry.globalOpenTelemetryUsage();
-        sampleTelemetry.providersUsage();
     }
 
     public void start(LegacyIncomingConnectionHandler handler) throws Exception {
@@ -66,7 +59,7 @@ public class ServerBootstrap {
     }
 
 
-    public void start(IncomingConnectionHandlerV2 handler) throws Exception {
+    public void start(ModernIncomingConnectionHandler handler) throws Exception {
         var selector = openSelector();
         try (var serverSocketChannel = tryOpenSocketChannel()) {
             registerAcceptEvent(serverSocketChannel, selector);
@@ -80,7 +73,7 @@ public class ServerBootstrap {
         return Selector.open();
     }
 
-    private void startBusyWaitingSelector(IncomingConnectionHandlerV2 handler, Selector selector) throws ExecutionException, InterruptedException {
+    private void startBusyWaitingSelector(ModernIncomingConnectionHandler handler, Selector selector) throws ExecutionException, InterruptedException {
         Future blockChannel = this.executorService.submit(() -> {
             try {
                 startThreadSelector(selector, handler);
@@ -104,7 +97,7 @@ public class ServerBootstrap {
         return serverSocketChannel;
     }
 
-    private void startThreadSelector(Selector selector, IncomingConnectionHandlerV2 handler) throws IOException {
+    private void startThreadSelector(Selector selector, ModernIncomingConnectionHandler handler) throws IOException {
         while (selector.isOpen()) {
             int numReadyChannels = selector.select();
             if (numReadyChannels == 0) continue;
@@ -119,7 +112,7 @@ public class ServerBootstrap {
         }
     }
 
-    private void handleSelectedKey(Selector selector, IncomingConnectionHandlerV2 handler, SelectionKey key) throws IOException {
+    private void handleSelectedKey(Selector selector, ModernIncomingConnectionHandler handler, SelectionKey key) throws IOException {
         if (key.isAcceptable()) {
             handleNewConnectionEvent(selector, (ServerSocketChannel) key.channel());
         } else if (key.isReadable()) {
@@ -133,10 +126,12 @@ public class ServerBootstrap {
             client.configureBlocking(false);
             ConnectionState state = new HandShakeState();
             client.register(selector, SelectionKey.OP_READ, state);
+            sampleTelemetry.incrementConcurrentUsers();
+            log.info("New connection accepted. Total concurrent users: {}", sampleTelemetry.getConcurrentUsers());
         }
     }
 
-    private void handleReadableEvent(IncomingConnectionHandlerV2 handler, SelectionKey key) throws IOException {
+    private void handleReadableEvent(ModernIncomingConnectionHandler handler, SelectionKey key) throws IOException {
         ConnectionState state = (ConnectionState) key.attachment();
         var tracingContext = buildTraceContext(state);
 

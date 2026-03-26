@@ -1,6 +1,6 @@
 package com.freenote.app.server.demo.v2;
 
-import com.freenote.app.server.core.v2.NIOIncomingSocketHandler;
+import com.freenote.app.server.core.v2.NIOModernIncomingSocketHandler;
 import com.freenote.app.server.core.v2.WebSocketServerV2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,7 +15,7 @@ public class SSLServerV2 {
                 .useSSL(true)
                 .keystorePath("keystore.p12")
                 .keystorePassword("changeit")
-                .handler(new NIOIncomingSocketHandler())
+                .handler(new NIOModernIncomingSocketHandler())
                 .build();
         server.start();
     }

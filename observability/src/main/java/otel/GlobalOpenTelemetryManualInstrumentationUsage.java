@@ -13,6 +13,7 @@ import lombok.Getter;
 import otel.sdk.OpenTelemetrySdkConfig;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static io.opentelemetry.context.Context.current;
 
@@ -27,15 +28,26 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
     @Getter
     private Tracer tracer;
     private OpenTelemetry openTelemetry;
+    private final AtomicLong concurrentUsers = new AtomicLong(0);
 
     public static GlobalOpenTelemetryManualInstrumentationUsage sampleTelemetry;
 
     static {
         GlobalOpenTelemetry.set(OpenTelemetrySdkConfig.create());
         sampleTelemetry = new GlobalOpenTelemetryManualInstrumentationUsage();
+        sampleTelemetry.initProviders();
     }
 
-    public void globalOpenTelemetryUsage() {
+    public void incrementConcurrentUsers() {
+        concurrentUsers.incrementAndGet();
+    }
+
+    public void decrementConcurrentUsers() {
+        concurrentUsers.decrementAndGet();
+    }
+
+    public long getConcurrentUsers() {
+        return concurrentUsers.get();
     }
 
     public GlobalOpenTelemetryManualInstrumentationUsage() {
@@ -46,7 +58,7 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
         return GlobalOpenTelemetry.getOrNoop();
     }
 
-    public void providersUsage() {
+    public void initProviders() {
         TracerProvider tracerProvider = openTelemetry.getTracerProvider();
 
         MeterProvider meterProvider = openTelemetry.getMeterProvider();
@@ -58,6 +70,12 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
         meter = meterProvider.get(SCOPE_NAME);
 
         logger = loggerProvider.get(SCOPE_NAME);
+
+        meter.gaugeBuilder("websocket.concurrent_users")
+                .setDescription("Number of concurrent connected users")
+                .setUnit("1")
+                .ofLongs()
+                .buildWithCallback(measurement -> measurement.record(concurrentUsers.get()));
 
     }
 

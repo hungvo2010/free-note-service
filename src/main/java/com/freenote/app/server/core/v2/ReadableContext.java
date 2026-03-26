@@ -11,6 +11,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
+import static otel.GlobalOpenTelemetryManualInstrumentationUsage.sampleTelemetry;
+
 @AllArgsConstructor
 @Getter
 @Builder
@@ -22,7 +24,10 @@ public class ReadableContext {
     private TracingContext tracingContext;
 
     public void closeChannel() throws IOException {
-        this.channel.close();
+        if (this.channel.isOpen()) {
+            this.channel.close();
+            sampleTelemetry.decrementConcurrentUsers();
+        }
     }
 
     public void setState(ProcessingState processingState) {
