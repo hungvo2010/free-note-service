@@ -49,14 +49,13 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandlerV2 {
     private Span buildMessageSpan(ReadableContext context, HttpUpgradeRequest upgradeRequest) {
         var parentSpan = this.getParentSpan(context);
         Context parentContext = Context.current().with(parentSpan);
-        var childSpan = sampleTelemetry.getTracer()
+        return sampleTelemetry.getTracer()
                 .spanBuilder("ws.message")
                 .setParent(parentContext)
                 .setAttribute("origin", upgradeRequest.getOrigin())
                 .setAttribute("path", upgradeRequest.getPath())
                 .setAttribute("uri", upgradeRequest.getUri())
                 .startSpan();
-        return childSpan;
     }
 
     private Span getParentSpan(ReadableContext context) {

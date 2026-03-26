@@ -31,6 +31,7 @@ dependencies {
 
     // This artifact is legacy and not part of the 1.60.1 BOM
     implementation("io.opentelemetry:opentelemetry-sdk-extension-resources:1.19.0")
+    implementation("io.opentelemetry:opentelemetry-exporter-jaeger:1.34.1")
 }
 
 test {
