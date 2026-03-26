@@ -1,5 +1,6 @@
 package otel.sdk;
 
+import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
@@ -15,6 +16,8 @@ public class SdkMeterProviderConfig {
                         PeriodicMetricReader.builder(LoggingMetricExporter.create())
                                 .setInterval(Duration.ofSeconds(60))
                                 .build())
+                .registerMetricReader(
+                        PrometheusHttpServer.builder().setPort(9464).build())
                 .build();
     }
 }
