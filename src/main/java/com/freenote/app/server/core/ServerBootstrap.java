@@ -43,6 +43,14 @@ public class ServerBootstrap {
 
     public void start(LegacyIncomingConnectionHandler handler) throws Exception {
         logServerInitialization();
+        Thread t = Thread.ofVirtual()
+                .name("my-worker")
+                .unstarted(() -> {
+                    log.error("Running in virtual thread: {}, Is Virtual: {}", Thread.currentThread(), Thread.currentThread().isVirtual());
+                });
+
+        t.start(); // ✅ start() called exactly once
+        t.join();
         try (var serverSocket = serverSocketFactory.createServerSocket(this.port)) {
             while (!serverSocket.isClosed()) {
                 log.info("Waiting for connection on port {}", this.port);

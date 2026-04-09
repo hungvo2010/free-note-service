@@ -80,7 +80,7 @@ group = 'com.freenote'
 version = '0.0.1-SNAPSHOT'
 
 java {
-    sourceCompatibility = '17'
+    sourceCompatibility = '21'
 }
 
 test {
@@ -159,7 +159,7 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17) // or 21, etc.
+        languageVersion = JavaLanguageVersion.of(21) // or 21, etc.
     }
 }
 
