@@ -12,7 +12,6 @@ import static com.freenote.app.server.frames.base.DataFrame.DEFAULT_MASKING_KEY_
 
 @Log4j2
 public class FullFrameParser {
-    @Setter
     private boolean masked;
     @Setter
     private byte[] extendedPayloadLength;

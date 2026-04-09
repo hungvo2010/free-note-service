@@ -1,4 +1,4 @@
-package com.freenote.app.server.core.v2;
+package com.freenote.app.server.core.v2.context;
 
 import io.opentelemetry.api.trace.Span;
 import lombok.AllArgsConstructor;

@@ -74,7 +74,7 @@ export default function () {
         socket.setTimeout(function () {
             console.log(`[VU ${__VU}] Timeout reached, closing socket`);
             socket.close();
-        }, 5000);
+        }, 300000);
     });
 
     // Check that upgrade handshake was successful (HTTP 101)

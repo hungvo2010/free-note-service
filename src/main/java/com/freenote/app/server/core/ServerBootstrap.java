@@ -1,6 +1,10 @@
 package com.freenote.app.server.core;
 
 import com.freenote.app.server.core.v2.*;
+import com.freenote.app.server.core.v2.connections.ConnectionState;
+import com.freenote.app.server.core.v2.connections.HandShakeState;
+import com.freenote.app.server.core.v2.context.ReadableContext;
+import com.freenote.app.server.core.v2.context.TracingContext;
 import com.freenote.app.server.exceptions.SelectorInterruptException;
 import com.freenote.app.server.model.LegacyIOWrapper;
 import com.freenote.app.server.socket.RawSocket;
@@ -28,12 +32,14 @@ import static otel.GlobalOpenTelemetryManualInstrumentationUsage.sampleTelemetry
 @AllArgsConstructor
 public class ServerBootstrap {
     private ExecutorService executorService = Executors.newFixedThreadPool(getAvailableProcessors());
+    private ExecutorService virtualExecutorService = Executors.newVirtualThreadPerTaskExecutor();
 
 
     private static final Logger log = LogManager.getLogger(ServerBootstrap.class);
     private ServerSocketFactory serverSocketFactory = new RawSocket();
     @Setter
     private int port = 8189;
+
     public ServerBootstrap(ServerSocketFactory serverSocketFactory) {
         this.serverSocketFactory = serverSocketFactory;
     }
@@ -46,17 +52,17 @@ public class ServerBootstrap {
         Thread t = Thread.ofVirtual()
                 .name("my-worker")
                 .unstarted(() -> {
-                    log.error("Running in virtual thread: {}, Is Virtual: {}", Thread.currentThread(), Thread.currentThread().isVirtual());
+                    log.warn("Running in virtual thread: {}, Is Virtual: {}", Thread.currentThread(), Thread.currentThread().isVirtual());
                 });
 
-        t.start(); // ✅ start() called exactly once
+        t.start();
         t.join();
         try (var serverSocket = serverSocketFactory.createServerSocket(this.port)) {
             while (!serverSocket.isClosed()) {
                 log.info("Waiting for connection on port {}", this.port);
                 var socket = serverSocket.accept(); // block method
                 log.info("Accepted connection from {}", socket.getRemoteSocketAddress());
-                this.executorService.submit(() -> {
+                this.virtualExecutorService.submit(() -> {
                     try {
                         handler.handle(new LegacyIOWrapper(socket));
                     } catch (Exception e) {
@@ -69,7 +75,7 @@ public class ServerBootstrap {
 
 
     public void start(ModernIncomingConnectionHandler handler) throws Exception {
-        var selector = openSelector();
+        var selector = openNetworkSelector();
         try (var serverSocketChannel = tryOpenSocketChannel()) {
             registerAcceptEvent(serverSocketChannel, selector);
             logServerInitialization();
@@ -78,12 +84,12 @@ public class ServerBootstrap {
 
     }
 
-    private Selector openSelector() throws IOException {
-        return Selector.open();
+    private NetworkSelector openNetworkSelector() throws IOException {
+        return new NetworkSelector(Selector.open());
     }
 
-    private void startBusyWaitingSelector(ModernIncomingConnectionHandler handler, Selector selector) throws ExecutionException, InterruptedException {
-        Future blockChannel = this.executorService.submit(() -> {
+    private void startBusyWaitingSelector(ModernIncomingConnectionHandler handler, NetworkSelector selector) throws ExecutionException, InterruptedException {
+        Future blockChannel = this.virtualExecutorService.submit(() -> {
             try {
                 startThreadSelector(selector, handler);
             } catch (IOException e) {
@@ -94,8 +100,8 @@ public class ServerBootstrap {
         blockChannel.get();
     }
 
-    private void registerAcceptEvent(ServerSocketChannel serverSocketChannel, Selector selector) throws ClosedChannelException {
-        serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+    private void registerAcceptEvent(ServerSocketChannel serverSocketChannel, NetworkSelector networkSelector) throws ClosedChannelException {
+        serverSocketChannel.register(networkSelector.getSelector(), SelectionKey.OP_ACCEPT);
     }
 
     private ServerSocketChannel tryOpenSocketChannel() throws IOException {
@@ -106,12 +112,12 @@ public class ServerBootstrap {
         return serverSocketChannel;
     }
 
-    private void startThreadSelector(Selector selector, ModernIncomingConnectionHandler handler) throws IOException {
-        while (selector.isOpen()) {
+    private void startThreadSelector(NetworkSelector selector, ModernIncomingConnectionHandler handler) throws IOException {
+        while (selector.isHealthy()) {
             int numReadyChannels = selector.select();
             if (numReadyChannels == 0) continue;
 
-            Set<SelectionKey> selectedKeys = selector.selectedKeys();
+            Set<SelectionKey> selectedKeys = selector.getNewSelectionEvents();
             Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
             while (keyIterator.hasNext()) {
                 SelectionKey key = keyIterator.next();
@@ -121,7 +127,7 @@ public class ServerBootstrap {
         }
     }
 
-    private void handleSelectedKey(Selector selector, ModernIncomingConnectionHandler handler, SelectionKey key) throws IOException {
+    private void handleSelectedKey(NetworkSelector selector, ModernIncomingConnectionHandler handler, SelectionKey key) throws IOException {
         if (key.isAcceptable()) {
             handleNewConnectionEvent(selector, (ServerSocketChannel) key.channel());
         } else if (key.isReadable()) {
@@ -129,12 +135,12 @@ public class ServerBootstrap {
         }
     }
 
-    private void handleNewConnectionEvent(Selector selector, ServerSocketChannel server) throws IOException {
+    private void handleNewConnectionEvent(NetworkSelector selector, ServerSocketChannel server) throws IOException {
         SocketChannel client = server.accept();
         if (client != null) {
             client.configureBlocking(false);
             ConnectionState state = new HandShakeState();
-            client.register(selector, SelectionKey.OP_READ, state);
+            client.register(selector.getSelector(), SelectionKey.OP_READ, state);
             MetricUtils.incrementConcurrentUsers();
         }
     }
@@ -167,7 +173,7 @@ public class ServerBootstrap {
                 .setAttribute("network.transport", "tcp")
                 .setAttribute("app.websocket.state", state.getClass().getSimpleName())
                 .startSpan();
-        
+
         return TracingContext.builder()
                 .span(span)
                 .build();

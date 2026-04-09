@@ -2,6 +2,7 @@ package com.freenote.app.server.core.v2;
 
 import com.freenote.app.server.auth.AcceptHandshakeHandler;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
+import com.freenote.app.server.core.v2.context.ReadableContext;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.handler.URIEndpointHandler;
 import com.freenote.app.server.model.InputWrapper;

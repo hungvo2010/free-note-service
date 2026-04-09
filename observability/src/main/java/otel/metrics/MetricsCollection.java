@@ -37,12 +37,16 @@ public class MetricsCollection {
                 .setDescription("Number of concurrent connected users")
                 .setUnit("1")
                 .ofLongs()
-                .buildWithCallback(measurement -> measurement.record(getConcurrentUsers().get()));
+                .buildWithCallback(
+                        measurement -> measurement.record(getConcurrentUsers().get())
+                );
         var acceptedHandshake = meter.gaugeBuilder("websocket.accept_handshake.requests")
                 .setDescription("Number of accepted handshake users")
                 .setUnit("1")
                 .ofLongs()
-                .buildWithCallback(measurement -> measurement.record(getAcceptedHandshakeCount().get()));
+                .buildWithCallback(
+                        measurement -> measurement.record(getAcceptedHandshakeCount().get())
+                );
 
         addMetric(concurrentUsersGauge);
         addMetric(acceptedHandshake);

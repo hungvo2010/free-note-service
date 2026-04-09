@@ -1,5 +1,7 @@
-package com.freenote.app.server.core.v2;
+package com.freenote.app.server.core.v2.connections;
 
+import com.freenote.app.server.core.v2.ModernIncomingConnectionHandler;
+import com.freenote.app.server.core.v2.context.ReadableContext;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
