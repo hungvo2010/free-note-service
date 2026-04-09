@@ -14,7 +14,7 @@ public class SdkMeterProviderConfig {
                 .setResource(resource)
                 .registerMetricReader(
                         PeriodicMetricReader.builder(LoggingMetricExporter.create())
-                                .setInterval(Duration.ofSeconds(60))
+                                .setInterval(Duration.ofSeconds(5))
                                 .build())
                 .registerMetricReader(
                         PrometheusHttpServer.builder().setPort(9464).build())

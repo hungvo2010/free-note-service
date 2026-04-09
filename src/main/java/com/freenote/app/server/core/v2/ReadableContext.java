@@ -4,14 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import otel.metrics.MetricUtils;
 
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-
-import static otel.GlobalOpenTelemetryManualInstrumentationUsage.sampleTelemetry;
 
 @AllArgsConstructor
 @Getter
@@ -26,7 +25,7 @@ public class ReadableContext {
     public void closeChannel() throws IOException {
         if (this.channel.isOpen()) {
             this.channel.close();
-            sampleTelemetry.decrementConcurrentUsers();
+            MetricUtils.decrementConcurrentUsers();
         }
     }
 

@@ -10,11 +10,8 @@ public class ContextPropagatorsConfig {
     public static ContextPropagators create() {
 
         return ContextPropagators.create(
-
                 TextMapPropagator.composite(
-
                         W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance()));
-
     }
 
 }

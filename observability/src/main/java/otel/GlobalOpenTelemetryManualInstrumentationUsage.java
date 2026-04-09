@@ -10,10 +10,10 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.*;
 import io.opentelemetry.semconv.NetworkAttributes;
 import lombok.Getter;
+import otel.metrics.MetricsCollection;
 import otel.sdk.OpenTelemetrySdkConfig;
 
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static io.opentelemetry.context.Context.current;
 
@@ -27,8 +27,9 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
     private Meter meter;
     @Getter
     private Tracer tracer;
+    @Getter
+    private MetricsCollection metricsCollection;
     private OpenTelemetry openTelemetry;
-    private final AtomicLong concurrentUsers = new AtomicLong(0);
 
     public static GlobalOpenTelemetryManualInstrumentationUsage sampleTelemetry;
 
@@ -36,18 +37,6 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
         GlobalOpenTelemetry.set(OpenTelemetrySdkConfig.create());
         sampleTelemetry = new GlobalOpenTelemetryManualInstrumentationUsage();
         sampleTelemetry.initProviders();
-    }
-
-    public void incrementConcurrentUsers() {
-        concurrentUsers.incrementAndGet();
-    }
-
-    public void decrementConcurrentUsers() {
-        concurrentUsers.decrementAndGet();
-    }
-
-    public long getConcurrentUsers() {
-        return concurrentUsers.get();
     }
 
     public GlobalOpenTelemetryManualInstrumentationUsage() {
@@ -70,12 +59,8 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
         meter = meterProvider.get(SCOPE_NAME);
 
         logger = loggerProvider.get(SCOPE_NAME);
-
-        meter.gaugeBuilder("websocket.concurrent_users")
-                .setDescription("Number of concurrent connected users")
-                .setUnit("1")
-                .ofLongs()
-                .buildWithCallback(measurement -> measurement.record(concurrentUsers.get()));
+        metricsCollection = new MetricsCollection(meter);
+        metricsCollection.initMetrics();
 
     }
 
@@ -196,4 +181,5 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
         return Span.fromContext(current()).getSpanContext();
 
     }
+
 }

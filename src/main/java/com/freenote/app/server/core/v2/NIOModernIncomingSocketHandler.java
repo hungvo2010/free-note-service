@@ -14,6 +14,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import otel.metrics.MetricUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -77,7 +78,7 @@ public class NIOModernIncomingSocketHandler implements ModernIncomingConnectionH
         if (channel.read(byteBuffer) == -1) {
             if (channel.isOpen()) {
                 channel.close();
-                sampleTelemetry.decrementConcurrentUsers();
+                MetricUtils.decrementConcurrentUsers();
             }
             return true;
         }

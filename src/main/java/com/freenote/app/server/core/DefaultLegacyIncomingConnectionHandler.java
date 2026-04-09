@@ -17,6 +17,7 @@ import com.freenote.app.server.parser.HttpParser;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import otel.metrics.MetricUtils;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -40,8 +41,10 @@ public class DefaultLegacyIncomingConnectionHandler implements LegacyIncomingCon
     @Override
     public void handle(LegacyIOWrapper legacyIOWrapper) throws IOException {
         try {
+            MetricUtils.incrementAcceptedHandshakeCount();
             serveConnection(legacyIOWrapper);
         } catch (ClientDisconnectException | AcceptConnectionException connectionException) {
+            MetricUtils.decrementConcurrentUsers();
             handleClientDisconnect(legacyIOWrapper, connectionException);
         } catch (Exception e) {
             handleError(legacyIOWrapper, e);
@@ -77,7 +80,7 @@ public class DefaultLegacyIncomingConnectionHandler implements LegacyIncomingCon
         var pathHandler = getEndpointHandler(upgradeRequest);
         var inputWrapper = buildInputWrapper(socket, upgradeRequest);
         var outputWrapper = new OutputWrapper(socket.getOutputStream());
-
+        MetricUtils.incrementConcurrentUsers();
         while (!socket.isClosed()) {
             pathHandler.handle(inputWrapper, outputWrapper);
         }

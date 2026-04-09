@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import otel.metrics.MetricUtils;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -126,8 +127,7 @@ public class ServerBootstrap {
             client.configureBlocking(false);
             ConnectionState state = new HandShakeState();
             client.register(selector, SelectionKey.OP_READ, state);
-            sampleTelemetry.incrementConcurrentUsers();
-            log.info("New connection accepted. Total concurrent users: {}", sampleTelemetry.getConcurrentUsers());
+            MetricUtils.incrementConcurrentUsers();
         }
     }
 
