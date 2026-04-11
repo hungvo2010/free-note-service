@@ -1,4 +1,4 @@
-package otel.sdk;
+package otel.sdk.exporter;
 
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter;

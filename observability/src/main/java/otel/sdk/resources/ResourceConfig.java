@@ -1,4 +1,4 @@
-package otel.sdk;
+package otel.sdk.resources;
 
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.ServiceAttributes;

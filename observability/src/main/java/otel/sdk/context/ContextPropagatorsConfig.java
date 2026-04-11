@@ -1,4 +1,4 @@
-package otel.sdk;
+package otel.sdk.context;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;

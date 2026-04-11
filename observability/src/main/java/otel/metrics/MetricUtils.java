@@ -1,9 +1,9 @@
 package otel.metrics;
 
-import static otel.GlobalOpenTelemetryManualInstrumentationUsage.sampleTelemetry;
+import static otel.SampleGlobalOpenTelemetry.SAMPLE_GLOBAL_TELEMETRY;
 
 public class MetricUtils {
-    private static MetricsCollection metricsCollection = sampleTelemetry.getMetricsCollection();
+    private static final MetricsCollection metricsCollection = SAMPLE_GLOBAL_TELEMETRY.getMetricsCollection();
 
     public static void incrementConcurrentUsers() {
         metricsCollection.incrementConcurrentUsers();

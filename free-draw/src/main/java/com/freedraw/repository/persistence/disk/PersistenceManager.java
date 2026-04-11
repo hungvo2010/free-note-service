@@ -9,7 +9,7 @@ import io.opentelemetry.api.trace.Tracer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static otel.GlobalOpenTelemetryManualInstrumentationUsage.sampleTelemetry;
+import static otel.SampleGlobalOpenTelemetry.SAMPLE_GLOBAL_TELEMETRY;
 
 /**
  * Factory and lifecycle manager for persistence components.
@@ -17,8 +17,8 @@ import static otel.GlobalOpenTelemetryManualInstrumentationUsage.sampleTelemetry
  */
 public class PersistenceManager {
     private static final Logger log = LogManager.getLogger(PersistenceManager.class);
-    private static final Tracer tracer = sampleTelemetry.getTracer();
-    private static final DoubleHistogram flushLatency = sampleTelemetry.getMeter()
+    private static final Tracer tracer = SAMPLE_GLOBAL_TELEMETRY.getTracer();
+    private static final DoubleHistogram flushLatency = SAMPLE_GLOBAL_TELEMETRY.getMeter()
             .histogramBuilder("persistence.flush.duration")
             .setDescription("Latency of disk flush operations")
             .setUnit("ms")

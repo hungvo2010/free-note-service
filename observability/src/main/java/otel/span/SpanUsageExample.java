@@ -1,76 +1,14 @@
-package otel;
+package otel.span;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.logs.Logger;
-import io.opentelemetry.api.logs.LoggerProvider;
-import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.*;
 import io.opentelemetry.semconv.NetworkAttributes;
-import lombok.Getter;
-import otel.metrics.MetricsCollection;
-import otel.sdk.OpenTelemetrySdkConfig;
 
 import java.util.Arrays;
 
 import static io.opentelemetry.context.Context.current;
 
-public class GlobalOpenTelemetryManualInstrumentationUsage {
-    private static final String SCOPE_NAME = "websocket.lifecycle.full";
-    private static final String SCOPE_VERSION = "1.0.0";
-    private static final String SCOPE_SCHEMA_URL = "https://github.com/opentelemetry/opentelemetry-java/issues";
-    @Getter
-    private Logger logger;
-    @Getter
-    private Meter meter;
-    @Getter
-    private Tracer tracer;
-    @Getter
-    private MetricsCollection metricsCollection;
-    private OpenTelemetry openTelemetry;
-
-    public static GlobalOpenTelemetryManualInstrumentationUsage sampleTelemetry;
-
-    static {
-        GlobalOpenTelemetry.set(OpenTelemetrySdkConfig.create());
-        sampleTelemetry = new GlobalOpenTelemetryManualInstrumentationUsage();
-        sampleTelemetry.initProviders();
-    }
-
-    public GlobalOpenTelemetryManualInstrumentationUsage() {
-        this.openTelemetry = GlobalOpenTelemetry.isSet() ? GlobalOpenTelemetry.get() : initializeOpenTelemetry();
-    }
-
-    public static OpenTelemetry initializeOpenTelemetry() {
-        return GlobalOpenTelemetry.getOrNoop();
-    }
-
-    public void initProviders() {
-        TracerProvider tracerProvider = openTelemetry.getTracerProvider();
-
-        MeterProvider meterProvider = openTelemetry.getMeterProvider();
-
-        LoggerProvider loggerProvider = openTelemetry.getLogsBridge();
-
-        tracer = tracerProvider.get(SCOPE_NAME);
-
-        meter = meterProvider.get(SCOPE_NAME);
-
-        logger = loggerProvider.get(SCOPE_NAME);
-        metricsCollection = new MetricsCollection(meter);
-        metricsCollection.initMetrics();
-
-    }
-
-    private void setStandardOtelCoreClasses(TracerProvider tracerProvider, MeterProvider meterProvider, LoggerProvider loggerProvider) {
-        tracer = tracerProvider.tracerBuilder(SCOPE_NAME).setInstrumentationVersion(SCOPE_VERSION).setSchemaUrl(SCOPE_SCHEMA_URL).build();
-
-        meter = meterProvider.meterBuilder(SCOPE_NAME).setInstrumentationVersion(SCOPE_VERSION).setSchemaUrl(SCOPE_SCHEMA_URL).build();
-
-        logger = loggerProvider.loggerBuilder(SCOPE_NAME).setInstrumentationVersion(SCOPE_VERSION).setSchemaUrl(SCOPE_SCHEMA_URL).build();
-    }
+public class SpanUsageExample {
 
     public Span spanUsage(Tracer tracer, String spanName) {
 
@@ -175,11 +113,9 @@ public class GlobalOpenTelemetryManualInstrumentationUsage {
 
     }
 
-
     private static SpanContext exampleLinkContext() {
 
         return Span.fromContext(current()).getSpanContext();
 
     }
-
 }

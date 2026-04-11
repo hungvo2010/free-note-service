@@ -7,6 +7,7 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 public class MetricsCollection {
     @Getter
@@ -33,22 +34,26 @@ public class MetricsCollection {
     }
 
     public void initMetrics() {
-        var concurrentUsersGauge = meter.gaugeBuilder("websocket.concurrent_users")
-                .setDescription("Number of concurrent connected users")
-                .setUnit("1")
-                .ofLongs()
-                .buildWithCallback(
-                        measurement -> measurement.record(getConcurrentUsers().get())
-                );
-        var acceptedHandshake = meter.gaugeBuilder("websocket.accept_handshake.requests")
-                .setDescription("Number of accepted handshake users")
-                .setUnit("1")
-                .ofLongs()
-                .buildWithCallback(
-                        measurement -> measurement.record(getAcceptedHandshakeCount().get())
-                );
+        var concurrentUsersGauge = buildLongGauge(
+                "websocket.concurrent_users",
+                "Number of concurrent connected users",
+                getConcurrentUsers()::get);
+        var acceptedHandshake = buildLongGauge(
+                "websocket.accept_handshake.requests",
+                "Number of accepted handshake users",
+                getAcceptedHandshakeCount()::get);
 
         addMetric(concurrentUsersGauge);
         addMetric(acceptedHandshake);
+    }
+
+    private ObservableLongGauge buildLongGauge(String metricName, String description, Supplier<Long> longSupplier) {
+        return meter.gaugeBuilder(metricName)
+                .setDescription(description)
+                .setUnit("1")
+                .ofLongs()
+                .buildWithCallback(
+                        measurement -> measurement.record(longSupplier.get())
+                );
     }
 }

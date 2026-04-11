@@ -27,7 +27,7 @@ import java.util.concurrent.Future;
 
 import static com.freenote.app.server.util.RuntimeUtils.getAvailableProcessors;
 import static com.freenote.app.server.util.RuntimeUtils.logServerInitialization;
-import static otel.GlobalOpenTelemetryManualInstrumentationUsage.sampleTelemetry;
+import static otel.SampleGlobalOpenTelemetry.SAMPLE_GLOBAL_TELEMETRY;
 
 @AllArgsConstructor
 public class ServerBootstrap {
@@ -90,14 +90,18 @@ public class ServerBootstrap {
 
     private void startBusyWaitingSelector(ModernIncomingConnectionHandler handler, NetworkSelector selector) throws ExecutionException, InterruptedException {
         Future blockChannel = this.virtualExecutorService.submit(() -> {
-            try {
-                startThreadSelector(selector, handler);
-            } catch (IOException e) {
-                log.info("Error during runtime of thread selector", e);
-                throw new SelectorInterruptException("Thread for readiness selection are interrupted", e);
-            }
+            startSingleNetworkSelector(handler, selector);
         });
         blockChannel.get();
+    }
+
+    private void startSingleNetworkSelector(ModernIncomingConnectionHandler handler, NetworkSelector selector) {
+        try {
+            runSelectorLoop(selector, handler);
+        } catch (IOException e) {
+            log.info("Error during runtime of thread selector", e);
+            throw new SelectorInterruptException("Thread for readiness selection are interrupted", e);
+        }
     }
 
     private void registerAcceptEvent(ServerSocketChannel serverSocketChannel, NetworkSelector networkSelector) throws ClosedChannelException {
@@ -112,19 +116,26 @@ public class ServerBootstrap {
         return serverSocketChannel;
     }
 
-    private void startThreadSelector(NetworkSelector selector, ModernIncomingConnectionHandler handler) throws IOException {
+    private void runSelectorLoop(NetworkSelector selector, ModernIncomingConnectionHandler handler) throws IOException {
         while (selector.isHealthy()) {
-            int numReadyChannels = selector.select();
-            if (numReadyChannels == 0) continue;
-
-            Set<SelectionKey> selectedKeys = selector.getNewSelectionEvents();
-            Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-            while (keyIterator.hasNext()) {
-                SelectionKey key = keyIterator.next();
-                handleSelectedKey(selector, handler, key);
-                keyIterator.remove();
-            }
+            waitForEvents(selector);
+            dispatcherReadyEvents(selector, handler);
         }
+    }
+
+    private void dispatcherReadyEvents(NetworkSelector selector, ModernIncomingConnectionHandler handler) throws IOException {
+        Set<SelectionKey> selectedKeys = selector.getNewSelectionEvents();
+        Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
+        while (keyIterator.hasNext()) {
+            SelectionKey key = keyIterator.next();
+            handleSelectedKey(selector, handler, key);
+            keyIterator.remove();
+        }
+    }
+
+    private void waitForEvents(NetworkSelector selector) throws IOException {
+        int numReadyChannels = selector.select();
+        if (numReadyChannels == 0) throw new SelectorInterruptException("Selector is interrupted or no channels are ready");
     }
 
     private void handleSelectedKey(NetworkSelector selector, ModernIncomingConnectionHandler handler, SelectionKey key) throws IOException {
@@ -167,7 +178,7 @@ public class ServerBootstrap {
 
     private TracingContext buildTraceContext(ConnectionState state) {
         String spanName = state instanceof HandShakeState ? "websocket.handshake" : "websocket.message";
-        var span = sampleTelemetry.getTracer().spanBuilder(spanName)
+        var span = SAMPLE_GLOBAL_TELEMETRY.getTracer().spanBuilder(spanName)
                 .setAttribute("server.address", "localhost")
                 .setAttribute("server.port", (long) this.port)
                 .setAttribute("network.transport", "tcp")

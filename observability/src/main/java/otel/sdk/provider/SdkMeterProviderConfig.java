@@ -1,4 +1,4 @@
-package otel.sdk;
+package otel.sdk.provider;
 
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;

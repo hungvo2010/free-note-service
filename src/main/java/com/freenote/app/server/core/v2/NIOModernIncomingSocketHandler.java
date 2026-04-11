@@ -23,7 +23,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 
 import static generated.URIHandlerRegistry.getInstanceByURI;
-import static otel.GlobalOpenTelemetryManualInstrumentationUsage.sampleTelemetry;
+import static otel.SampleGlobalOpenTelemetry.SAMPLE_GLOBAL_TELEMETRY;
 
 public class NIOModernIncomingSocketHandler implements ModernIncomingConnectionHandler {
     private static final Logger log = LogManager.getLogger(NIOModernIncomingSocketHandler.class);
@@ -51,7 +51,7 @@ public class NIOModernIncomingSocketHandler implements ModernIncomingConnectionH
     private Span buildMessageSpan(ReadableContext context, HttpUpgradeRequest upgradeRequest) {
         var parentSpan = this.getParentSpan(context);
         Context parentContext = Context.current().with(parentSpan);
-        return sampleTelemetry.getTracer()
+        return SAMPLE_GLOBAL_TELEMETRY.getTracer()
                 .spanBuilder("ws.message")
                 .setParent(parentContext)
                 .setAttribute("origin", upgradeRequest.getOrigin())

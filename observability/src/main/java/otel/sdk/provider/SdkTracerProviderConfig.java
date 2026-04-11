@@ -1,10 +1,14 @@
-package otel.sdk;
+package otel.sdk.provider;
 
 
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import otel.sdk.exporter.SamplerConfig;
+import otel.sdk.exporter.SpanExporterConfig;
+import otel.sdk.exporter.SpanLimitsConfig;
+import otel.sdk.exporter.SpanProcessorConfig;
 
 public class SdkTracerProviderConfig {
 

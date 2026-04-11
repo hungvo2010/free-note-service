@@ -1,4 +1,4 @@
-package otel.sdk;
+package otel.sdk.exporter;
 
 import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
 import io.opentelemetry.sdk.trace.samplers.Sampler;

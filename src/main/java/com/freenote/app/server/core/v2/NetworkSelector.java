@@ -9,7 +9,7 @@ import java.util.Set;
 
 @Getter
 public class NetworkSelector {
-    private Selector selector;
+    private final Selector selector;
 
     public NetworkSelector(Selector selector) {
         this.selector = selector;

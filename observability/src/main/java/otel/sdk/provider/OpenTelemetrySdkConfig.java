@@ -1,7 +1,9 @@
-package otel.sdk;
+package otel.sdk.provider;
 
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
+import otel.sdk.context.ContextPropagatorsConfig;
+import otel.sdk.resources.ResourceConfig;
 
 public class OpenTelemetrySdkConfig {
 

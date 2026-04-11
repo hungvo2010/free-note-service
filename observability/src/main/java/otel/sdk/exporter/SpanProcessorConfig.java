@@ -1,4 +1,4 @@
-package otel.sdk;
+package otel.sdk.exporter;
 
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
