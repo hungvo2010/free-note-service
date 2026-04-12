@@ -1,6 +1,7 @@
 package com.freenote.app.server.frames.base;
 
 import com.freenote.app.server.frames.FrameType;
+import com.freenote.app.server.messages.WebSocketFrame;
 
 import java.io.IOException;
 import java.io.ObjectOutput;

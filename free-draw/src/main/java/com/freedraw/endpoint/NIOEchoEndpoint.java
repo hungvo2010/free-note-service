@@ -1,16 +1,16 @@
 package com.freedraw.endpoint;
 
 import com.freenote.annotations.WebSocketEndpoint;
-import com.freenote.app.server.core.WebSocketConnection;
+import com.freenote.app.server.core.connection.WebSocketConnection;
 import com.freenote.app.server.frames.factory.FrameFactory;
-import com.freenote.app.server.handler.impl.NIOCommonEndpointFrameEndpointHandlerImpl;
+import com.freenote.app.server.handler.impl.NIOCommonEndpointHandlerImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.ByteBuffer;
 
 @WebSocketEndpoint("/echo")
-public class NIOEchoEndpoint extends NIOCommonEndpointFrameEndpointHandlerImpl {
+public class NIOEchoEndpoint extends NIOCommonEndpointHandlerImpl {
     private static final Logger log = LogManager.getLogger(NIOEchoEndpoint.class);
 
     @Override

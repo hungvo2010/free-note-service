@@ -1,7 +1,7 @@
 package com.freenote.app.handler;
 
 import com.freenote.app.server.handler.URIEndpointHandler;
-import com.freenote.app.server.handler.impl.FragmentedURIEndpointHandlerImpl;
+import com.freenote.app.server.handler.impl.FragmentedEndpointHandlerImpl;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ class ExampleURIHandlerTest {
         InputStream input = new ByteArrayInputStream(new byte[0]);
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-        URIEndpointHandler handler = new FragmentedURIEndpointHandlerImpl();
+        URIEndpointHandler handler = new FragmentedEndpointHandlerImpl();
 
         boolean result = handler.handle(new InputWrapper(), new OutputWrapper(output));
 
@@ -29,7 +29,7 @@ class ExampleURIHandlerTest {
 
     @Test
     void shouldThrowWhenStreamsAreNull() {
-        URIEndpointHandler handler = new FragmentedURIEndpointHandlerImpl();
+        URIEndpointHandler handler = new FragmentedEndpointHandlerImpl();
 
         assertThrows(NullPointerException.class,
                 () -> handler.handle(null, new OutputWrapper(new ByteArrayOutputStream())));

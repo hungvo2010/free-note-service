@@ -3,7 +3,7 @@ package com.freenote.app.server.frames.factory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.frames.base.DataFrame;
-import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.messages.WebSocketFrame;
 
 import java.security.SecureRandom;
 

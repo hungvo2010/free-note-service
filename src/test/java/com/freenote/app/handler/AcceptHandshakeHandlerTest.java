@@ -17,7 +17,7 @@ class AcceptHandshakeHandlerTest {
     private final AcceptHandshakeImpl acceptHandshake = new AcceptHandshakeImpl();
 
     @Test
-    void testHandle_WithValidSecWebSocketKey() throws Exception {
+    void testProcess_WithValidSecWebSocketKey() throws Exception {
         var request = mock(HttpUpgradeRequest.class);
         when(request.getSecWebSocketKey()).thenReturn("test-key");
         when(request.getOrigin()).thenReturn("http://localhost:8082");
@@ -30,7 +30,7 @@ class AcceptHandshakeHandlerTest {
                                 .getBytes(StandardCharsets.UTF_8))
         );
 
-        var response = acceptHandshake.handle(request);
+        var response = acceptHandshake.process(request);
 
         assertEquals("101", response.getStatusCode());
         assertEquals("Switching Protocols", response.getStatusText());
@@ -41,19 +41,19 @@ class AcceptHandshakeHandlerTest {
     }
 
     @Test
-    void testHandle_WithNullSecWebSocketKey() {
+    void testProcess_WithNullSecWebSocketKey() {
         var request = mock(HttpUpgradeRequest.class);
         when(request.getSecWebSocketKey()).thenReturn(null);
         when(request.getSecWebSocketExtensions()).thenReturn(null);
         when(request.getSecWebSocketVersion()).thenReturn(null);
 
-        var response = acceptHandshake.handle(request);
+        var response = acceptHandshake.process(request);
 
         assertSame(HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE, response);
     }
 
     @Test
-    void testHandle_MissingWebSocketKey_ShouldReturnEmptyResponse() {
+    void testProcess_MissingWebSocketKey_ShouldReturnEmptyResponse() {
         // Arrange
         HttpUpgradeRequest request = mock(HttpUpgradeRequest.class);
         when(request.getOrigin()).thenReturn("http://localhost:3000"); // Allowed origin
@@ -62,14 +62,14 @@ class AcceptHandshakeHandlerTest {
         when(request.getSecWebSocketVersion()).thenReturn("13");
 
         // Act
-        HttpUpgradeResponse response = acceptHandshake.handle(request);
+        HttpUpgradeResponse response = acceptHandshake.process(request);
 
         // Assert
         assertSame(HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE, response);
     }
 
     @Test
-    void testHandle_MissingWebSocketVersion_ShouldReturnEmptyResponse() {
+    void testProcess_MissingWebSocketVersion_ShouldReturnEmptyResponse() {
         // Arrange
         HttpUpgradeRequest request = mock(HttpUpgradeRequest.class);
         when(request.getOrigin()).thenReturn("http://localhost:3000"); // Valid origin
@@ -78,31 +78,31 @@ class AcceptHandshakeHandlerTest {
         when(request.getSecWebSocketVersion()).thenReturn(null);       // Missing version
 
         // Act
-        HttpUpgradeResponse response = acceptHandshake.handle(request);
+        HttpUpgradeResponse response = acceptHandshake.process(request);
 
         // Assert
         assertSame(HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE, response);
     }
 
     @Test
-    void testHandle_WithEmptySecWebSocketKey() {
+    void testProcess_WithEmptySecWebSocketKey() {
         var request = mock(HttpUpgradeRequest.class);
         when(request.getSecWebSocketKey()).thenReturn("");
 
-        var response = acceptHandshake.handle(request);
+        var response = acceptHandshake.process(request);
 
         assertSame(HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE, response);
     }
 
     @Test
-    void testHandle_WithException() {
+    void testProcess_WithException() {
         var request = mock(HttpUpgradeRequest.class);
         when(request.getSecWebSocketKey()).thenThrow(new RuntimeException("fail"));
         when(request.getOrigin()).thenReturn("http://localhost:8082");
         when(request.getSecWebSocketExtensions()).thenReturn("permessage-deflate");
         when(request.getSecWebSocketVersion()).thenReturn("13");
 
-        var response = acceptHandshake.handle(request);
+        var response = acceptHandshake.process(request);
 
         // Exception fallback -> should return a new empty HttpUpgradeResponse (not necessarily the EMPTY_UPGRADE_RESPONSE)
         assertNotNull(response);

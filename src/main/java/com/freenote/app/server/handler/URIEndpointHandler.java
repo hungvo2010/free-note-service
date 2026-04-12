@@ -1,6 +1,6 @@
 package com.freenote.app.server.handler;
 
-import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.messages.WebSocketFrame;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 

@@ -1,6 +1,6 @@
 package com.freedraw.models.core;
 
-import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.messages.WebSocketFrame;
 import com.freenote.app.server.util.IOUtils;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;

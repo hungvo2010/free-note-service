@@ -1,8 +1,9 @@
 package com.freenote.app.server.util;
 
+import com.freenote.app.server.exceptions.ConnectionException;
 import com.freenote.app.server.frames.FrameType;
-import com.freenote.app.server.frames.base.WebSocketFrame;
 import com.freenote.app.server.io.NoHeaderObjectOutputStream;
+import com.freenote.app.server.messages.WebSocketFrame;
 import lombok.experimental.UtilityClass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +20,16 @@ public class IOUtils {
         } catch (IOException e) {
             log.error("Error writing output stream", e);
             throw e;
+        }
+    }
+
+    public static void writeOutPut(OutputStream outputStream, byte[] bytesData) throws ConnectionException {
+        try {
+            outputStream.write(bytesData);
+            outputStream.flush();
+        } catch (IOException e) {
+            log.error("Error writing output stream", e);
+            throw new ConnectionException("Error writing output stream", e);
         }
     }
 

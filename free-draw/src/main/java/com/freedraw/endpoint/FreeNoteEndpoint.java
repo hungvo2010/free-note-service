@@ -10,11 +10,11 @@ import com.freedraw.models.core.RoomManager;
 import com.freedraw.repository.InMemDraftRepositoryImpl;
 import com.freedraw.service.DraftService;
 import com.freenote.annotations.WebSocketEndpoint;
-import com.freenote.app.server.core.WebSocketConnection;
+import com.freenote.app.server.core.connection.WebSocketConnection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.frames.base.ControlFrame;
-import com.freenote.app.server.frames.base.WebSocketFrame;
-import com.freenote.app.server.handler.impl.AbstractEndpointFrameEndpointHandlerImpl;
+import com.freenote.app.server.messages.WebSocketFrame;
+import com.freenote.app.server.handler.impl.AbstractEndpointHandlerImpl;
 import com.freenote.app.server.model.ws.CommonResponseObject;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.JSONUtils;
@@ -26,7 +26,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 @WebSocketEndpoint("/freeNote")
-public class FreeNoteEndpoint extends AbstractEndpointFrameEndpointHandlerImpl {
+public class FreeNoteEndpoint extends AbstractEndpointHandlerImpl {
     private static final Logger log = LogManager.getLogger(FreeNoteEndpoint.class);
     private static final DraftResponseData DEFAULT_MESSAGE_PAYLOAD = new DraftResponseData();
     private final DraftService draftService = new DraftService(new InMemDraftRepositoryImpl());

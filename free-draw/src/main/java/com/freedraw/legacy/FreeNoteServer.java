@@ -1,6 +1,6 @@
 package com.freedraw.legacy;
 
-import com.freenote.app.server.core.DefaultLegacyIncomingConnectionHandler;
+import com.freenote.app.server.core.legacy.DefaultLegacyIncomingConnectionHandler;
 import com.freenote.app.server.core.WebSocketServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.nio.charset.StandardCharsets;
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -34,5 +36,9 @@ public class HttpUpgradeResponse {
                 "Sec-WebSocket-Accept: " + secWebSocketAccept,
                 "", "" // required to terminate HTTP headers
         );
+    }
+
+    public byte[] toRawBytes() {
+        return this.toString().getBytes(StandardCharsets.UTF_8);
     }
 }
