@@ -3,6 +3,7 @@ package otel.metrics;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
 import lombok.Getter;
+import otel.metrics.core.impl.OtelAccumulateMetric;
 import otel.metrics.core.impl.OtelPointInTimeMetric;
 
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ public class MetricsCollection {
     @Getter
     private final AtomicLong concurrentUsers = new AtomicLong(0);
     private final List<OtelPointInTimeMetric> gauges = new ArrayList<>();
+    @Getter
+    private final List<OtelAccumulateMetric> accumulateMetrics = new ArrayList<>();
     @Getter
     private final AtomicLong acceptedHandshakeCount = new AtomicLong(0);
     private final Meter meter;
@@ -47,13 +50,10 @@ public class MetricsCollection {
                 .recordCallback(getConcurrentUsers()::get)
                 .build()
                 .register();
-        var acceptedHandshake = OtelPointInTimeMetric.<Long>builder()
+        var acceptedHandshake = OtelAccumulateMetric.builder()
                 .meter(meter)
                 .title("websocket.accept_handshake.requests")
                 .desc("Number of accepted handshake users")
-                .type(Long.class)
-                .recordCallback(
-                        getAcceptedHandshakeCount()::get)
                 .build()
                 .register();
 
@@ -63,7 +63,7 @@ public class MetricsCollection {
 //                getAcceptedHandshakeCount()::get);
 //
 //        addMetric(concurrentUsersGauge);
-//        addMetric(acceptedHandshake);
+        accumulateMetrics.add(acceptedHandshake);
     }
 
     private ObservableLongGauge buildLongGauge(String metricName, String description, Supplier<Long> longSupplier) {

@@ -13,7 +13,11 @@ public class MetricUtils {
         metricsCollection.decrementConcurrentUsers();
     }
 
-        public static void incrementAcceptedHandshakeCount() {
-            metricsCollection.getAcceptedHandshakeCount().incrementAndGet();
-        }
+    public static void incrementAcceptedHandshakeCount() {
+        metricsCollection.getAcceptedHandshakeCount().incrementAndGet();
+    }
+
+    public static void incrementAcceptedHandshakeCount(int val) {
+        metricsCollection.getAccumulateMetrics().get(0).add(val);
+    }
 }

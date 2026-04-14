@@ -40,7 +40,7 @@ public class DefaultLegacyIncomingConnectionHandler implements LegacyIncomingCon
     @Override
     public void handle(WebSocketSession session) throws IOException {
         try {
-            MetricUtils.incrementAcceptedHandshakeCount();
+            MetricUtils.incrementAcceptedHandshakeCount(1);
             serveConnection(session);
         } catch (ClientDisconnectException | AcceptConnectionException connectionException) {
             MetricUtils.decrementConcurrentUsers();
