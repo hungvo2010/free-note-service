@@ -1,7 +1,6 @@
 package com.freedraw.models.core;
 
-import com.freenote.app.server.messages.WebSocketFrame;
-import com.freenote.app.server.util.IOUtils;
+import com.freenote.app.server.messages.ws.WebSocketFrame;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +44,7 @@ public class Room {
 
     private void sendMember(Connection connection, WebSocketFrame data) {
         try {
-            IOUtils.writeOutPut(connection.getOutputStream(), data);
+            connection.writeData(data);
         } catch (IOException e) {
             log.error("Error broadcasting to member: {}", e.getMessage());
         }
@@ -56,8 +55,12 @@ public class Room {
         return this
                 .getConnections()
                 .stream()
-                .filter(connection -> !excludeConnections.contains(connection) && connection.isOpen())
+                .filter(connection -> isEligibleForBroadcast(excludeConnections, connection))
                 .toList();
+    }
+
+    private boolean isEligibleForBroadcast(List<Connection> excludeConnections, Connection connection) {
+        return !excludeConnections.contains(connection) && connection.isOpen();
     }
 
     public void remove(Connection newConnection) {

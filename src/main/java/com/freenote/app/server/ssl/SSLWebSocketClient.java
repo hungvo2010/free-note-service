@@ -2,7 +2,7 @@ package com.freenote.app.server.ssl;
 
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.base.DataFrame;
-import com.freenote.app.server.messages.WebSocketFrame;
+import com.freenote.app.server.messages.ws.WebSocketFrame;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;

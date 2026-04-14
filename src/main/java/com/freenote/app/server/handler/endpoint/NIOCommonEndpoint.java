@@ -1,7 +1,8 @@
-package com.freenote.app.server.handler.impl;
+package com.freenote.app.server.handler.endpoint;
 
 import com.freenote.app.server.core.connection.WebSocketConnection;
 import com.freenote.app.server.model.InputWrapper;
+import com.freenote.app.server.parser.impl.ByteBufferFrameParser;
 import com.freenote.app.server.util.IOUtils;
 import lombok.extern.log4j.Log4j2;
 
@@ -11,21 +12,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 @Log4j2
-public class NIOCommonEndpointHandlerImpl extends AbstractEndpointHandlerImpl {
+public class NIOCommonEndpoint extends AbstractEndpointHandler {
 
-    @Override
-    public byte[] getRawBytes(InputWrapper inputWrapper) {
-        var byteBuffer = inputWrapper.getChannelBuffer();
-        if (byteBuffer.position() > 0) {
-            byteBuffer.flip();
-        }
-        log.info("Reading WebSocket frame from ByteBuffer (limit: {}, remaining: {})", byteBuffer.limit(), byteBuffer.remaining());
-        try (InputStream inputStream = IOUtils.newInputStream(byteBuffer)) {
-            return IOUtils.getRawBytes(inputStream);
-        } catch (IOException e) {
-            log.error("Failed to parse WebSocket frame from ByteBuffer", e);
-            return new byte[0];
-        }
+    public NIOCommonEndpoint() {
+        super(new ByteBufferFrameParser());
     }
 
     @Override

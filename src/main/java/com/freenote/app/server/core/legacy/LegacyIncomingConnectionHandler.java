@@ -1,11 +1,11 @@
 package com.freenote.app.server.core.legacy;
 
 
-import com.freenote.app.server.model.LegacyIOWrapper;
+import com.freenote.app.server.core.connection.WebSocketSession;
 
 import java.io.IOException;
 
 public interface LegacyIncomingConnectionHandler {
-    void handle(LegacyIOWrapper legacyIOWrapper) throws IOException;
+    void handle(WebSocketSession session) throws IOException;
 }
 

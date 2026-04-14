@@ -4,7 +4,7 @@ import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.DataFrame;
-import com.freenote.app.server.handler.impl.FragmentedEndpointHandlerImpl;
+import com.freenote.app.server.handler.endpoint.FragmentedHandler;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.util.IOUtils;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 class FragmentedURIHandlerTest {
     private static final Logger log = LogManager.getLogger(FragmentedURIHandlerTest.class);
     private final FrameFactory clientFactory = new ClientFrameFactory();
-    private final FragmentedEndpointHandlerImpl handler = new FragmentedEndpointHandlerImpl();
+    private final FragmentedHandler handler = new FragmentedHandler();
 
     @Test
     void givenMockEOFInputStream_whenParseToContinuationFrame_thenSuccess() throws IOException {

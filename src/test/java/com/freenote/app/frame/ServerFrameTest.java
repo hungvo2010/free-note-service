@@ -3,7 +3,7 @@ package com.freenote.app.frame;
 import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.frames.base.DataFrame;
-import com.freenote.app.server.messages.WebSocketFrame;
+import com.freenote.app.server.messages.ws.WebSocketFrame;
 import com.freenote.app.server.util.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

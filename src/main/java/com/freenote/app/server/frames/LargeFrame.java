@@ -3,7 +3,7 @@ package com.freenote.app.server.frames;
 import com.freenote.app.server.exceptions.InvalidFrameStateException;
 import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.base.DataFrame;
-import com.freenote.app.server.messages.WebSocketFrame;
+import com.freenote.app.server.messages.ws.WebSocketFrame;
 import com.freenote.app.server.util.FrameUtil;
 
 import java.nio.ByteBuffer;

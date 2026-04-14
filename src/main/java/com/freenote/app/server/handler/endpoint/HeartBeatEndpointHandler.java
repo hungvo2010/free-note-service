@@ -1,4 +1,4 @@
-package com.freenote.app.server.handler.impl;
+package com.freenote.app.server.handler.endpoint;
 
 
 import com.freenote.annotations.WebSocketEndpoint;
@@ -8,7 +8,7 @@ import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import java.nio.ByteBuffer;
 
 @WebSocketEndpoint("/heartbeat")
-public class HeartBeatEndpointHandlerImpl extends AbstractEndpointHandlerImpl {
+public class HeartBeatEndpointHandler extends AbstractEndpointHandler {
     private final ServerFrameFactory serverFactory = new ServerFrameFactory();
 
 

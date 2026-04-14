@@ -2,13 +2,12 @@ package com.freenote.app.server.core.legacy;
 
 import com.freenote.app.server.auth.AcceptHandshakeHandler;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
+import com.freenote.app.server.core.connection.WebSocketConnection;
+import com.freenote.app.server.core.connection.WebSocketSession;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
-import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.handler.URIEndpointHandler;
 import com.freenote.app.server.model.InputWrapper;
-import com.freenote.app.server.model.LegacyIOWrapper;
-import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.TraceRequestData;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.http.HttpUpgradeResponse;
@@ -39,28 +38,28 @@ public class DefaultLegacyIncomingConnectionHandler implements LegacyIncomingCon
     }
 
     @Override
-    public void handle(LegacyIOWrapper legacyIOWrapper) throws IOException {
+    public void handle(WebSocketSession session) throws IOException {
         try {
             MetricUtils.incrementAcceptedHandshakeCount();
-            serveConnection(legacyIOWrapper);
+            serveConnection(session);
         } catch (ClientDisconnectException | AcceptConnectionException connectionException) {
             MetricUtils.decrementConcurrentUsers();
-            handleClientDisconnect(legacyIOWrapper, connectionException);
+            handleClientDisconnect(session, connectionException);
         } catch (Exception e) {
-            handleError(legacyIOWrapper, e);
+            handleError(session, e);
         }
     }
 
-    private void serveConnection(LegacyIOWrapper legacyIOWrapper) throws IOException {
-        var upgradeRequest = parseRequest(legacyIOWrapper);
+    private void serveConnection(WebSocketSession session) throws IOException {
+        var upgradeRequest = parseRequest(session);
         var handShakeResp = performHandshake(upgradeRequest);
-        legacyIOWrapper.sendHandshakeResponse(handShakeResp);
+        session.sendHandshakeResponse(handShakeResp);
 
-        routeToHandler(legacyIOWrapper, upgradeRequest);
+        routeToHandler(session, upgradeRequest);
     }
 
-    private HttpUpgradeRequest parseRequest(LegacyIOWrapper legacyIOWrapper) throws IOException {
-        var socket = legacyIOWrapper.getSocket();
+    private HttpUpgradeRequest parseRequest(WebSocketSession session) throws IOException {
+        var socket = session.getSocket();
         return httpParser.parse(socket.getInputStream());
     }
 
@@ -75,11 +74,11 @@ public class DefaultLegacyIncomingConnectionHandler implements LegacyIncomingCon
     }
 
 
-    private void routeToHandler(LegacyIOWrapper legacyIOWrapper, HttpUpgradeRequest upgradeRequest) throws IOException {
-        var socket = legacyIOWrapper.getSocket();
+    private void routeToHandler(WebSocketSession session, HttpUpgradeRequest upgradeRequest) throws IOException {
+        var socket = session.getSocket();
         var pathHandler = getEndpointHandler(upgradeRequest);
         var inputWrapper = buildInputWrapper(socket, upgradeRequest);
-        var outputWrapper = new OutputWrapper(socket.getOutputStream());
+        var outputWrapper = session.getOutputWrapper();
         MetricUtils.incrementConcurrentUsers();
         while (!socket.isClosed()) {
             pathHandler.handle(inputWrapper, outputWrapper);
@@ -108,17 +107,32 @@ public class DefaultLegacyIncomingConnectionHandler implements LegacyIncomingCon
         return inputWrapper;
     }
 
-    private void handleClientDisconnect(LegacyIOWrapper legacyIOWrapper, Exception e) throws IOException {
+    private void handleClientDisconnect(WebSocketSession session, Exception e) throws IOException {
         log.error("Client disconnected => self closed: {}", e.getMessage());
-        legacyIOWrapper.close();
+        closeSocket(session.getSocket());
     }
 
-    private void handleError(LegacyIOWrapper socket, Exception e) {
+    private void handleError(WebSocketSession session, Exception e) {
         log.error("Error handling socket: ", e);
-        try (socket) {
-            socket.writeOutput(
-                    FrameFactory.SERVER.createTextFrame("Internal Server Error"));
+        try {
+            var context = WebSocketConnection.builder()
+                    .session(session)
+                    .build();
+            context.sendText("Internal Server Error");
+            context.sendCurrentResponse();
         } catch (Exception ignore) {
+        } finally {
+            closeSocket(session.getSocket());
+        }
+    }
+
+    private void closeSocket(Socket socket) {
+        if (socket != null && !socket.isClosed()) {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                log.error("Error closing socket", e);
+            }
         }
     }
 }

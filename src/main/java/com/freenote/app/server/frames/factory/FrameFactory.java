@@ -1,6 +1,6 @@
 package com.freenote.app.server.frames.factory;
 
-import com.freenote.app.server.messages.WebSocketFrame;
+import com.freenote.app.server.messages.ws.WebSocketFrame;
 
 public interface FrameFactory {
     WebSocketFrame createTextFrame(String text);

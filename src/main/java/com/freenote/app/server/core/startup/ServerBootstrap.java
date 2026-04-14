@@ -1,6 +1,7 @@
 package com.freenote.app.server.core.startup;
 
 import com.freenote.app.server.core.legacy.LegacyIncomingConnectionHandler;
+import com.freenote.app.server.core.connection.WebSocketSession;
 import com.freenote.app.server.core.nio.*;
 import com.freenote.app.server.core.connection.state.ConnectionState;
 import com.freenote.app.server.core.connection.state.HandShakeState;
@@ -8,7 +9,8 @@ import com.freenote.app.server.core.context.ReadableContext;
 import com.freenote.app.server.core.context.TracingContext;
 import com.freenote.app.server.core.transport.NetworkSelector;
 import com.freenote.app.server.exceptions.SelectorInterruptException;
-import com.freenote.app.server.model.LegacyIOWrapper;
+import com.freenote.app.server.model.InputWrapper;
+import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.socket.RawSocket;
 import com.freenote.app.server.socket.ServerSocketFactory;
 import lombok.AllArgsConstructor;
@@ -66,7 +68,12 @@ public class ServerBootstrap {
                 log.info("Accepted connection from {}", socket.getRemoteSocketAddress());
                 this.virtualExecutorService.submit(() -> {
                     try {
-                        handler.handle(new LegacyIOWrapper(socket));
+                        var session = WebSocketSession.builder()
+                                .socket(socket)
+                                .inputWrapper(new InputWrapper(socket))
+                                .outputWrapper(new OutputWrapper(socket.getOutputStream()))
+                                .build();
+                        handler.handle(session);
                     } catch (Exception e) {
                         log.error("Error handling connection", e);
                     }

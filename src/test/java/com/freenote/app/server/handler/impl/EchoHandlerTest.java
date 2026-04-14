@@ -1,6 +1,7 @@
 package com.freenote.app.server.handler.impl;
 
 import com.freenote.app.server.handler.URIEndpointHandler;
+import com.freenote.app.server.handler.endpoint.NewEchoEndpointHandler;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.util.FrameUtil;
@@ -23,7 +24,7 @@ class EchoHandlerTest {
 
     @BeforeEach
     void setUp() {
-        uriHandler = new NewEchoEndpointHandlerImpl();
+        uriHandler = new NewEchoEndpointHandler();
         outputStream = new ByteArrayOutputStream();
     }
 

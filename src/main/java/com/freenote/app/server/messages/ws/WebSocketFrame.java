@@ -1,6 +1,8 @@
-package com.freenote.app.server.messages;
+package com.freenote.app.server.messages.ws;
 
 import com.freenote.app.server.exceptions.InvalidFrameException;
+import com.freenote.app.server.frames.FrameType;
+import com.freenote.app.server.handler.frames.WebSocketFrameDispatcher;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -107,4 +109,16 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
     }
 
     public abstract int getTotalFrameLength();
+
+    @Override
+    public String toString() {
+        return String.join("\n",
+                "FIN: " + isFin(),
+                "Opcode: " + getOpcode() + " - " + FrameType.fromHexValue(getOpcode()),
+                "Masked: " + isMasked(),
+                "Payload Length: " + getPayloadLength(),
+                "Masking Key: " + getMaskingKey(),
+                "Payload: " + WebSocketFrameDispatcher.getContent(this)
+        );
+    }
 }

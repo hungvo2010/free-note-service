@@ -1,4 +1,4 @@
-package com.freenote.app.server.handler.impl;
+package com.freenote.app.server.handler.endpoint;
 
 import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.core.connection.WebSocketConnection;
@@ -9,8 +9,8 @@ import org.apache.logging.log4j.Logger;
 import java.nio.ByteBuffer;
 
 @WebSocketEndpoint("/echo")
-public class NewEchoEndpointHandlerImpl extends AbstractEndpointHandlerImpl {
-    private static final Logger log = LogManager.getLogger(NewEchoEndpointHandlerImpl.class);
+public class NewEchoEndpointHandler extends AbstractEndpointHandler {
+    private static final Logger log = LogManager.getLogger(NewEchoEndpointHandler.class);
 
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, String message) {

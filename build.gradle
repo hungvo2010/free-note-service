@@ -23,7 +23,14 @@ import com.github.spotbugs.snom.Confidence
 import com.github.spotbugs.snom.Effort
 
 allprojects {
+    apply plugin: 'java'
     apply plugin: 'com.github.spotbugs'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
 
     repositories {
         mavenCentral()
@@ -155,12 +162,6 @@ dependencies {
     // Observability
     implementation platform("io.opentelemetry:opentelemetry-bom:1.61.0-SNAPSHOT")
     implementation('io.opentelemetry:opentelemetry-api')
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21) // or 21, etc.
-    }
 }
 
 tasks.named('test') {

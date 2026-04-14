@@ -3,7 +3,7 @@ package com.freenote.app.server.handler.frames;
 import com.freenote.app.server.core.connection.WebSocketConnection;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.handler.WebSocketFrameHandler;
-import com.freenote.app.server.messages.WebSocketFrame;
+import com.freenote.app.server.messages.ws.WebSocketFrame;
 import com.freenote.app.server.util.FrameUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
