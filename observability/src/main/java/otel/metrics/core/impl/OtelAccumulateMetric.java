@@ -9,8 +9,10 @@ import lombok.Builder;
 @Builder
 public class OtelAccumulateMetric implements LongCounter {
     private String title;
+    @Builder.Default
     private String desc = "default.otel.point.in.time.metric";
     private Meter meter;
+    @Builder.Default
     private String unit = "1";
     private LongCounter longCounter;
 

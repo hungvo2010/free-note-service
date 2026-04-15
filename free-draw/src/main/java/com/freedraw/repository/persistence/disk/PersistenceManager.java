@@ -9,7 +9,7 @@ import io.opentelemetry.api.trace.Tracer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static otel.SampleGlobalOpenTelemetry.SAMPLE_GLOBAL_TELEMETRY;
+import static otel.SampleGlobalOpenTelemetry.getSampleGlobalTelemetry;
 
 /**
  * Factory and lifecycle manager for persistence components.
@@ -17,8 +17,8 @@ import static otel.SampleGlobalOpenTelemetry.SAMPLE_GLOBAL_TELEMETRY;
  */
 public class PersistenceManager {
     private static final Logger log = LogManager.getLogger(PersistenceManager.class);
-    private static final Tracer tracer = SAMPLE_GLOBAL_TELEMETRY.getTracer();
-    private static final DoubleHistogram flushLatency = SAMPLE_GLOBAL_TELEMETRY.getMeter()
+    private static final Tracer tracer = getSampleGlobalTelemetry().getTracer();
+    private static final DoubleHistogram flushLatency = getSampleGlobalTelemetry().getMeter()
             .histogramBuilder("persistence.flush.duration")
             .setDescription("Latency of disk flush operations")
             .setUnit("ms")
@@ -26,13 +26,13 @@ public class PersistenceManager {
 
     private final PersistenceContext persistenceContext;
     private final DiskPersistenceScheduler scheduler;
-    
-    private PersistenceManager(PersistenceContext persistenceContext, 
-                              DiskPersistenceScheduler scheduler) {
+
+    private PersistenceManager(PersistenceContext persistenceContext,
+                               DiskPersistenceScheduler scheduler) {
         this.persistenceContext = persistenceContext;
         this.scheduler = scheduler;
     }
-    
+
     /**
      * Create and initialize all persistence components
      */
@@ -45,18 +45,18 @@ public class PersistenceManager {
 
         try {
             log.info("Creating persistence manager");
-            
+
             // 1. Create and initialize persistence context
             PersistenceContext context = new PersistenceContext();
             context.initData();
-            
+
             // 2. Create scheduler with injected dependencies
             DiskPersistenceScheduler scheduler = new DiskPersistenceScheduler(
-                context,  // PersistenceWriter interface
-                context.getInMemoryStore(),
-                config
+                    context,  // PersistenceWriter interface
+                    context.getInMemoryStore(),
+                    config
             );
-            
+
             log.info("Persistence manager created successfully");
             return new PersistenceManager(context, scheduler);
         } catch (Exception e) {
@@ -67,14 +67,14 @@ public class PersistenceManager {
             span.end();
         }
     }
-    
+
     /**
      * Create with default configuration
      */
     public static PersistenceManager createDefault() {
         return create(DiskPersistenceConfig.getDefault());
     }
-    
+
     /**
      * Start periodic persistence
      */
@@ -91,7 +91,7 @@ public class PersistenceManager {
             span.end();
         }
     }
-    
+
     /**
      * Stop periodic persistence
      */
@@ -108,7 +108,7 @@ public class PersistenceManager {
             span.end();
         }
     }
-    
+
     /**
      * Force immediate flush
      */
@@ -129,27 +129,27 @@ public class PersistenceManager {
         } finally {
             long durationNs = System.nanoTime() - startTime;
             double durationMs = durationNs / 1_000_000.0;
-            
+
             // Record duration on span as an attribute (standard practice)
             span.setAttribute("app.persistence.duration_ms", durationMs);
-            
+
             // Record on histogram for P99/aggregation
             flushLatency.record(durationMs, Attributes.of(
                     AttributeKey.stringKey("db.system"), "file",
                     AttributeKey.stringKey("db.operation"), "flush"
             ));
-            
+
             span.end();
         }
     }
-    
+
     /**
      * Get the persistence context for data operations
      */
     public PersistenceContext getContext() {
         return persistenceContext;
     }
-    
+
     /**
      * Check if scheduler is running
      */

@@ -2,24 +2,24 @@ package otel.metrics.core.impl;
 
 import otel.metrics.core.RealtimeMetric;
 
-public class OtelRealtimeMetric implements RealtimeMetric {
+public class OtelRealtimeMetric<T extends Number> implements RealtimeMetric<T> {
     @Override
-    public void increment(Number val) {
+    public void increment(T val) {
 
     }
 
     @Override
-    public void decrement(Number val) {
+    public void decrement(T val) {
 
     }
 
     @Override
-    public Number get() {
+    public T get() {
         return null;
     }
 
     @Override
-    public void set(Number val) {
+    public void set(T val) {
 
     }
 }

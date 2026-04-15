@@ -1,12 +1,12 @@
 package com.freenote.app.server.core.startup;
 
-import com.freenote.app.server.core.legacy.LegacyIncomingConnectionHandler;
 import com.freenote.app.server.core.connection.WebSocketSession;
-import com.freenote.app.server.core.nio.*;
 import com.freenote.app.server.core.connection.state.ConnectionState;
 import com.freenote.app.server.core.connection.state.HandShakeState;
 import com.freenote.app.server.core.context.ReadableContext;
 import com.freenote.app.server.core.context.TracingContext;
+import com.freenote.app.server.core.legacy.LegacyIncomingConnectionHandler;
+import com.freenote.app.server.core.nio.ModernIncomingConnectionHandler;
 import com.freenote.app.server.core.transport.NetworkSelector;
 import com.freenote.app.server.exceptions.SelectorInterruptException;
 import com.freenote.app.server.model.InputWrapper;
@@ -31,7 +31,7 @@ import java.util.concurrent.Future;
 
 import static com.freenote.app.server.util.RuntimeUtils.getAvailableProcessors;
 import static com.freenote.app.server.util.RuntimeUtils.logServerInitialization;
-import static otel.SampleGlobalOpenTelemetry.SAMPLE_GLOBAL_TELEMETRY;
+import static otel.SampleGlobalOpenTelemetry.getSampleGlobalTelemetry;
 
 @AllArgsConstructor
 public class ServerBootstrap {
@@ -187,7 +187,7 @@ public class ServerBootstrap {
 
     private TracingContext buildTraceContext(ConnectionState state) {
         String spanName = state instanceof HandShakeState ? "websocket.handshake" : "websocket.message";
-        var span = SAMPLE_GLOBAL_TELEMETRY.getTracer().spanBuilder(spanName)
+        var span = getSampleGlobalTelemetry().getTracer().spanBuilder(spanName)
                 .setAttribute("server.address", "localhost")
                 .setAttribute("server.port", (long) this.port)
                 .setAttribute("network.transport", "tcp")

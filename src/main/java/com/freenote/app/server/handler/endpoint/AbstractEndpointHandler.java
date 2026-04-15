@@ -3,20 +3,22 @@ package com.freenote.app.server.handler.endpoint;
 
 import com.freenote.app.server.core.connection.WebSocketConnection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
+import com.freenote.app.server.exceptions.ConnectionException;
 import com.freenote.app.server.exceptions.MessageParsingException;
 import com.freenote.app.server.frames.handler.WebSocketFrameHandler;
 import com.freenote.app.server.handler.URIEndpointHandler;
 import com.freenote.app.server.handler.frames.WebSocketFrameDispatcher;
+import com.freenote.app.server.messages.IncomingMessage;
 import com.freenote.app.server.messages.ws.WebSocketFrame;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
-import com.freenote.app.server.messages.IncomingMessage;
 import com.freenote.app.server.parser.MessageParser;
 import com.freenote.app.server.parser.WebSocketFrameParser;
 import com.freenote.app.server.parser.impl.InputStreamFrameParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import otel.metrics.MetricUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -38,21 +40,26 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
     @Override
     public boolean handle(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
         try {
-            serveConnection(inputWrapper, outputWrapper);
+            MetricUtils.getLatencyMetric().time(() -> this.serveConnection(inputWrapper, outputWrapper));
             return true;
-        } catch (IOException e) {
+        } catch (ConnectionException e) {
             log.error("Error handling input stream", e);
             return false;
         }
     }
 
-    private void serveConnection(InputWrapper inputWrapper, OutputWrapper outputWrapper) throws IOException {
-        WebSocketFrame wsFrame = parseFrame(inputWrapper);
+    private void serveConnection(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
+        try {
+            WebSocketFrame wsFrame = parseFrame(inputWrapper);
 
-        log.debug(wsFrame.toString());
-        WebSocketConnection webSocketConnection = WebSocketConnection.from(inputWrapper, outputWrapper);
+            log.info(wsFrame.toString());
+            WebSocketConnection webSocketConnection = WebSocketConnection.from(inputWrapper, outputWrapper);
 
-        dispatchAndRespond(webSocketConnection, wsFrame);
+            dispatchAndRespond(webSocketConnection, wsFrame);
+        } catch (IOException e) {
+            log.error("Error handling frame", e);
+            throw new ConnectionException("Error handling frame", e);
+        }
     }
 
     private void dispatchAndRespond(WebSocketConnection webSocketConnection, WebSocketFrame wsFrame) throws IOException {

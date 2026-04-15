@@ -28,19 +28,15 @@ public class SampleGlobalOpenTelemetry {
 
     static {
         GlobalOpenTelemetry.set(OpenTelemetrySdkConfig.create());
-        SAMPLE_GLOBAL_TELEMETRY = new SampleGlobalOpenTelemetry();
-        SAMPLE_GLOBAL_TELEMETRY.initProviders();
+        SAMPLE_GLOBAL_TELEMETRY = new SampleGlobalOpenTelemetry().initProviders();
     }
 
     public SampleGlobalOpenTelemetry() {
-        this.openTelemetry = GlobalOpenTelemetry.isSet() ? GlobalOpenTelemetry.get() : initializeOpenTelemetry();
+        this.openTelemetry =
+                GlobalOpenTelemetry.isSet() ? GlobalOpenTelemetry.get() : GlobalOpenTelemetry.getOrNoop();
     }
 
-    public static OpenTelemetry initializeOpenTelemetry() {
-        return GlobalOpenTelemetry.getOrNoop();
-    }
-
-    public void initProviders() {
+    public SampleGlobalOpenTelemetry initProviders() {
         TracerProvider tracerProvider = openTelemetry.getTracerProvider();
         MeterProvider meterProvider = openTelemetry.getMeterProvider();
         LoggerProvider loggerProvider = openTelemetry.getLogsBridge();
@@ -49,6 +45,10 @@ public class SampleGlobalOpenTelemetry {
         sdkLogger = loggerProvider.get(SAMPLE_SCOPE_NAME);
         metricsCollection = new MetricsCollection(meter);
         metricsCollection.initMetrics();
+        return this;
+    }
 
+    public static SampleGlobalOpenTelemetry getSampleGlobalTelemetry() {
+        return SAMPLE_GLOBAL_TELEMETRY;
     }
 }

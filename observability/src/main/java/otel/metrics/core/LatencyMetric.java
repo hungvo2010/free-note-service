@@ -2,7 +2,6 @@ package otel.metrics.core;
 
 import io.opentelemetry.api.common.Attributes;
 
-import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -11,10 +10,10 @@ import java.util.function.Supplier;
 // The Result (D): The difference (T_2 - T_1 = {Duration})
 
 public interface LatencyMetric {
-    void record(double duration, TimeUnit unit);
-    void record(double duration, TimeUnit unit, Attributes attr);
-    Timer start();
-    void stop(Timer ticket);
+    void record(long duration, TimeUnit unit);
+    void record(long duration, TimeUnit unit, Attributes attr);
+    long start();
+    void stop(long ticket);
     <T> T time(Supplier<T> action);
     void time(Runnable action);
 

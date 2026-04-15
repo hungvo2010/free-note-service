@@ -28,7 +28,6 @@ public class OtelPointInTimeMetric<T extends Number> implements PointInTimeMetri
     }
 
 
-
     @Override
     public void record(Supplier<T> value) {
         this.recordCallback = value;
@@ -39,7 +38,7 @@ public class OtelPointInTimeMetric<T extends Number> implements PointInTimeMetri
         return null;
     }
 
-    public OtelPointInTimeMetric register() {
+    public OtelPointInTimeMetric<T> register() {
         if (this.type == Long.class) {
             this.longGauge = meter.gaugeBuilder(title)
                     .setDescription(desc)

@@ -41,7 +41,7 @@ public class DefaultLegacyIncomingConnectionHandler implements LegacyIncomingCon
     public void handle(WebSocketSession session) throws IOException {
         try {
             MetricUtils.incrementAcceptedHandshakeCount(1);
-            serveConnection(session);
+            doHandShakeAndRouting(session);
         } catch (ClientDisconnectException | AcceptConnectionException connectionException) {
             MetricUtils.decrementConcurrentUsers();
             handleClientDisconnect(session, connectionException);
@@ -50,7 +50,7 @@ public class DefaultLegacyIncomingConnectionHandler implements LegacyIncomingCon
         }
     }
 
-    private void serveConnection(WebSocketSession session) throws IOException {
+    private void doHandShakeAndRouting(WebSocketSession session) throws IOException {
         var upgradeRequest = parseRequest(session);
         var handShakeResp = performHandshake(upgradeRequest);
         session.sendHandshakeResponse(handShakeResp);

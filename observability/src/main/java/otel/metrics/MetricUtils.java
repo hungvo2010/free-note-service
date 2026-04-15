@@ -1,9 +1,11 @@
 package otel.metrics;
 
-import static otel.SampleGlobalOpenTelemetry.SAMPLE_GLOBAL_TELEMETRY;
+import otel.metrics.core.impl.OtelLatencyMetric;
+
+import static otel.SampleGlobalOpenTelemetry.getSampleGlobalTelemetry;
 
 public class MetricUtils {
-    private static final MetricsCollection metricsCollection = SAMPLE_GLOBAL_TELEMETRY.getMetricsCollection();
+    private static final MetricsCollection metricsCollection = getSampleGlobalTelemetry().getMetricsCollection();
 
     public static void incrementConcurrentUsers() {
         metricsCollection.incrementConcurrentUsers();
@@ -13,11 +15,11 @@ public class MetricUtils {
         metricsCollection.decrementConcurrentUsers();
     }
 
-    public static void incrementAcceptedHandshakeCount() {
-        metricsCollection.getAcceptedHandshakeCount().incrementAndGet();
+    public static void incrementAcceptedHandshakeCount(int val) {
+        metricsCollection.getAccumulateMetrics().getFirst().add(val);
     }
 
-    public static void incrementAcceptedHandshakeCount(int val) {
-        metricsCollection.getAccumulateMetrics().get(0).add(val);
+    public static OtelLatencyMetric getLatencyMetric() {
+        return metricsCollection.getLatencyMetric();
     }
 }
