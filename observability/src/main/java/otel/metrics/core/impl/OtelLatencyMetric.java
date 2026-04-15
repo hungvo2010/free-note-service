@@ -26,12 +26,12 @@ public class OtelLatencyMetric implements LatencyMetric {
     );
 
     @Override
-    public void record(long duration, TimeUnit unit) {
+    public void record(double duration, TimeUnit unit) {
         this.doubleHistogram.record(duration);
     }
 
     @Override
-    public void record(long duration, TimeUnit unit, Attributes attr) {
+    public void record(double duration, TimeUnit unit, Attributes attr) {
         this.doubleHistogram.record(duration, attr);
     }
 
@@ -62,7 +62,8 @@ public class OtelLatencyMetric implements LatencyMetric {
             action.run();
         } finally {
             long duration = System.nanoTime() - start;
-            record(duration, TimeUnit.NANOSECONDS);
+            double seconds = duration / 1_000_000_000.0;
+            record(seconds, TimeUnit.NANOSECONDS);
         }
     }
 

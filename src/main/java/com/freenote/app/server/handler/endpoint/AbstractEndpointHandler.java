@@ -23,6 +23,7 @@ import otel.metrics.MetricUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Random;
 
 public abstract class AbstractEndpointHandler implements URIEndpointHandler, WebSocketFrameHandler {
     private static final Logger log = LogManager.getLogger(AbstractEndpointHandler.class);
@@ -50,6 +51,7 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
 
     private void serveConnection(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
         try {
+            Thread.sleep(new Random().nextInt(8000));
             WebSocketFrame wsFrame = parseFrame(inputWrapper);
 
             log.info(wsFrame.toString());
@@ -59,6 +61,8 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
         } catch (IOException e) {
             log.error("Error handling frame", e);
             throw new ConnectionException("Error handling frame", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

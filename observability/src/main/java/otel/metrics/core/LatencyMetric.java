@@ -10,8 +10,10 @@ import java.util.function.Supplier;
 // The Result (D): The difference (T_2 - T_1 = {Duration})
 
 public interface LatencyMetric {
-    void record(long duration, TimeUnit unit);
-    void record(long duration, TimeUnit unit, Attributes attr);
+    void record(double duration, TimeUnit unit);
+
+    void record(double duration, TimeUnit unit, Attributes attr);
+
     long start();
     void stop(long ticket);
     <T> T time(Supplier<T> action);
