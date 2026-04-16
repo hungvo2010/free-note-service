@@ -19,9 +19,10 @@ public class OtelPointInTimeMetric<T extends Number> implements PointInTimeMetri
     private Class<T> type;
 
     @Builder
-    public OtelPointInTimeMetric(String title, String desc, Class<T> type, Meter meter, Supplier<T> recordCallback) {
+    public OtelPointInTimeMetric(String title, String desc, String unit, Class<T> type, Meter meter, Supplier<T> recordCallback) {
         this.title = title;
         this.desc = desc;
+        this.unit = unit;
         this.type = type;
         this.meter = meter;
         this.recordCallback = recordCallback;

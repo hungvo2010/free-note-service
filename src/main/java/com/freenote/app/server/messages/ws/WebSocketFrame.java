@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.*;
+import java.util.Arrays;
 
 import static com.freenote.app.server.util.FrameUtil.boolToBit;
 
@@ -117,7 +118,7 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
                 "Opcode: " + getOpcode() + " - " + FrameType.fromHexValue(getOpcode()),
                 "Masked: " + isMasked(),
                 "Payload Length: " + getPayloadLength(),
-                "Masking Key: " + getMaskingKey(),
+                "Masking Key: " + Arrays.toString(getMaskingKey()),
                 "Payload: " + WebSocketFrameDispatcher.getContent(this)
         );
     }
