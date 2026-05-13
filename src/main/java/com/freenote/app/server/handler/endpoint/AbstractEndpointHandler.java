@@ -23,7 +23,6 @@ import otel.metrics.MetricUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Random;
 
 public abstract class AbstractEndpointHandler implements URIEndpointHandler, WebSocketFrameHandler {
     private static final Logger log = LogManager.getLogger(AbstractEndpointHandler.class);
@@ -40,29 +39,29 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
 
     @Override
     public boolean handle(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
+        MetricUtils.incrementInFlightRequests();
         try {
             MetricUtils.getLatencyMetric().time(() -> this.serveConnection(inputWrapper, outputWrapper));
             return true;
         } catch (ConnectionException e) {
             log.error("Error handling input stream", e);
             return false;
+        } finally {
+            MetricUtils.decrementInFlightRequests();
         }
     }
 
     private void serveConnection(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
         try {
-            Thread.sleep(new Random().nextInt(8000));
             WebSocketFrame wsFrame = parseFrame(inputWrapper);
 
-            log.info(wsFrame.toString());
+            log.debug(wsFrame.toString());
             WebSocketConnection webSocketConnection = WebSocketConnection.from(inputWrapper, outputWrapper);
 
             dispatchAndRespond(webSocketConnection, wsFrame);
         } catch (IOException e) {
             log.error("Error handling frame", e);
             throw new ConnectionException("Error handling frame", e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 

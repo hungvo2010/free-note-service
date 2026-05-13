@@ -70,11 +70,10 @@ export default function () {
             console.log(`[VU ${__VU}] Disconnected`);
         });
 
-        // 6. Auto-close after 5 seconds per VU iteration
         socket.setTimeout(function () {
             console.log(`[VU ${__VU}] Timeout reached, closing socket`);
             socket.close();
-        }, 300000);
+        }, 480000);
     });
 
     // Check that upgrade handshake was successful (HTTP 101)
