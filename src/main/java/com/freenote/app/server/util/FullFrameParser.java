@@ -1,5 +1,8 @@
 package com.freenote.app.server.util;
 
+import com.freenote.app.server.frames.factory.FrameFactory;
+import com.freenote.app.server.messages.ws.WebSocketFrame;
+import com.freenote.app.server.model.InputWrapper;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -12,7 +15,6 @@ import static com.freenote.app.server.frames.base.DataFrame.DEFAULT_MASKING_KEY_
 
 @Log4j2
 public class FullFrameParser {
-    @Setter
     private boolean masked;
     @Setter
     private byte[] extendedPayloadLength;
@@ -137,5 +139,10 @@ public class FullFrameParser {
 
     public void clearState() {
 
+    }
+
+    public WebSocketFrame parseFrame(InputWrapper inputWrapper) throws IOException {
+        byte[] actualData = getRawBytes(inputWrapper.getInputStream());
+        return FrameFactory.CLIENT.createFrameFromBytes(actualData);
     }
 }

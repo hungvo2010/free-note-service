@@ -1,9 +1,9 @@
 package com.freenote.app.handler;
 
-import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.messages.ws.WebSocketFrame;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.handler.URIEndpointHandler;
-import com.freenote.app.server.handler.impl.NewEchoFrameEndpointHandlerImpl;
+import com.freenote.app.server.handler.endpoint.NewEchoEndpointHandler;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.util.IOUtils;
@@ -30,7 +30,7 @@ class URIHandlerTest {
         clientFrameFactory = new ClientFrameFactory();
     }
 
-    private final URIEndpointHandler mockURIHandler = new NewEchoFrameEndpointHandlerImpl();
+    private final URIEndpointHandler mockURIHandler = new NewEchoEndpointHandler();
 
     @Test
     void givenWebSocketFrameInputStream_whenHandled_thenEchoesToOutputStream() throws IOException {

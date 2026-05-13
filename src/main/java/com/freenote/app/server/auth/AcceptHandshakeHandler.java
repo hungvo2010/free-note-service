@@ -4,5 +4,5 @@ import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.http.HttpUpgradeResponse;
 
 public interface AcceptHandshakeHandler {
-    HttpUpgradeResponse handle(HttpUpgradeRequest request);
+    HttpUpgradeResponse process(HttpUpgradeRequest request);
 }

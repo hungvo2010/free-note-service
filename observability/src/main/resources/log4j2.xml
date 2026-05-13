@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} | %t | %c | [%p] | %m%n</Property>
+        <Property name="APP_LOG_ROOT">/tmp/logs</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- ✅ Console appender with color highlighting -->
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="%highlight{${LOG_PATTERN}}{FATAL=red blink, ERROR=red, WARN=yellow, INFO=green, DEBUG=cyan, TRACE=blue}" />
+        </Console>
+
+        <RollingFile name="appLog"
+                     fileName="${APP_LOG_ROOT}/SpringBoot2App/application.log"
+                     filePattern="${APP_LOG_ROOT}/SpringBoot2App/application-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}" />
+            <Policies>
+                <SizeBasedTriggeringPolicy size="19500KB" />
+            </Policies>
+            <DefaultRolloverStrategy max="1" />
+        </RollingFile>
+
+        <RollingFile name="OtelLog"
+                     fileName="${APP_LOG_ROOT}/otel.log"
+                     filePattern="${APP_LOG_ROOT}/otel-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}" />
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB" />
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="io.opentelemetry" level="info" additivity="false">
+            <AppenderRef ref="OtelLog"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+
+        <Logger name="com.trial" level="info" additivity="false">
+            <AppenderRef ref="appLog"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="appLog"/>
+        </Root>
+    </Loggers>
+</Configuration>
