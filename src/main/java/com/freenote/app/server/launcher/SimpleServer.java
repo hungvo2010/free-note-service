@@ -1,12 +1,9 @@
 package com.freenote.app.server.launcher;
 
-import com.freenote.app.server.core.legacy.DefaultLegacyIncomingConnectionHandler;
 import com.freenote.app.server.core.WebSocketServer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.freenote.app.server.core.legacy.DefaultLegacyIncomingConnectionHandler;
 
 public class SimpleServer {
-    private static final Logger log = LogManager.getLogger(SimpleServer.class);
 
     public static void main(String[] args) throws Exception {
         int port = args.length >= 1 ? Integer.parseInt(args[0]) : 8189;
