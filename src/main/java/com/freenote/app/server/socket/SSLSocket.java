@@ -1,5 +1,8 @@
 package com.freenote.app.server.socket;
 
+import com.freenote.app.server.core.config.SSLConfig;
+import com.freenote.app.server.core.config.ServerSocketConfig;
+
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
@@ -12,29 +15,28 @@ import java.net.ServerSocket;
 import java.security.KeyStore;
 
 public class SSLSocket implements ServerSocketFactory {
-    private final String keystorePath;
-    private final String password;
 
-    public SSLSocket(String keystorePath, String password) {
-        this.keystorePath = keystorePath;
-        this.password = password;
+    private final SSLConfig sslConfig;
+
+    public SSLSocket(SSLConfig sslConfig) {
+        this.sslConfig = sslConfig;
     }
 
     @Override
-    public ServerSocket createServerSocket(int port) throws Exception {
+    public ServerSocket createServerSocket(ServerSocketConfig config) throws Exception {
         KeyStore ks = KeyStore.getInstance("PKCS12");
-        var passwordChars = password.toCharArray();
+        var passwordChars = sslConfig.getKeystorePassword().toCharArray();
 
         // Try loading from filesystem first, then from classpath
         InputStream is = null;
         try {
-            File file = new File(keystorePath);
+            File file = new File(this.sslConfig.getKeystorePath());
             if (file.exists()) {
                 is = new FileInputStream(file);
             } else {
-                is = getClass().getClassLoader().getResourceAsStream(keystorePath);
+                is = getClass().getClassLoader().getResourceAsStream(this.sslConfig.getKeystorePath());
                 if (is == null) {
-                    throw new FileNotFoundException("Keystore not found: " + keystorePath);
+                    throw new FileNotFoundException("Keystore not found: " + this.sslConfig.getKeystorePath());
                 }
             }
             ks.load(is, passwordChars);
@@ -54,7 +56,7 @@ public class SSLSocket implements ServerSocketFactory {
 
         // Create SSL server socket
         SSLServerSocketFactory factory = ctx.getServerSocketFactory();
-        var serverSocket = (SSLServerSocket) factory.createServerSocket(port);
+        var serverSocket = (SSLServerSocket) factory.createServerSocket(config.port());
 
         // Don't require client authentication
         serverSocket.setNeedClientAuth(false);

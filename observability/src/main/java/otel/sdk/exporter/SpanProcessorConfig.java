@@ -13,11 +13,12 @@ public class SpanProcessorConfig {
 
         return BatchSpanProcessor.builder(spanExporter)
 
-                .setMaxQueueSize(2048)
+                .setMaxQueueSize(50)
+                .setMaxExportBatchSize(50)
 
                 .setExporterTimeout(Duration.ofSeconds(30))
 
-                .setScheduleDelay(Duration.ofSeconds(5))
+                .setScheduleDelay(Duration.ofSeconds(15))
 
                 .build();
 

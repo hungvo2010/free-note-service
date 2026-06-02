@@ -8,25 +8,16 @@ import java.time.Duration;
 public class SamplerConfig {
 
     public static Sampler parentBasedSampler(Sampler root) {
-
         return Sampler.parentBasedBuilder(root)
-
                 .setLocalParentNotSampled(Sampler.alwaysOff())
-
                 .setLocalParentSampled(Sampler.alwaysOn())
-
                 .setRemoteParentNotSampled(Sampler.alwaysOff())
-
                 .setRemoteParentSampled(Sampler.alwaysOn())
-
                 .build();
-
     }
 
     public static Sampler alwaysOn() {
-
         return Sampler.alwaysOn();
-
     }
 
     public static Sampler alwaysOff() {

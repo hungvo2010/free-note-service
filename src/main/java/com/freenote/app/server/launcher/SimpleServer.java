@@ -1,7 +1,9 @@
 package com.freenote.app.server.launcher;
 
 import com.freenote.app.server.core.WebSocketServer;
-import com.freenote.app.server.core.legacy.DefaultLegacyIncomingConnectionHandler;
+import com.freenote.app.server.core.config.ServerSocketConfig;
+import com.freenote.app.server.core.legacy.DefaultLegacySessionBasedConnectionHandler;
+import com.freenote.app.server.core.legacy.LegacyConnectionAdapter;
 
 public class SimpleServer {
 
@@ -12,9 +14,8 @@ public class SimpleServer {
 
     public static void run(int port) throws Exception {
         WebSocketServer server = WebSocketServer.builder()
-                .port(port)
-                .useSSL(false)
-                .handler(new DefaultLegacyIncomingConnectionHandler())
+                .socketConfig(new ServerSocketConfig(port))
+                .handler(new LegacyConnectionAdapter(new DefaultLegacySessionBasedConnectionHandler()))
                 .build();
         server.start();
     }

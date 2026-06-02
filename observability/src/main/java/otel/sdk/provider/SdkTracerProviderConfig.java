@@ -21,6 +21,7 @@ public class SdkTracerProviderConfig {
                 .setResource(resource)
                 .addSpanProcessor(SpanProcessorConfig.simpleSpanProcessor(LoggingSpanExporter.create()))
                 .addSpanProcessor(SpanProcessorConfig.simpleSpanProcessor(SpanExporterConfig.otlpHttpSpanExporter(httpEndpoint)))
+                .addSpanProcessor(SpanProcessorConfig.batchSpanProcessor(SpanExporterConfig.otlpHttpSpanExporter(httpEndpoint)))
                 .addSpanProcessor(SimpleSpanProcessor.create(SpanExporterConfig.otlpGrpcSpanExporter(grpcEndpoint)))
                 .setSampler(SamplerConfig.alwaysOn())
                 .setSpanLimits(SpanLimitsConfig::spanLimits)

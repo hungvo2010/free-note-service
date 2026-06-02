@@ -11,11 +11,11 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class MetricFactory {
+public class MetricRegistries {
     private final Meter meter;
     private final Map<MetricsEnum, Object> registry = new EnumMap<>(MetricsEnum.class);
 
-    public MetricFactory(Meter meter) {
+    public MetricRegistries(Meter meter) {
         this.meter = meter;
     }
 

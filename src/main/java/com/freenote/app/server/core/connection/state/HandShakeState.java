@@ -24,9 +24,9 @@ public class HandShakeState implements ConnectionState {
     @Override
     public void handle(ModernIncomingConnectionHandler handler, ReadableContext context) throws IOException {
         try {
-            var upgradeRequest = handler.handShake(context, byteBuffer);
+            var upgradeRequest = handler.handShake(context);
             if (upgradeRequest != null) {
-                context.setState(new ProcessingState(upgradeRequest, byteBuffer));
+                context.setState(new ProcessingState(upgradeRequest));
             }
         } catch (Exception e) {
             log.error("Handshake failed: ", e);

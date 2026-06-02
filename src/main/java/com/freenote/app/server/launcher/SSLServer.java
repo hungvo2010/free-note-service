@@ -1,7 +1,10 @@
 package com.freenote.app.server.launcher;
 
-import com.freenote.app.server.core.legacy.DefaultLegacyIncomingConnectionHandler;
 import com.freenote.app.server.core.WebSocketServer;
+import com.freenote.app.server.core.config.SSLConfig;
+import com.freenote.app.server.core.config.ServerSocketConfig;
+import com.freenote.app.server.core.legacy.DefaultLegacySessionBasedConnectionHandler;
+import com.freenote.app.server.core.legacy.LegacyConnectionAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,11 +13,9 @@ public class SSLServer {
 
     public static void main(String[] args) throws Exception {
         WebSocketServer server = WebSocketServer.builder()
-                .port(8443)
-                .useSSL(true)
-                .keystorePath("keystore.p12")
-                .keystorePassword("changeit")
-                .handler(new DefaultLegacyIncomingConnectionHandler())
+                .socketConfig(new ServerSocketConfig(8443))
+                .sslConfig(SSLConfig.builder().build())
+                .handler(new LegacyConnectionAdapter(new DefaultLegacySessionBasedConnectionHandler()))
                 .build();
         server.start();
     }

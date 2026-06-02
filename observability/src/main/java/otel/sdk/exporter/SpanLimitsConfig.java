@@ -6,7 +6,7 @@ public class SpanLimitsConfig {
 
     public static SpanLimits spanLimits() {
         return SpanLimits.builder()
-                .setMaxNumberOfAttributes(128)
+                .setMaxNumberOfAttributes(2)
                 .setMaxAttributeValueLength(1024)
                 .setMaxNumberOfLinks(128)
                 .setMaxNumberOfAttributesPerLink(128)

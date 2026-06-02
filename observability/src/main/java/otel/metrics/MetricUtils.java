@@ -5,29 +5,29 @@ import otel.metrics.core.impl.OtelLatencyMetric;
 import static otel.SampleGlobalOpenTelemetry.getSampleGlobalTelemetry;
 
 public class MetricUtils {
-    private static final MetricFactory factory = getSampleGlobalTelemetry().getMetricFactory();
+    private static final MetricRegistries registries = getSampleGlobalTelemetry().getMetricRegistries();
 
     public static void incrementConcurrentUsers() {
-        factory.getConcurrentUsersCounter().increment(1L);
+        registries.getConcurrentUsersCounter().increment(1L);
     }
 
     public static void decrementConcurrentUsers() {
-        factory.getConcurrentUsersCounter().decrement(1L);
+        registries.getConcurrentUsersCounter().decrement(1L);
     }
 
     public static void incrementAcceptedHandshakeCount(int val) {
-        factory.getAcceptedHandshakeCounter().add(val);
+        registries.getAcceptedHandshakeCounter().add(val);
     }
 
     public static void incrementInFlightRequests() {
-        factory.getInFlightRequestsCounter().increment(1L);
+        registries.getInFlightRequestsCounter().increment(1L);
     }
 
     public static void decrementInFlightRequests() {
-        factory.getInFlightRequestsCounter().decrement(1L);
+        registries.getInFlightRequestsCounter().decrement(1L);
     }
 
     public static OtelLatencyMetric getLatencyMetric() {
-        return factory.getLatencyHistogram();
+        return registries.getLatencyHistogram();
     }
 }

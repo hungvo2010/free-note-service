@@ -2,8 +2,11 @@ package com.freenote.app.server.core.nio;
 
 import com.freenote.app.server.auth.AcceptHandshakeHandler;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
+import com.freenote.app.server.core.connection.IncomingConnectionHandler;
+import com.freenote.app.server.core.context.ConnectionContext;
 import com.freenote.app.server.core.context.ReadableContext;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
+import com.freenote.app.server.exceptions.ConnectionException;
 import com.freenote.app.server.handler.URIEndpointHandler;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
@@ -25,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 import static generated.URIHandlerRegistry.getInstanceByURI;
 import static otel.SampleGlobalOpenTelemetry.getSampleGlobalTelemetry;
 
-public class NIOModernIncomingSocketHandler implements ModernIncomingConnectionHandler {
+public class NIOModernIncomingSocketHandler implements ModernIncomingConnectionHandler, IncomingConnectionHandler {
     private static final Logger log = LogManager.getLogger(NIOModernIncomingSocketHandler.class);
     private final AcceptHandshakeHandler handshakeHandler;
     private final HttpParser httpParser;
@@ -65,10 +68,10 @@ public class NIOModernIncomingSocketHandler implements ModernIncomingConnectionH
     }
 
     @Override
-    public HttpUpgradeRequest handShake(ReadableContext context, ByteBuffer byteBuffer) throws IOException {
-        if (emptyReadFromChannel(context.getChannel(), byteBuffer)) return null;
+    public HttpUpgradeRequest handShake(ReadableContext context) throws IOException {
+        if (emptyReadFromChannel(context.getChannel(), context.getByteBuffer())) return null;
 
-        var upgradeRequest = parseUpgradeRequest(byteBuffer);
+        var upgradeRequest = parseUpgradeRequest(context.getByteBuffer());
         performHandshake(context.getChannel(), upgradeRequest);
 
         return upgradeRequest;
@@ -131,5 +134,10 @@ public class NIOModernIncomingSocketHandler implements ModernIncomingConnectionH
                 .channelBuffer(byteBuffer)
                 .requestObject(request)
                 .build();
+    }
+
+    @Override
+    public void handle(ConnectionContext context) throws ConnectionException {
+
     }
 }

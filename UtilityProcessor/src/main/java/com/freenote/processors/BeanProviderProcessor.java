@@ -18,7 +18,7 @@ import java.util.Set;
 import static com.freenote.utils.LogUtils.error;
 import static com.freenote.utils.LogUtils.info;
 
-@SupportedSourceVersion(SourceVersion.RELEASE_17)
+@SupportedSourceVersion(SourceVersion.RELEASE_21)
 @AutoService(Processor.class)
 public class BeanProviderProcessor extends AbstractProcessor {
     private Filer filer;

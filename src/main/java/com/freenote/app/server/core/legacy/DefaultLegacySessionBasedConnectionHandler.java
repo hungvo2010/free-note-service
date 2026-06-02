@@ -23,17 +23,17 @@ import java.net.Socket;
 
 import static generated.URIHandlerRegistry.getInstanceByURI;
 
-public class DefaultLegacyIncomingConnectionHandler implements LegacyIncomingConnectionHandler {
-    private static final Logger log = LogManager.getLogger(DefaultLegacyIncomingConnectionHandler.class);
+public class DefaultLegacySessionBasedConnectionHandler implements LegacySessionBasedConnectionHandler {
+    private static final Logger log = LogManager.getLogger(DefaultLegacySessionBasedConnectionHandler.class);
     private final AcceptHandshakeHandler handshakeHandler;
     private final HttpParser httpParser;
 
-    public DefaultLegacyIncomingConnectionHandler(AcceptHandshakeHandler handshakeHandler, HttpParser httpParser) {
+    public DefaultLegacySessionBasedConnectionHandler(AcceptHandshakeHandler handshakeHandler, HttpParser httpParser) {
         this.handshakeHandler = handshakeHandler;
         this.httpParser = httpParser;
     }
 
-    public DefaultLegacyIncomingConnectionHandler() {
+    public DefaultLegacySessionBasedConnectionHandler() {
         this(new AcceptHandshakeImpl(), new HttpParserImpl());
     }
 

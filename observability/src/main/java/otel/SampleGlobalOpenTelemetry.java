@@ -9,7 +9,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import lombok.Getter;
-import otel.metrics.MetricFactory;
+import otel.metrics.MetricRegistries;
 import otel.sdk.provider.OpenTelemetrySdkConfig;
 
 public class SampleGlobalOpenTelemetry {
@@ -21,7 +21,7 @@ public class SampleGlobalOpenTelemetry {
     @Getter
     private Tracer tracer;
     @Getter
-    private MetricFactory metricFactory;
+    private MetricRegistries metricRegistries;
     private final OpenTelemetry openTelemetry;
 
     public static SampleGlobalOpenTelemetry SAMPLE_GLOBAL_TELEMETRY;
@@ -44,8 +44,8 @@ public class SampleGlobalOpenTelemetry {
         meter = meterProvider.get(SAMPLE_SCOPE_NAME);
         sdkLogger = loggerProvider.get(SAMPLE_SCOPE_NAME);
         
-        metricFactory = new MetricFactory(meter);
-        metricFactory.registerAll();
+        metricRegistries = new MetricRegistries(meter);
+        metricRegistries.registerAll();
         
         return this;
     }
