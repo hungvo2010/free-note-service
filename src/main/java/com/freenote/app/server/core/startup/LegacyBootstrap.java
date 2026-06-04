@@ -6,8 +6,8 @@ import com.freenote.app.server.core.connection.WebSocketSession;
 import com.freenote.app.server.core.context.ConnectionContext;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
-import com.freenote.app.server.socket.RawSocket;
-import com.freenote.app.server.socket.ServerSocketFactory;
+import com.freenote.app.server.io.socket.RawSocket;
+import com.freenote.app.server.io.socket.ServerSocketFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

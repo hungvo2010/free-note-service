@@ -1,4 +1,4 @@
-package com.freenote.app.server.util;
+package com.freenote.app.server.parser;
 
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.messages.ws.WebSocketFrame;

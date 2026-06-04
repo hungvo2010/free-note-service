@@ -1,4 +1,4 @@
-package com.freenote.app.server;
+package com.freenote.app.utils;
 
 class Solution {
     public int minimumSize(int[] nums, int maxOperations) {

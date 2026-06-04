@@ -1,4 +1,4 @@
-package com.freenote.app.server;
+package com.freenote.app.utils;
 
 import java.util.Iterator;
 import java.util.Random;

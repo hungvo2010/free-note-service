@@ -8,14 +8,12 @@ import com.freenote.app.server.exceptions.MessageParsingException;
 import com.freenote.app.server.frames.handler.WebSocketFrameHandler;
 import com.freenote.app.server.handler.URIEndpointHandler;
 import com.freenote.app.server.handler.frames.WebSocketFrameDispatcher;
-import com.freenote.app.server.messages.IncomingMessage;
 import com.freenote.app.server.messages.ws.WebSocketFrame;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
-import com.freenote.app.server.parser.MessageParser;
 import com.freenote.app.server.parser.WebSocketFrameParser;
-import com.freenote.app.server.parser.impl.InputStreamFrameParser;
+import com.freenote.app.server.parser.InputStreamFrameParserImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import otel.metrics.MetricUtils;
@@ -27,10 +25,9 @@ import java.util.List;
 public abstract class AbstractEndpointHandler implements URIEndpointHandler, WebSocketFrameHandler {
     private static final Logger log = LogManager.getLogger(AbstractEndpointHandler.class);
     private final WebSocketFrameParser frameParser;
-    private final MessageParser messageParser = new MessageParser();
 
     public AbstractEndpointHandler() {
-        this.frameParser = new InputStreamFrameParser();
+        this.frameParser = new InputStreamFrameParserImpl();
     }
 
     protected AbstractEndpointHandler(WebSocketFrameParser frameParser) {
@@ -85,12 +82,7 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
 
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, String message) {
-        try {
-            IncomingMessage request = messageParser.parse(message);
-            request.handle(this, webSocketConnection);
-        } catch (MessageParsingException e) {
-            handleErrorMessage(e);
-        }
+        onData(webSocketConnection, message);
     }
 
     private void handleErrorMessage(MessageParsingException e) {

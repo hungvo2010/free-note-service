@@ -1,13 +1,10 @@
 package com.freenote.app.server.handler.endpoint;
 
 import com.freenote.app.server.core.connection.WebSocketConnection;
-import com.freenote.app.server.model.InputWrapper;
-import com.freenote.app.server.parser.impl.ByteBufferFrameParser;
-import com.freenote.app.server.util.IOUtils;
+import com.freenote.app.server.parser.ByteBufferFrameParserImpl;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
@@ -15,7 +12,7 @@ import java.nio.channels.SocketChannel;
 public class NIOCommonEndpoint extends AbstractEndpointHandler {
 
     public NIOCommonEndpoint() {
-        super(new ByteBufferFrameParser());
+        super(new ByteBufferFrameParserImpl());
     }
 
     @Override

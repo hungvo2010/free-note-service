@@ -1,4 +1,4 @@
-package com.freenote.app.server.dto;
+package com.freedraw.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

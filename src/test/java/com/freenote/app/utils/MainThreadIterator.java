@@ -1,4 +1,4 @@
-package com.freenote.app.server;
+package com.freenote.app.utils;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

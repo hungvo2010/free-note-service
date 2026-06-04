@@ -1,9 +1,8 @@
-package com.freenote.app.server.parser.impl;
+package com.freenote.app.server.parser;
 
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.messages.ws.WebSocketFrame;
 import com.freenote.app.server.model.InputWrapper;
-import com.freenote.app.server.parser.WebSocketFrameParser;
 import com.freenote.app.server.util.IOUtils;
 import lombok.extern.log4j.Log4j2;
 
@@ -11,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @Log4j2
-public class ByteBufferFrameParser implements WebSocketFrameParser {
+public class ByteBufferFrameParserImpl implements WebSocketFrameParser {
 
     @Override
     public WebSocketFrame parseFrame(InputWrapper inputWrapper) throws IOException {

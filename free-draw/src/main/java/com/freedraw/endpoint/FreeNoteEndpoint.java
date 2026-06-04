@@ -3,6 +3,7 @@ package com.freedraw.endpoint;
 import com.freedraw.dto.DraftRequestData;
 import com.freedraw.dto.DraftResponseContent;
 import com.freedraw.dto.DraftResponseData;
+import com.freedraw.dto.HeartbeatMsg;
 import com.freedraw.entities.Draft;
 import com.freedraw.entities.DraftAction;
 import com.freedraw.models.core.Connection;
@@ -16,6 +17,7 @@ import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.handler.endpoint.AbstractEndpointHandler;
 import com.freenote.app.server.messages.ws.WebSocketFrame;
+import com.freenote.app.server.model.enums.MsgType;
 import com.freenote.app.server.model.ws.CommonResponseObject;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.JSONUtils;
@@ -35,6 +37,14 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
     @Override
     public void onData(WebSocketConnection webSocketConnection, String message) {
         try {
+            var heartbeat = JSONUtils.fromJSON(message, HeartbeatMsg.class);
+            if (heartbeat != null && heartbeat.getMsgType() == MsgType.PING) {
+                log.info("Received Heartbeat PING");
+                heartbeat.setMsgType(MsgType.PONG);
+                webSocketConnection.setResponseObject(new CommonResponseObject<>(heartbeat));
+                return;
+            }
+
             var draftRequest = JSONUtils.fromJSON(message, DraftRequestData.class);
             log.info("Received DraftRequest: {}", message);
             if (draftRequest == null) {

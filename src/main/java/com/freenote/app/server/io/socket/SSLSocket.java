@@ -1,4 +1,4 @@
-package com.freenote.app.server.socket;
+package com.freenote.app.server.io.socket;
 
 import com.freenote.app.server.core.config.SSLConfig;
 import com.freenote.app.server.core.config.ServerSocketConfig;
