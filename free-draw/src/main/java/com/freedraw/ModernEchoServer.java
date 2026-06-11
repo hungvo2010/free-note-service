@@ -15,6 +15,7 @@ public class ModernEchoServer {
     }
 
     public static void run(int port) throws Exception {
+        log.info("Starting server on port: {}", port);
         NIOWebSocketServer server = NIOWebSocketServer.builder()
                 .socketConfig(new ServerSocketConfig(port))
                 .handler(new NIOModernIncomingSocketHandler())

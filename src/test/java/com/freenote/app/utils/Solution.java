@@ -1,5 +1,8 @@
 package com.freenote.app.utils;
 
+import java.util.PriorityQueue;
+import java.util.Stack;
+
 class Solution {
     public int minimumSize(int[] nums, int maxOperations) {
         int min = 1;
@@ -49,5 +52,60 @@ class Solution {
         dp[m][n + 1] = 1;
         dp[m + 1][n] = 1;
         return countPath(dp, 0, 0, m, n);
+    }
+
+
+    public String removeStars(String s) {
+        Stack<Character> stack = new Stack<>();
+        for (char c : s.toCharArray()){
+            if (c == '*'){
+                if (!stack.isEmpty()){
+                    stack.pop();
+                }
+            }
+            else {
+                stack.push(c);
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (char c : stack){
+            sb.append(c);
+        }
+        return sb.toString();
+    }
+
+
+    public int[] asteroidCollision(int[] asteroids) {
+        Stack<Integer> stack = new Stack<>();
+        for (int ast : asteroids){
+            if (ast > 0){
+                stack.push(ast);
+            }
+            else {
+                while (!stack.isEmpty() && stack.peek() > 0 && stack.peek() < -ast){
+                    stack.pop();
+                }
+                if (!stack.isEmpty() && stack.peek() == -ast){
+                    stack.pop();
+                }
+                else if (stack.isEmpty() || stack.peek() < 0){
+                    stack.push(ast);
+                }
+            }
+        }
+        int[] result = new int[stack.size()];
+        for (int i = result.length - 1; i >= 0; i--){
+            result[i] = stack.pop();
+        }
+        return result;
+
+        var heap = new PriorityQueue<Integer>();
+        for (int val: nums){
+            heap.add(val);
+        }
+        for (int i = 0 ; i < k ; ++ i){
+            heap.poll();
+        }
+        return heap.peek();
     }
 }

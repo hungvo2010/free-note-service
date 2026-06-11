@@ -1,7 +1,7 @@
 package com.freenote.app.server.parser;
 
 import com.freenote.app.server.frames.factory.FrameFactory;
-import com.freenote.app.server.messages.ws.WebSocketFrame;
+import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.util.IOUtils;
 import lombok.extern.log4j.Log4j2;

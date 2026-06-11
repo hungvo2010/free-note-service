@@ -1,4 +1,4 @@
-package com.freenote.app.server.messages.ws;
+package com.freenote.app.server.frames.ws;
 
 import com.freenote.app.server.exceptions.InvalidFrameException;
 import com.freenote.app.server.frames.FrameType;

@@ -8,7 +8,7 @@ import com.freenote.app.server.exceptions.MessageParsingException;
 import com.freenote.app.server.frames.handler.WebSocketFrameHandler;
 import com.freenote.app.server.handler.URIEndpointHandler;
 import com.freenote.app.server.handler.frames.WebSocketFrameDispatcher;
-import com.freenote.app.server.messages.ws.WebSocketFrame;
+import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;

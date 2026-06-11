@@ -26,7 +26,7 @@ public class HandShakeState implements ConnectionState {
         try {
             var upgradeRequest = handler.handShake(context);
             if (upgradeRequest != null) {
-                context.setState(new ProcessingState(upgradeRequest));
+                context.setState(new ProcessingState(upgradeRequest, this.byteBuffer));
             }
         } catch (Exception e) {
             log.error("Handshake failed: ", e);

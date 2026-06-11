@@ -17,10 +17,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.*;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.AbstractExecutorService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 import static com.freenote.app.server.util.RuntimeUtils.logServerInitialization;
 import static otel.SampleGlobalOpenTelemetry.getSampleGlobalTelemetry;
@@ -46,6 +45,7 @@ public class NIOServerBootstrap implements ServerBootstrap {
     }
 
     private void startBusyWaitingSelector(NetworkSelector selector) throws ExecutionException, InterruptedException {
+        this.virtualExecutorService = Optional.ofNullable(this.virtualExecutorService).orElseGet(() -> (AbstractExecutorService) Executors.newFixedThreadPool(2));
         Future blockChannel = this.virtualExecutorService.submit(() -> {
             startSingleNetworkSelector(selector);
         });
@@ -71,6 +71,7 @@ public class NIOServerBootstrap implements ServerBootstrap {
 
     private void runSelectorLoop(NetworkSelector selector) throws IOException {
         while (selector.isHealthy()) {
+            log.info("NIO Selector is waiting for events...");
             waitForEvents(selector);
             dispatcherReadyEvents(selector);
         }
@@ -124,6 +125,7 @@ public class NIOServerBootstrap implements ServerBootstrap {
                     ReadableContext.builder()
                             .tracingContext(tracingContext)
                             .channel((SocketChannel) key.channel())
+                            .byteBuffer(state.getByteBuffer())
                             .key(key)
                             .build()
             );
@@ -150,6 +152,6 @@ public class NIOServerBootstrap implements ServerBootstrap {
 
     @Override
     public void start(IncomingConnectionHandler handler, ServerSocketConfig config) throws Exception {
-
+        start((ModernIncomingConnectionHandler) handler, config);
     }
 }

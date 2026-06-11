@@ -4,7 +4,7 @@ import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.LargeFrame;
 import com.freenote.app.server.frames.base.DataFrame;
-import com.freenote.app.server.messages.ws.WebSocketFrame;
+import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.handler.URIEndpointHandler;

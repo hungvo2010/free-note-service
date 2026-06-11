@@ -1,6 +1,6 @@
 package com.freenote.app.handler;
 
-import com.freenote.app.server.messages.ws.WebSocketFrame;
+import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.handler.URIEndpointHandler;
 import com.freenote.app.server.handler.endpoint.NewEchoEndpointHandler;
