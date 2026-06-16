@@ -1,4 +1,4 @@
-package com.freenote.app.server.handler;
+package com.freenote.app.server.routes;
 
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.InputWrapper;

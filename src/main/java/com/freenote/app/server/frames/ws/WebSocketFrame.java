@@ -2,7 +2,7 @@ package com.freenote.app.server.frames.ws;
 
 import com.freenote.app.server.exceptions.InvalidFrameException;
 import com.freenote.app.server.frames.FrameType;
-import com.freenote.app.server.handler.frames.WebSocketFrameDispatcher;
+import com.freenote.app.server.routes.frames.WebSocketFrameDispatcher;
 import lombok.Getter;
 import lombok.Setter;
 

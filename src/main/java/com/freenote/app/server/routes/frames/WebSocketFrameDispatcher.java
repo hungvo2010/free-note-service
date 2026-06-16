@@ -1,4 +1,4 @@
-package com.freenote.app.server.handler.frames;
+package com.freenote.app.server.routes.frames;
 
 import com.freenote.app.server.core.connection.WebSocketConnection;
 import com.freenote.app.server.frames.FrameType;

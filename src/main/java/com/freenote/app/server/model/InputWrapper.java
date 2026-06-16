@@ -1,6 +1,6 @@
 package com.freenote.app.server.model;
 
-import com.freenote.app.server.model.ws.CommonRequestObject;
+import com.freenote.app.server.model.ws.AppRequestData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,7 +20,7 @@ public class InputWrapper {
     private Socket socket;
     private ByteBuffer channelBuffer;
     private SocketChannel socketChannel;
-    private CommonRequestObject requestObject;
+    private AppRequestData requestObject;
     private InputStream inputStream;
 
     public InputWrapper(Socket incomingSocket) {
@@ -35,9 +35,6 @@ public class InputWrapper {
             return inputStream;
         }
         try {
-            if (requestObject != null && requestObject.getSocket() != null) {
-                return requestObject.getSocket().getInputStream();
-            }
             if (socket != null) {
                 return socket.getInputStream();
             }

@@ -6,12 +6,12 @@ import com.freenote.app.server.core.connection.WebSocketConnection;
 import com.freenote.app.server.core.connection.WebSocketSession;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
-import com.freenote.app.server.handler.URIEndpointHandler;
+import com.freenote.app.server.routes.URIEndpointHandler;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.TraceRequestData;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.http.HttpUpgradeResponse;
-import com.freenote.app.server.model.ws.CommonRequestObject;
+import com.freenote.app.server.model.ws.AppRequestData;
 import com.freenote.app.server.parser.HttpParser;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
 import org.apache.logging.log4j.LogManager;
@@ -95,14 +95,14 @@ public class DefaultLegacySessionBasedConnectionHandler implements LegacySession
     }
 
     private InputWrapper buildInputWrapper(Socket socket, HttpUpgradeRequest request) {
-        var requestObject = CommonRequestObject.builder()
-                .origin(request.getOrigin())
-                .socket(socket)
+        var requestObject = AppRequestData.builder()
+                .requestOrigin(request.getOrigin())
                 .build();
         requestObject.setRequestData(new TraceRequestData());
 
         var inputWrapper = new InputWrapper(socket);
         inputWrapper.setRequestObject(requestObject);
+        inputWrapper.setSocket(socket);
 
         return inputWrapper;
     }

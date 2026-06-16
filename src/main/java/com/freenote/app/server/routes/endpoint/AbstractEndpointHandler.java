@@ -1,4 +1,4 @@
-package com.freenote.app.server.handler.endpoint;
+package com.freenote.app.server.routes.endpoint;
 
 
 import com.freenote.app.server.core.connection.WebSocketConnection;
@@ -6,8 +6,8 @@ import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.ConnectionException;
 import com.freenote.app.server.exceptions.MessageParsingException;
 import com.freenote.app.server.frames.handler.WebSocketFrameHandler;
-import com.freenote.app.server.handler.URIEndpointHandler;
-import com.freenote.app.server.handler.frames.WebSocketFrameDispatcher;
+import com.freenote.app.server.routes.URIEndpointHandler;
+import com.freenote.app.server.routes.frames.WebSocketFrameDispatcher;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;

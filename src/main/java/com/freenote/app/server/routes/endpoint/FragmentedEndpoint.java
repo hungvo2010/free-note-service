@@ -1,4 +1,4 @@
-package com.freenote.app.server.handler.endpoint;
+package com.freenote.app.server.routes.endpoint;
 
 import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.frames.FrameType;
@@ -7,7 +7,7 @@ import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.factory.ServerFrameFactory;
-import com.freenote.app.server.handler.URIEndpointHandler;
+import com.freenote.app.server.routes.URIEndpointHandler;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.util.FrameUtil;
@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @WebSocketEndpoint("/update")
-public class FragmentedHandler implements URIEndpointHandler {
-    private static final Logger log = LogManager.getLogger(FragmentedHandler.class);
+public class FragmentedEndpoint implements URIEndpointHandler {
+    private static final Logger log = LogManager.getLogger(FragmentedEndpoint.class);
     private final FrameFactory frameFactory = new ServerFrameFactory();
 
     @Override
