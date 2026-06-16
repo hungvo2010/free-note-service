@@ -1,13 +1,14 @@
-package com.freenote.app.server.core.startup;
+package com.freenote.app.server.core.nio.startup;
 
 import com.freenote.app.server.core.config.ServerSocketConfig;
 import com.freenote.app.server.core.connection.IncomingConnectionHandler;
-import com.freenote.app.server.core.connection.state.ConnectionState;
-import com.freenote.app.server.core.connection.state.HandShakeState;
+import com.freenote.app.server.core.nio.state.ConnectionState;
+import com.freenote.app.server.core.nio.state.HandShakeState;
 import com.freenote.app.server.core.context.ReadableContext;
 import com.freenote.app.server.core.context.TracingContext;
 import com.freenote.app.server.core.nio.ModernIncomingConnectionHandler;
-import com.freenote.app.server.core.transport.NetworkSelector;
+import com.freenote.app.server.core.nio.transport.NetworkSelector;
+import com.freenote.app.server.core.startup.ServerBootstrap;
 import com.freenote.app.server.exceptions.SelectorInterruptException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

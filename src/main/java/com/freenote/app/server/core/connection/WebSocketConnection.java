@@ -4,8 +4,8 @@ import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
-import com.freenote.app.server.model.ws.CommonRequestObject;
-import com.freenote.app.server.model.ws.CommonResponseObject;
+import com.freenote.app.server.model.ws.AppRequestData;
+import com.freenote.app.server.model.ws.AppResponseData;
 import com.freenote.app.server.util.IOUtils;
 import com.freenote.app.server.util.JSONUtils;
 import lombok.Builder;
@@ -21,8 +21,8 @@ import java.nio.channels.SocketChannel;
 @Builder
 public class WebSocketConnection {
     private final WebSocketSession session;
-    private CommonRequestObject requestObject;
-    private CommonResponseObject responseObject;
+    private AppRequestData requestObject;
+    private AppResponseData responseObject;
     private WebSocketFrame requestFrame;
     private WebSocketFrame responseFrame;
 
@@ -46,7 +46,7 @@ public class WebSocketConnection {
         IOUtils.writeOutPut(getOutputStream(), frame);
     }
 
-    private void writeAsJsonTextFrame(CommonResponseObject obj) throws IOException {
+    private void writeAsJsonTextFrame(AppResponseData obj) throws IOException {
         String json = JSONUtils.toJSONString(obj.getResponseData());
         writeFrame(FrameFactory.SERVER.createTextFrame(json));
     }

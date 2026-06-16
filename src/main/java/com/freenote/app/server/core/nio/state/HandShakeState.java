@@ -1,4 +1,4 @@
-package com.freenote.app.server.core.connection.state;
+package com.freenote.app.server.core.nio.state;
 
 import com.freenote.app.server.core.nio.ModernIncomingConnectionHandler;
 import com.freenote.app.server.core.context.ReadableContext;

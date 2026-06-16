@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class CommonResponseObject<T extends TraceResponseData> {
+public class AppResponseData<T extends TraceResponseData> {
     private T responseData;
 
     public T getResponseData(Class<T> clazz) {

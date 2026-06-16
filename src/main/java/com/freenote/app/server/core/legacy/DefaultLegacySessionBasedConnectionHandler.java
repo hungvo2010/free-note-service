@@ -11,7 +11,7 @@ import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.TraceRequestData;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.http.HttpUpgradeResponse;
-import com.freenote.app.server.model.ws.CommonRequestObject;
+import com.freenote.app.server.model.ws.AppRequestData;
 import com.freenote.app.server.parser.HttpParser;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
 import org.apache.logging.log4j.LogManager;
@@ -73,11 +73,10 @@ public class DefaultLegacySessionBasedConnectionHandler implements LegacySession
         return upgradeResponse;
     }
 
-
     private void routeToHandler(WebSocketSession session, HttpUpgradeRequest upgradeRequest) throws IOException {
         var socket = session.getSocket();
         var pathHandler = getEndpointHandler(upgradeRequest);
-        var inputWrapper = buildInputWrapper(socket, upgradeRequest);
+        var inputWrapper = buildInputWrapper(session, upgradeRequest);
         var outputWrapper = session.getOutputWrapper();
         MetricUtils.incrementConcurrentUsers();
         while (!socket.isClosed()) {
@@ -94,15 +93,15 @@ public class DefaultLegacySessionBasedConnectionHandler implements LegacySession
         return endpointHandler;
     }
 
-    private InputWrapper buildInputWrapper(Socket socket, HttpUpgradeRequest request) {
-        var requestObject = CommonRequestObject.builder()
-                .origin(request.getOrigin())
-                .socket(socket)
+    private InputWrapper buildInputWrapper(WebSocketSession session, HttpUpgradeRequest request) {
+        var requestObject = AppRequestData.builder()
+                .requestOrigin(request.getOrigin())
                 .build();
         requestObject.setRequestData(new TraceRequestData());
 
-        var inputWrapper = new InputWrapper(socket);
-        inputWrapper.setRequestObject(requestObject);
+        var inputWrapper = new InputWrapper(session.getSocket());
+//        inputWrapper.setAppRequestData(requestObject);
+        inputWrapper.setSocket(session.getSocket());
 
         return inputWrapper;
     }

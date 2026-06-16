@@ -14,7 +14,7 @@ public enum MsgType
 ```java
 package com.freenote.app.server.model;
 
-import com.freenote.app.server.model.ws.CommonRequestObject;
+import com.freenote.app.server.model.ws.AppRequestData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

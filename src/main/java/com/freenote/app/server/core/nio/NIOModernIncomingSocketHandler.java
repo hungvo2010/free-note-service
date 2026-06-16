@@ -11,7 +11,7 @@ import com.freenote.app.server.handler.URIEndpointHandler;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
-import com.freenote.app.server.model.ws.CommonRequestObject;
+import com.freenote.app.server.model.ws.AppRequestData;
 import com.freenote.app.server.parser.HttpParser;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
 import io.opentelemetry.api.trace.Span;
@@ -125,14 +125,13 @@ public class NIOModernIncomingSocketHandler implements ModernIncomingConnectionH
     }
 
     private InputWrapper buildInputWrapper(SocketChannel channel, HttpUpgradeRequest upgradeRequest, ByteBuffer byteBuffer) {
-        var request = CommonRequestObject.builder()
-                .origin(upgradeRequest.getOrigin())
-                .socket(channel.socket())
+        var request = AppRequestData.builder()
+                .requestOrigin(upgradeRequest.getOrigin())
                 .build();
         return InputWrapper.builder()
                 .socketChannel(channel)
                 .channelBuffer(byteBuffer)
-                .requestObject(request)
+                .socket(channel.socket())
                 .build();
     }
 

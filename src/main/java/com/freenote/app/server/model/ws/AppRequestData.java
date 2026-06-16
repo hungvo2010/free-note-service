@@ -6,15 +6,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.net.Socket;
-
 @AllArgsConstructor
 @Builder
 @Setter
 @Getter
-public class CommonRequestObject<T extends TraceRequestData> {
-    private Socket socket;
-    private String origin;
+public class AppRequestData<T extends TraceRequestData> {
+    private String requestOrigin;
     private T requestData;
 
     private T getRequestData(Class<T> clazz) {

@@ -15,10 +15,10 @@ import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.core.connection.WebSocketConnection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.frames.base.ControlFrame;
-import com.freenote.app.server.handler.endpoint.AbstractEndpointHandler;
+import com.freenote.app.server.handler.routes.AbstractEndpointHandler;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.enums.MsgType;
-import com.freenote.app.server.model.ws.CommonResponseObject;
+import com.freenote.app.server.model.ws.AppResponseData;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
@@ -41,28 +41,28 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
             if (heartbeat != null && heartbeat.getMsgType() == MsgType.PING) {
                 log.info("Received Heartbeat PING");
                 heartbeat.setMsgType(MsgType.PONG);
-                webSocketConnection.setResponseObject(new CommonResponseObject<>(heartbeat));
+                webSocketConnection.setResponseObject(new AppResponseData<>(heartbeat));
                 return;
             }
 
             var draftRequest = JSONUtils.fromJSON(message, DraftRequestData.class);
             log.info("Received DraftRequest: {}", message);
             if (draftRequest == null) {
-                webSocketConnection.setResponseObject(new CommonResponseObject<>(DEFAULT_MESSAGE_PAYLOAD));
+                webSocketConnection.setResponseObject(new AppResponseData<>(DEFAULT_MESSAGE_PAYLOAD));
                 return;
             }
 
             var draft = draftService.handleDraftRequest(draftRequest);
             var responseData = buildResponseAction(draft, draftRequest);
             webSocketConnection.setResponseObject(
-                    new CommonResponseObject<>(responseData)
+                    new AppResponseData<>(responseData)
             );
             broadcastMessage(draft.getDraftId(), Connection.from(webSocketConnection),
                     FrameUtil.createApplicationFrame(responseData)  // Use responseData instead of lastAction
             );
         } catch (Exception ex) {
             log.error("Error in application onMessage logic: {}", ex.getMessage());
-            webSocketConnection.setResponseObject(new CommonResponseObject<>(DEFAULT_MESSAGE_PAYLOAD));
+            webSocketConnection.setResponseObject(new AppResponseData<>(DEFAULT_MESSAGE_PAYLOAD));
         }
     }
 

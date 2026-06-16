@@ -1,4 +1,4 @@
-package com.freenote.app.server.handler.endpoint;
+package com.freenote.app.server.handler.routes;
 
 import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.frames.FrameType;
@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @WebSocketEndpoint("/update")
-public class FragmentedHandler implements URIEndpointHandler {
-    private static final Logger log = LogManager.getLogger(FragmentedHandler.class);
+public class FragmentedEndpoint implements URIEndpointHandler {
+    private static final Logger log = LogManager.getLogger(FragmentedEndpoint.class);
     private final FrameFactory frameFactory = new ServerFrameFactory();
 
     @Override

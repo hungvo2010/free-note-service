@@ -1,4 +1,4 @@
-package com.freenote.app.server.handler.endpoint;
+package com.freenote.app.server.handler.routes;
 
 import com.freenote.app.server.core.connection.WebSocketConnection;
 import com.freenote.app.server.parser.ByteBufferFrameParserImpl;
