@@ -3,6 +3,7 @@ package com.freedraw.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.freedraw.models.enums.DraftRequestType;
 import com.freenote.app.server.model.ws.AppResponseData;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,6 +14,7 @@ import java.util.List;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Builder
+@AllArgsConstructor
 public class DraftResponseData extends AppResponseData {
     private String draftId;
     private String draftName;

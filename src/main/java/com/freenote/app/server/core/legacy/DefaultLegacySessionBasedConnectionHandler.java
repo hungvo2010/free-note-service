@@ -72,11 +72,10 @@ public class DefaultLegacySessionBasedConnectionHandler implements LegacySession
         return upgradeResponse;
     }
 
-
     private void routeToHandler(WebSocketSession session, HttpUpgradeRequest upgradeRequest) throws IOException {
         var socket = session.getSocket();
         var pathHandler = getEndpointHandler(upgradeRequest);
-        var inputWrapper = buildInputWrapper(socket, upgradeRequest);
+        var inputWrapper = buildInputWrapper(session, upgradeRequest);
         var outputWrapper = session.getOutputWrapper();
         MetricUtils.incrementConcurrentUsers();
         while (!socket.isClosed()) {
@@ -93,14 +92,14 @@ public class DefaultLegacySessionBasedConnectionHandler implements LegacySession
         return endpointHandler;
     }
 
-    private InputWrapper buildInputWrapper(Socket socket, HttpUpgradeRequest request) {
-        var appRequestData = AppRequestData.builder()
+    private InputWrapper buildInputWrapper(WebSocketSession session, HttpUpgradeRequest request) {
+        var requestObject = AppRequestData.builder()
                 .requestOrigin(request.getOrigin())
                 .build();
 
-        var inputWrapper = new InputWrapper(socket);
-        inputWrapper.setAppRequestData(appRequestData);
-        inputWrapper.setSocket(socket);
+        var inputWrapper = new InputWrapper(session.getSocket());
+        inputWrapper.setAppRequestData(requestObject);
+        inputWrapper.setSocket(session.getSocket());
 
         return inputWrapper;
     }

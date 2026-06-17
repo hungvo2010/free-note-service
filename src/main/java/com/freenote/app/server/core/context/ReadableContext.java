@@ -1,6 +1,6 @@
 package com.freenote.app.server.core.context;
 
-import com.freenote.app.server.core.connection.state.ProcessingState;
+import com.freenote.app.server.core.nio.state.ProcessingState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

@@ -1,6 +1,5 @@
 package com.freenote.app.utils;
 
-import java.util.PriorityQueue;
 import java.util.Stack;
 
 class Solution {
@@ -98,14 +97,5 @@ class Solution {
             result[i] = stack.pop();
         }
         return result;
-
-        var heap = new PriorityQueue<Integer>();
-        for (int val: nums){
-            heap.add(val);
-        }
-        for (int i = 0 ; i < k ; ++ i){
-            heap.poll();
-        }
-        return heap.peek();
     }
 }

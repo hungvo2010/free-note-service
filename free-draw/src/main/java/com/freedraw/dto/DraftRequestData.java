@@ -6,12 +6,14 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.freedraw.models.enums.DraftRequestType;
 import com.freenote.app.server.model.ws.AppRequestData;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 @Getter
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Setter
 public class DraftRequestData extends AppRequestData {
     private String draftId;
     private String draftName;

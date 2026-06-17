@@ -1,4 +1,4 @@
-package com.freenote.app.server.core.transport;
+package com.freenote.app.server.core.nio.transport;
 
 import lombok.Getter;
 

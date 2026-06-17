@@ -4,6 +4,7 @@ package com.freenote.app.server.routes.endpoint;
 import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.core.connection.WebSocketConnection;
 import com.freenote.app.server.frames.factory.ServerFrameFactory;
+import com.freenote.app.server.routes.endpoint.AbstractEndpointHandler;
 
 import java.nio.ByteBuffer;
 
