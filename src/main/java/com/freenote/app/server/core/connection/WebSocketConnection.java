@@ -21,16 +21,16 @@ import java.nio.channels.SocketChannel;
 @Builder
 public class WebSocketConnection {
     private final WebSocketSession session;
-    private AppRequestData requestObject;
-    private AppResponseData responseObject;
+    private AppRequestData appRequestData;
+    private AppResponseData appResponseData;
     private WebSocketFrame requestFrame;
     private WebSocketFrame responseFrame;
 
     public void sendCurrentResponse() throws IOException {
         if (hasResponseFrame()) {
             writeFrame(responseFrame);
-        } else if (hasResponseObject()) {
-            writeAsJsonTextFrame(responseObject);
+        } else if (hasResponseData()) {
+            writeAsJsonTextFrame(appResponseData);
         }
     }
 
@@ -38,8 +38,8 @@ public class WebSocketConnection {
         return responseFrame != null;
     }
 
-    public boolean hasResponseObject() {
-        return responseObject != null;
+    public boolean hasResponseData() {
+        return appResponseData != null;
     }
 
     private void writeFrame(WebSocketFrame frame) throws IOException {
@@ -47,7 +47,7 @@ public class WebSocketConnection {
     }
 
     private void writeAsJsonTextFrame(AppResponseData obj) throws IOException {
-        String json = JSONUtils.toJSONString(obj.getResponseData());
+        String json = JSONUtils.toJSONString(obj);
         writeFrame(FrameFactory.SERVER.createTextFrame(json));
     }
 
@@ -71,7 +71,7 @@ public class WebSocketConnection {
         byte[] dataToWrite = new byte[0];
         if (hasResponseFrame()) {
             dataToWrite = getFromResponseFrame();
-        } else if (hasResponseObject()) {
+        } else if (hasResponseData()) {
             dataToWrite = getFromResponseObject();
         }
         return dataToWrite;
@@ -84,7 +84,7 @@ public class WebSocketConnection {
             IOUtils.writeOutPut(
                     baos,
                     FrameFactory.SERVER.createTextFrame(
-                            JSONUtils.toJSONString(getResponseObject().getResponseData()
+                            JSONUtils.toJSONString(getAppResponseData()
                             )));
             dataToWrite = baos.toByteArray();
         }

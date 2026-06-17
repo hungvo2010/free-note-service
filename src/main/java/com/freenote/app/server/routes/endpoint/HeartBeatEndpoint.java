@@ -14,7 +14,7 @@ public class HeartBeatEndpoint extends AbstractEndpointHandler {
 
     @Override
     public void onMessage(WebSocketConnection webSocketConnection, String message) {
-        webSocketConnection.setResponseObject(null);
+        webSocketConnection.setAppResponseData(null);
     }
 
     @Override

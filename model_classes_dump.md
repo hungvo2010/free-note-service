@@ -258,7 +258,7 @@ public class TraceRequestData
 ```java
 package com.freenote.app.server.model.ws;
 
-import com.freenote.app.server.model.TraceResponseData;
+import com.freenote.app.server.model.ws.TraceResponseData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -277,7 +277,7 @@ public class CommonResponseObject<T extends TraceResponseData>
 ```java
 package com.freenote.app.server.model.ws;
 
-import com.freenote.app.server.model.TraceRequestData;
+import com.freenote.app.server.model.ws.TraceRequestData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

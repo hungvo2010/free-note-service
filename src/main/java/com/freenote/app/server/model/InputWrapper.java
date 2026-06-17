@@ -20,7 +20,7 @@ public class InputWrapper {
     private Socket socket;
     private ByteBuffer channelBuffer;
     private SocketChannel socketChannel;
-    private AppRequestData requestObject;
+    private AppRequestData appRequestData;
     private InputStream inputStream;
 
     public InputWrapper(Socket incomingSocket) {

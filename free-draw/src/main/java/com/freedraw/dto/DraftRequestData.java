@@ -4,17 +4,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.freedraw.models.enums.DraftRequestType;
-import com.freenote.app.server.model.TraceRequestData;
-import lombok.*;
+import com.freenote.app.server.model.ws.AppRequestData;
+import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@AllArgsConstructor
-@NoArgsConstructor
-@Setter
-public class DraftRequestData extends TraceRequestData {
+public class DraftRequestData extends AppRequestData {
     private String draftId;
     private String draftName;
     private String senderId;

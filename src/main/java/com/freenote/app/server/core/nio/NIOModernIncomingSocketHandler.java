@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import static generated.URIHandlerRegistry.getInstanceByURI;
 import static otel.SampleGlobalOpenTelemetry.getSampleGlobalTelemetry;
 
+// TODO: confusing name
 public class NIOModernIncomingSocketHandler implements ModernIncomingConnectionHandler, IncomingConnectionHandler {
     private static final Logger log = LogManager.getLogger(NIOModernIncomingSocketHandler.class);
     private final AcceptHandshakeHandler handshakeHandler;
@@ -132,7 +133,7 @@ public class NIOModernIncomingSocketHandler implements ModernIncomingConnectionH
                 .socketChannel(channel)
                 .socket(channel.socket())
                 .channelBuffer(byteBuffer)
-                .requestObject(request)
+                .appRequestData(request)
                 .build();
     }
 

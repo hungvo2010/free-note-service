@@ -2,18 +2,18 @@ package com.freedraw.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.freedraw.models.enums.DraftRequestType;
-import com.freenote.app.server.model.TraceResponseData;
-import lombok.*;
+import com.freenote.app.server.model.ws.AppResponseData;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Builder
-public class DraftResponseData extends TraceResponseData {
+public class DraftResponseData extends AppResponseData {
     private String draftId;
     private String draftName;
     private DraftRequestType requestType;
@@ -24,5 +24,12 @@ public class DraftResponseData extends TraceResponseData {
         this.draftId = draftId;
         this.draftName = draftName;
         this.data = new DraftResponseContent(shapes);
+    }
+
+    public DraftResponseData(HeartbeatMsg heartbeat) {
+
+    }
+
+    public DraftResponseData() {
     }
 }
