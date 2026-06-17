@@ -98,7 +98,6 @@ public class DefaultLegacySessionBasedConnectionHandler implements LegacySession
                 .build();
 
         var inputWrapper = new InputWrapper(session.getSocket());
-        inputWrapper.setAppRequestData(appRequestData);
         inputWrapper.setSocket(session.getSocket());
 
         return inputWrapper;

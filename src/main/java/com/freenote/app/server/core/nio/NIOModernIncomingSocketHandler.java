@@ -7,13 +7,13 @@ import com.freenote.app.server.core.context.ConnectionContext;
 import com.freenote.app.server.core.context.ReadableContext;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.exceptions.ConnectionException;
-import com.freenote.app.server.routes.URIEndpointHandler;
-import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
-import com.freenote.app.server.model.ws.AppRequestData;
+import com.freenote.app.server.model.ws.NIONetworkRequestData;
+import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.parser.HttpParser;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
+import com.freenote.app.server.routes.URIEndpointHandler;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import org.apache.logging.log4j.LogManager;
@@ -111,7 +111,7 @@ public class NIOModernIncomingSocketHandler implements ModernIncomingConnectionH
 
     private void routeToHandler(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
         var pathHandler = getPathHandler(upgradeRequest);
-        var inputWrapper = buildInputWrapper(channel, upgradeRequest, byteBuffer);
+        var inputWrapper = builtNetworkRequest(channel, byteBuffer);
         var outputWrapper = new OutputWrapper(channel.socket().getOutputStream());
         pathHandler.handle(inputWrapper, outputWrapper);
     }
@@ -125,16 +125,8 @@ public class NIOModernIncomingSocketHandler implements ModernIncomingConnectionH
         return pathHandler;
     }
 
-    private InputWrapper buildInputWrapper(SocketChannel channel, HttpUpgradeRequest upgradeRequest, ByteBuffer byteBuffer) {
-        var request = AppRequestData.builder()
-                .requestOrigin(upgradeRequest.getOrigin())
-                .build();
-        return InputWrapper.builder()
-                .socketChannel(channel)
-                .socket(channel.socket())
-                .channelBuffer(byteBuffer)
-                .appRequestData(request)
-                .build();
+    private NetworkRequestData builtNetworkRequest(SocketChannel channel, ByteBuffer byteBuffer) {
+        return new NIONetworkRequestData(channel, byteBuffer);
     }
 
     @Override
