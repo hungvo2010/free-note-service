@@ -4,12 +4,12 @@ import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.LargeFrame;
 import com.freenote.app.server.frames.base.DataFrame;
-import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.factory.ServerFrameFactory;
-import com.freenote.app.server.routes.URIEndpointHandler;
-import com.freenote.app.server.model.InputWrapper;
+import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.OutputWrapper;
+import com.freenote.app.server.model.ws.NetworkRequestData;
+import com.freenote.app.server.routes.URIEndpointHandler;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
@@ -27,13 +27,10 @@ public class FragmentedEndpoint implements URIEndpointHandler {
     private final FrameFactory frameFactory = new ServerFrameFactory();
 
     @Override
-    public boolean handle(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
-        var inputStream = inputWrapper.getInputStream();
-        if (inputStream == null || outputWrapper == null) throw new NullPointerException();
-
+    public boolean handle(NetworkRequestData networkRequestData, OutputWrapper outputWrapper) {
         try {
             var bytes = new byte[70000];
-            int read = inputStream.read(bytes);
+            int read = networkRequestData.read(bytes);
             if (read == -1) {
                 log.info("End of stream reached");
                 return false;
@@ -42,7 +39,7 @@ public class FragmentedEndpoint implements URIEndpointHandler {
             var clientFrame = clientFrames.get(0);
             if (!clientFrame.isFin() && clientFrame.getOpcode() != FrameType.CONTINUATION.getOpCode()) {
                 log.info("Received non-final frame. Continuation expected.");
-                return continuationHandler(clientFrames, inputWrapper, outputWrapper);
+                return continuationHandler(clientFrames, networkRequestData, outputWrapper);
             } else if (clientFrame.getOpcode() == FrameType.CONTINUATION.getOpCode()) {
                 log.info("Received continuation frame without initial fragmented frame. Ignoring.");
                 return false;
@@ -74,9 +71,8 @@ public class FragmentedEndpoint implements URIEndpointHandler {
     }
 
     @Override
-    public boolean continuationHandler(List<WebSocketFrame> clientFrames, InputWrapper inputWrapper, OutputWrapper outputWrapper) throws IOException {
+    public boolean continuationHandler(List<WebSocketFrame> clientFrames, NetworkRequestData networkRequestData, OutputWrapper outputWrapper) throws IOException {
         LargeFrame largeFrame = new LargeFrame();
-        var inputStream = inputWrapper.getInputStream();
         try {
             int read;
             for (var clientFrame : clientFrames) {
@@ -86,7 +82,7 @@ public class FragmentedEndpoint implements URIEndpointHandler {
             do {
                 log.info("Reading more data...");
                 var bytes = new byte[70000];
-                read = inputStream.read(bytes);
+                read = networkRequestData.read(bytes);
                 log.info("Read {} bytes", read);
                 if (read != -1) {
                     largeFrame.addFragmentMessage(DataFrame.fromRawFrameBytes(Arrays.copyOfRange(bytes, 0, read)));

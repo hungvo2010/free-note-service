@@ -9,5 +9,7 @@ public interface NetworkRequestData {
 
     byte[] read();
 
+    int read(byte[] data);
+
     void write(byte[] data);
 }

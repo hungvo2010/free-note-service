@@ -1,6 +1,5 @@
 package com.freenote.app.server.core.connection;
 
-import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.http.HttpUpgradeResponse;
 import com.freenote.app.server.model.ws.NetworkRequestData;
@@ -16,14 +15,13 @@ import java.nio.channels.SocketChannel;
 public class WebSocketSession {
     private final Socket socket;
     private final SocketChannel socketChannel;
-    private final InputWrapper inputWrapper;
     private final OutputWrapper outputWrapper;
     private final NetworkRequestData networkRequestData;
 
     public void sendHandshakeResponse(HttpUpgradeResponse handShakeResp) {
         networkRequestData.write(handShakeResp.toRawBytes());
 
-        // NOTE:
+        // TODO: implement it here
         // IOUtils.writeOutPut(networkRequestData.outputStream(), handShakeResp.toRawBytes());
     }
 

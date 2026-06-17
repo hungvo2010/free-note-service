@@ -2,7 +2,7 @@ package com.freenote.app.server.model.ws;
 
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 
-public class NIONetworkRequestData implements NetworkRequestData{
+public class NIONetworkRequestData implements NetworkRequestData {
     @Override
     public WebSocketFrame buildRequestFrame() {
         return null;
@@ -16,6 +16,11 @@ public class NIONetworkRequestData implements NetworkRequestData{
     @Override
     public byte[] read() {
         return new byte[0];
+    }
+
+    @Override
+    public int read(byte[] data) {
+        return 0;
     }
 
     @Override

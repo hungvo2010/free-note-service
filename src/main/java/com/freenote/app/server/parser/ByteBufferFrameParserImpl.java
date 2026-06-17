@@ -3,6 +3,7 @@ package com.freenote.app.server.parser;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.InputWrapper;
+import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.util.IOUtils;
 import lombok.extern.log4j.Log4j2;
 
@@ -13,8 +14,8 @@ import java.io.InputStream;
 public class ByteBufferFrameParserImpl implements WebSocketFrameParser {
 
     @Override
-    public WebSocketFrame parseFrame(InputWrapper inputWrapper) throws IOException {
-        byte[] rawBytes = getRawBytes(inputWrapper);
+    public WebSocketFrame parseFrame(NetworkRequestData networkRequest) throws IOException {
+        byte[] rawBytes = getRawBytes(networkRequest);
         if (rawBytes.length == 0) {
             throw new IOException("Failed to read WebSocket frame from ByteBuffer: 0 bytes read");
         }

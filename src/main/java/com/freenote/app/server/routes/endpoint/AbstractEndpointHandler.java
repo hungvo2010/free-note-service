@@ -5,14 +5,14 @@ import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.ConnectionException;
 import com.freenote.app.server.exceptions.MessageParsingException;
 import com.freenote.app.server.frames.handler.WebSocketFrameHandler;
-import com.freenote.app.server.routes.URIEndpointHandler;
-import com.freenote.app.server.routes.frames.WebSocketFrameDispatcher;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
-import com.freenote.app.server.parser.WebSocketFrameParser;
+import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.parser.InputStreamFrameParserImpl;
+import com.freenote.app.server.parser.WebSocketFrameParser;
+import com.freenote.app.server.routes.URIEndpointHandler;
+import com.freenote.app.server.routes.frames.WebSocketFrameDispatcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import otel.metrics.MetricUtils;
@@ -34,10 +34,10 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
     }
 
     @Override
-    public boolean handle(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
+    public boolean handle(NetworkRequestData networkRequestData, OutputWrapper outputWrapper) {
         MetricUtils.incrementInFlightRequests();
         try {
-            MetricUtils.getLatencyMetric().time(() -> this.serveConnection(inputWrapper, outputWrapper));
+            MetricUtils.getLatencyMetric().time(() -> this.serveConnection(networkRequestData, outputWrapper));
             return true;
         } catch (ConnectionException e) {
             log.error("Error handling input stream", e);
@@ -47,12 +47,12 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
         }
     }
 
-    private void serveConnection(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
+    private void serveConnection(NetworkRequestData networkRequestData, OutputWrapper outputWrapper) {
         try {
-            WebSocketFrame wsFrame = parseFrame(inputWrapper);
+            WebSocketFrame wsFrame = parseFrame(networkRequestData);
 
             log.debug(wsFrame.toString());
-            WebSocketConnection webSocketConnection = WebSocketConnection.from(inputWrapper, outputWrapper);
+            WebSocketConnection webSocketConnection = WebSocketConnection.from(networkRequestData, outputWrapper);
 
             dispatchAndRespond(webSocketConnection, wsFrame);
         } catch (IOException e) {
@@ -66,8 +66,8 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
         sendResponse(webSocketConnection);
     }
 
-    private WebSocketFrame parseFrame(InputWrapper inputWrapper) throws IOException {
-        return frameParser.parseFrame(inputWrapper);
+    private WebSocketFrame parseFrame(NetworkRequestData networkRequestData) throws IOException {
+        return frameParser.parseFrame(networkRequestData);
     }
 
     protected void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
@@ -75,7 +75,7 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
     }
 
     @Override
-    public boolean continuationHandler(List<WebSocketFrame> clientFrame, InputWrapper inputWrapper, OutputWrapper outputWrapper) {
+    public boolean continuationHandler(List<WebSocketFrame> clientFrame, NetworkRequestData networkRequestData, OutputWrapper outputWrapper) {
         return false;
     }
 

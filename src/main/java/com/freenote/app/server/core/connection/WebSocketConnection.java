@@ -2,10 +2,10 @@ package com.freenote.app.server.core.connection;
 
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.ws.AppRequestData;
 import com.freenote.app.server.model.ws.AppResponseData;
+import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.util.IOUtils;
 import com.freenote.app.server.util.JSONUtils;
 import lombok.Builder;
@@ -99,12 +99,9 @@ public class WebSocketConnection {
         return session.getRemoteAddress();
     }
 
-    public static WebSocketConnection from(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
+    public static WebSocketConnection from(NetworkRequestData requestData, OutputWrapper outputWrapper) {
         var session = WebSocketSession.builder()
-                .outputWrapper(outputWrapper)
-                .socket(inputWrapper.getSocket())
-                .socketChannel(inputWrapper.getSocketChannel())
-                .build();
+                .networkRequestData(requestData).build();
         return WebSocketConnection.builder()
                 .session(session)
                 .build();
