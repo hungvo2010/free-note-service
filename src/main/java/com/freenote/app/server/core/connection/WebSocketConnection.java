@@ -13,7 +13,6 @@ import lombok.Data;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.SocketChannel;
 
@@ -49,10 +48,6 @@ public class WebSocketConnection {
     private void writeAsJsonTextFrame(AppResponseData obj) throws IOException {
         String json = JSONUtils.toJSONString(obj);
         writeFrame(FrameFactory.SERVER.createTextFrame(json));
-    }
-
-    public InputStream getInputStream() {
-        return session.getInputWrapper().getInputStream();
     }
 
     public OutputStream getOutputStream() {
@@ -106,7 +101,6 @@ public class WebSocketConnection {
 
     public static WebSocketConnection from(InputWrapper inputWrapper, OutputWrapper outputWrapper) {
         var session = WebSocketSession.builder()
-                .inputWrapper(inputWrapper)
                 .outputWrapper(outputWrapper)
                 .socket(inputWrapper.getSocket())
                 .socketChannel(inputWrapper.getSocketChannel())

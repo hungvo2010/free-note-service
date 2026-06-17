@@ -4,10 +4,6 @@ import com.freenote.app.server.core.connection.IncomingConnectionHandler;
 import com.freenote.app.server.core.connection.WebSocketSession;
 import com.freenote.app.server.core.context.ConnectionContext;
 import com.freenote.app.server.exceptions.ConnectionException;
-import com.freenote.app.server.model.InputWrapper;
-import com.freenote.app.server.model.OutputWrapper;
-
-import java.io.IOException;
 
 public class LegacyConnectionAdapter implements IncomingConnectionHandler {
     private final LegacySessionBasedConnectionHandler legacyHandler;
@@ -26,11 +22,9 @@ public class LegacyConnectionAdapter implements IncomingConnectionHandler {
         }
     }
 
-    private WebSocketSession convertToSession(ConnectionContext context) throws IOException {
+    private WebSocketSession convertToSession(ConnectionContext context) {
         return WebSocketSession.builder()
                 .socket(context.getSocket())
-                .inputWrapper(new InputWrapper(context.getSocket()))
-                .outputWrapper(new OutputWrapper(context.getSocket().getOutputStream()))
                 .build();
     }
 }

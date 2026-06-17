@@ -3,7 +3,7 @@ package com.freenote.app.server.core.connection;
 import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.http.HttpUpgradeResponse;
-import com.freenote.app.server.util.IOUtils;
+import com.freenote.app.server.model.ws.NetworkRequestData;
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,9 +18,13 @@ public class WebSocketSession {
     private final SocketChannel socketChannel;
     private final InputWrapper inputWrapper;
     private final OutputWrapper outputWrapper;
+    private final NetworkRequestData networkRequestData;
 
-    public void sendHandshakeResponse(HttpUpgradeResponse handShakeResp) throws IOException {
-        IOUtils.writeOutPut(outputWrapper.outputStream(), handShakeResp.toRawBytes());
+    public void sendHandshakeResponse(HttpUpgradeResponse handShakeResp) {
+        networkRequestData.write(handShakeResp.toRawBytes());
+
+        // NOTE:
+        // IOUtils.writeOutPut(networkRequestData.outputStream(), handShakeResp.toRawBytes());
     }
 
     public Object getRemoteAddress() {
