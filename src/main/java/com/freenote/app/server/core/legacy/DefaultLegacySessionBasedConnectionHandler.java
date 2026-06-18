@@ -79,7 +79,7 @@ public class DefaultLegacySessionBasedConnectionHandler implements LegacySession
         var outputWrapper = session.getOutputWrapper();
         MetricUtils.incrementConcurrentUsers();
         while (!socket.isClosed()) {
-            pathHandler.handle(inputWrapper, outputWrapper);
+            pathHandler.handle(session.getNetworkRequestData(), outputWrapper);
         }
     }
 

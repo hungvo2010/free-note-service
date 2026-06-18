@@ -42,7 +42,8 @@ public class WebSocketConnection {
     }
 
     private void writeFrame(WebSocketFrame frame) throws IOException {
-        IOUtils.writeOutPut(getOutputStream(), frame);
+//        IOUtils.writeOutPut(getOutputStream(), frame);
+        this.session.writeResponse(frame);
     }
 
     private void writeAsJsonTextFrame(AppResponseData obj) throws IOException {
@@ -65,7 +66,7 @@ public class WebSocketConnection {
     public byte[] getPayloadBytes() throws IOException {
         byte[] dataToWrite = new byte[0];
         if (hasResponseFrame()) {
-            dataToWrite = getFromResponseFrame();
+            dataToWrite = IOUtils.frameToBytes(responseFrame);
         } else if (hasResponseData()) {
             dataToWrite = getFromResponseObject();
         }
@@ -86,14 +87,6 @@ public class WebSocketConnection {
         return dataToWrite;
     }
 
-    private byte[] getFromResponseFrame() throws IOException {
-        byte[] dataToWrite;
-        try (var baos = new ByteArrayOutputStream()) {
-            IOUtils.writeOutPut(baos, getResponseFrame());
-            dataToWrite = baos.toByteArray();
-        }
-        return dataToWrite;
-    }
 
     public Object getRemoteAddress() {
         return session.getRemoteAddress();

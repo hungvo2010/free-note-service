@@ -1,8 +1,10 @@
 package com.freenote.app.server.core.connection;
 
+import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.http.HttpUpgradeResponse;
 import com.freenote.app.server.model.ws.NetworkRequestData;
+import com.freenote.app.server.util.IOUtils;
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,7 +20,7 @@ public class WebSocketSession {
     private final OutputWrapper outputWrapper;
     private final NetworkRequestData networkRequestData;
 
-    public void sendHandshakeResponse(HttpUpgradeResponse handShakeResp) {
+    public void sendHandshakeResponse(HttpUpgradeResponse handShakeResp) throws IOException {
         networkRequestData.write(handShakeResp.toRawBytes());
 
         // TODO: implement it here
@@ -37,5 +39,9 @@ public class WebSocketSession {
             // ignore
         }
         return null;
+    }
+
+    public void writeResponse(WebSocketFrame frame) throws IOException {
+        this.networkRequestData.write(IOUtils.frameToBytes(frame));
     }
 }
