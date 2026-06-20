@@ -5,7 +5,7 @@ Define the lifecycle and metadata methods of `NetworkRequestData` — the unifie
 ## Requirements
 
 ### Requirement: Close connection
-The `NetworkRequestData` interface SHALL provide a `void close() throws IOException` method that closes the underlying network connection. After calling `close()`, subsequent calls to `read()`, `write()`, and `buildRequestFrame()` SHALL throw `IOException`.
+The `NetworkRequestData` interface SHALL provide a `void close() throws IOException` method that closes the underlying network connection. After calling `close()`, subsequent calls to `read()`, `write()`, and `buildRequestFrame()` SHALL throw `IOException`. In the NIO path, `close()` SHALL also cancel the associated `SelectionKey` (managed by `NIOServerBootstrap`, not by `NIONetworkRequestData` directly).
 
 #### Scenario: Close an open blocking connection
 - **WHEN** `close()` is called on a `BlockingNetworkRequestData` with an open socket
@@ -13,11 +13,22 @@ The `NetworkRequestData` interface SHALL provide a `void close() throws IOExcept
 
 #### Scenario: Close an open NIO connection
 - **WHEN** `close()` is called on a `NIONetworkRequestData` with an open channel
-- **THEN** the underlying `SocketChannel` is closed and `isClosed()` returns `true`
+- **THEN** the underlying `SocketChannel` is closed and `isClosed()` returns `true`; the selector loop cancels the `SelectionKey`
 
 #### Scenario: Close an already-closed connection
 - **WHEN** `close()` is called on a `NetworkRequestData` that is already closed
 - **THEN** no exception is thrown (idempotent close)
+
+### Requirement: NIONetworkRequestData encapsulates ByteBuffer lifecycle
+`NIONetworkRequestData` SHALL own ByteBuffer-related operations: `readFromChannel()` (clear + channel.read) and `prepareForRead()` (flip). `NIOIncomingSocketHandler` SHALL NOT manipulate `ByteBuffer` directly.
+
+#### Scenario: Read from channel via NetworkRequestData
+- **WHEN** `nioNetworkRequestData.readFromChannel()` is called
+- **THEN** it clears the internal buffer, reads from the `SocketChannel`, and returns the byte count
+
+#### Scenario: Prepare buffer for reading
+- **WHEN** `nioNetworkRequestData.prepareForRead()` is called after a successful `readFromChannel()`
+- **THEN** the internal buffer is flipped from write-mode to read-mode, making bytes available to `read()` and `readFrameBytes()`
 
 ### Requirement: Check if connection is closed
 The `NetworkRequestData` interface SHALL provide a `boolean isClosed()` method that returns `true` if the underlying connection is no longer open.

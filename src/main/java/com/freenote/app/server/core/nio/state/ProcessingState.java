@@ -1,7 +1,7 @@
 package com.freenote.app.server.core.nio.state;
 
-import com.freenote.app.server.core.context.ReadableContext;
-import com.freenote.app.server.core.nio.ModernIncomingConnectionHandler;
+import com.freenote.app.server.core.connection.IncomingConnectionHandler;
+import com.freenote.app.server.core.context.ConnectionContext;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import lombok.AllArgsConstructor;
@@ -9,24 +9,28 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 @AllArgsConstructor
 @Log4j2
 @Getter
 public class ProcessingState implements ConnectionState {
     private final HttpUpgradeRequest request;
-    private final ByteBuffer byteBuffer;
 
     @Override
-    public void handle(ModernIncomingConnectionHandler handler, ReadableContext context) throws IOException {
+    public ConnectionState handle(IncomingConnectionHandler handler, ConnectionContext context) throws IOException {
         try {
-            handler.handleInComingMessage(context, request);
+            handler.handle(context);
+            if (context.getNetworkRequestData().isClosed()) {
+                return null;
+            }
+            return this;
         } catch (ClientDisconnectException e) {
-            context.closeChannel();
-        } catch (IOException e) {
-            context.closeChannel();
+            context.getNetworkRequestData().close();
+            return null;
+        } catch (Exception e) {
+            context.getNetworkRequestData().close();
             log.warn("[ProcessingState] Exception in handling new messages: {}", e.getMessage());
+            return null;
         }
     }
 }

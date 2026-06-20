@@ -58,9 +58,6 @@ public class StubNetworkRequestData implements NetworkRequestData {
     public WebSocketFrame buildResponseFrame() { return null; }
 
     @Override
-    public void write(WebSocketFrame frame) { }
-
-    @Override
     public void close() throws IOException {
         closed = true;
     }

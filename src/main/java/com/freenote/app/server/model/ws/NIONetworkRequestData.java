@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
@@ -43,7 +44,12 @@ public class NIONetworkRequestData implements NetworkRequestData {
 
     @Override
     public int read(byte[] data) {
-        return 0;
+        if (data == null || data.length == 0 || !byteBuffer.hasRemaining()) {
+            return 0;
+        }
+        int len = Math.min(byteBuffer.remaining(), data.length);
+        byteBuffer.get(data, 0, len);
+        return len;
     }
 
     @Override
@@ -55,6 +61,7 @@ public class NIONetworkRequestData implements NetworkRequestData {
                     channel.write(buffer);
                 } catch (IOException e) {
                     log.error("Error occurred while writing to SocketChannel", e);
+                    break;
                 }
             }
         }
@@ -62,7 +69,9 @@ public class NIONetworkRequestData implements NetworkRequestData {
 
     @Override
     public byte[] read() {
-        return new byte[0];
+        byte[] data = new byte[byteBuffer.remaining()];
+        byteBuffer.get(data);
+        return data;
     }
 
     @Override
@@ -89,9 +98,45 @@ public class NIONetworkRequestData implements NetworkRequestData {
         return null;
     }
 
+    /**
+     * Prepares the internal buffer for reading by flipping it
+     * (write-mode → read-mode). Called by the selector loop after
+     * {@link #readFromChannel()}.
+     */
     public void prepareForRead() {
         if (byteBuffer.position() > 0) {
             byteBuffer.flip();
         }
+    }
+
+    /**
+     * Reads from the underlying channel into the internal buffer.
+     * Clears the buffer first. Returns the number of bytes read, or -1 on EOF.
+     * Called by the selector loop instead of {@code channel.read(byteBuffer)}.
+     */
+    public int readFromChannel() throws IOException {
+        byteBuffer.clear();
+        return channel.read(byteBuffer);
+    }
+
+    /**
+     * Returns an OutputStream backed by {@link #write(byte[])}.
+     * Used to construct {@code OutputWrapper} without accessing
+     * {@code channel.socket().getOutputStream()}.
+     */
+    public OutputStream getOutputStream() {
+        return new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                NIONetworkRequestData.this.write(new byte[]{(byte) b});
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                byte[] chunk = new byte[len];
+                System.arraycopy(b, off, chunk, 0, len);
+                NIONetworkRequestData.this.write(chunk);
+            }
+        };
     }
 }

@@ -1,36 +1,27 @@
 package com.freenote.app.server.core.nio.state;
 
-import com.freenote.app.server.core.nio.ModernIncomingConnectionHandler;
-import com.freenote.app.server.core.context.ReadableContext;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import com.freenote.app.server.core.connection.IncomingConnectionHandler;
+import com.freenote.app.server.core.context.ConnectionContext;
+import com.freenote.app.server.model.ws.NetworkRequestData;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
-@AllArgsConstructor
-@Getter
-@Setter
 @Log4j2
 public class HandShakeState implements ConnectionState {
-    private ByteBuffer byteBuffer;
-
-    public HandShakeState() {
-        byteBuffer = ByteBuffer.allocateDirect(2048);
-    }
 
     @Override
-    public void handle(ModernIncomingConnectionHandler handler, ReadableContext context) throws IOException {
+    public ConnectionState handle(IncomingConnectionHandler handler, ConnectionContext context) throws IOException {
         try {
-            var upgradeRequest = handler.handShake(context);
-            if (upgradeRequest != null) {
-                context.setState(new ProcessingState(upgradeRequest, this.byteBuffer));
+            handler.handle(context);
+            if (context.getReadableContext().isHandshakeComplete()) {
+                return new ProcessingState(context.getReadableContext().getHttpUpgradeRequest());
             }
+            return this;
         } catch (Exception e) {
             log.error("Handshake failed: ", e);
-            context.closeChannel();
+            context.getNetworkRequestData().close();
+            return null;
         }
     }
 }

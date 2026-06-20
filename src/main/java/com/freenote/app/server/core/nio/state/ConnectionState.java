@@ -1,45 +1,18 @@
 package com.freenote.app.server.core.nio.state;
 
-import com.freenote.app.server.core.context.ReadableContext;
-import com.freenote.app.server.core.nio.ModernIncomingConnectionHandler;
+import com.freenote.app.server.core.connection.IncomingConnectionHandler;
+import com.freenote.app.server.core.context.ConnectionContext;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Stack;
 
 public interface ConnectionState {
-    void handle(ModernIncomingConnectionHandler handler, ReadableContext context) throws IOException;
 
-    ByteBuffer getByteBuffer();
-
-    default public String decodeString(String s) {
-        Stack<Object> arr = new Stack<Object>();
-        int tempNumber = 0;
-        String tempStr = "";
-        for (int i = 0; i < s.length(); ++i){
-            char c = s.charAt(i);
-            if (c >= '0' && c <= '9'){
-                tempNumber = tempNumber * 10 + (c - '0');
-            }
-            else if (c == '['){
-                if (tempNumber != 0){
-                    arr.push(tempNumber);
-                    tempNumber = 0;
-                }
-            }
-            else if (c == ']'){
-                handleCloseBracket(arr, tempStr);
-            }
-            // character
-            else {
-                tempStr = tempStr + c;
-            }
-
-        }
-        return tempStr;
-    }
-
-    default void handleCloseBracket(Stack<Object> arr, String tempStr){
-
-    }
+    /**
+     * Handles an I/O readiness event for a connection in this state.
+     *
+     * @param handler the connection handler (shared interface for blocking and NIO)
+     * @param context the connection context carrying network data and handshake state
+     * @return the next state for this connection, or {@code this} to stay in the current state
+     */
+    ConnectionState handle(IncomingConnectionHandler handler, ConnectionContext context) throws IOException;
 }

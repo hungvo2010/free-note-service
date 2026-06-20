@@ -9,27 +9,19 @@ import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.exceptions.ConnectionException;
 import com.freenote.app.server.model.OutputWrapper;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
-import com.freenote.app.server.model.ws.NIONetworkRequestData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.parser.HttpParser;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
 import com.freenote.app.server.routes.URIEndpointHandler;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Context;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import otel.metrics.MetricUtils;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 
 import static generated.URIHandlerRegistry.getInstanceByURI;
-import static otel.SampleGlobalOpenTelemetry.getSampleGlobalTelemetry;
 
-// TODO: confusing name
-public class NIOIncomingSocketHandler implements ModernIncomingConnectionHandler, IncomingConnectionHandler {
+public class NIOIncomingSocketHandler implements IncomingConnectionHandler {
     private static final Logger log = LogManager.getLogger(NIOIncomingSocketHandler.class);
     private final AcceptHandshakeHandler handshakeHandler;
     private final HttpParser httpParser;
@@ -43,77 +35,17 @@ public class NIOIncomingSocketHandler implements ModernIncomingConnectionHandler
         this(new AcceptHandshakeImpl(), new HttpParserImpl());
     }
 
-    @Override
-    public void handleInComingMessage(ReadableContext context, HttpUpgradeRequest upgradeRequest) throws IOException {
-        log.info("Subsequent read from {}", context.getRemoteAddress());
-        var newMessageSpan = buildMessageSpan(context, upgradeRequest);
-        if (emptyReadFromChannel(context.getChannel(), context.getByteBuffer())) return;
-        routeToHandler(context.getChannel(), context.getByteBuffer(), upgradeRequest);
-        newMessageSpan.end();
-    }
-
-    private Span buildMessageSpan(ReadableContext context, HttpUpgradeRequest upgradeRequest) {
-        var parentSpan = this.getParentSpan(context);
-        Context parentContext = Context.current().with(parentSpan);
-        return getSampleGlobalTelemetry().getTracer()
-                .spanBuilder("ws.message")
-                .setParent(parentContext)
-                .setAttribute("origin", upgradeRequest.getOrigin())
-                .setAttribute("path", upgradeRequest.getPath())
-                .setAttribute("uri", upgradeRequest.getUri())
-                .startSpan();
-    }
-
-    private Span getParentSpan(ReadableContext context) {
-        return context.getTracingContext().getSpan();
-    }
-
-    @Override
-    public HttpUpgradeRequest handShake(ReadableContext context) throws IOException {
-        if (emptyReadFromChannel(context.getChannel(), context.getByteBuffer())) return null;
-
-        var upgradeRequest = parseUpgradeRequest(context.getByteBuffer());
-        performHandshake(context.getChannel(), upgradeRequest);
-
-        return upgradeRequest;
-    }
-
-    private boolean emptyReadFromChannel(SocketChannel channel, ByteBuffer byteBuffer) throws IOException {
-        byteBuffer.clear();
-        if (channel.read(byteBuffer) == -1) {
-            if (channel.isOpen()) {
-                channel.close();
-                MetricUtils.decrementConcurrentUsers();
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private HttpUpgradeRequest parseUpgradeRequest(ByteBuffer byteBuffer) {
-        return this.httpParser.parse(byteBuffer);
-    }
-
-    private void performHandshake(SocketChannel channel, HttpUpgradeRequest request) throws IOException {
+    private void performHandshake(NetworkRequestData networkData, HttpUpgradeRequest request) throws IOException {
         log.info("Performing handshake for: {}", request);
         var handShakeResp = this.handshakeHandler.process(request);
         var outputBytes = handShakeResp.toString().getBytes(StandardCharsets.UTF_8);
-
-        writeResponse(channel, outputBytes);
+        networkData.write(outputBytes);
     }
 
-    private void writeResponse(SocketChannel channel, byte[] data) throws IOException {
-        ByteBuffer respBuffer = ByteBuffer.wrap(data);
-        while (respBuffer.hasRemaining()) {
-            channel.write(respBuffer);
-        }
-    }
-
-    private void routeToHandler(SocketChannel channel, ByteBuffer byteBuffer, HttpUpgradeRequest upgradeRequest) throws IOException {
+    private void routeToHandler(NetworkRequestData networkData, HttpUpgradeRequest upgradeRequest) throws IOException {
         var pathHandler = getPathHandler(upgradeRequest);
-        var inputWrapper = builtNetworkRequest(channel, byteBuffer);
-        var outputWrapper = new OutputWrapper(channel.socket().getOutputStream());
-        pathHandler.handle(inputWrapper, outputWrapper);
+        var outputWrapper = OutputWrapper.from(networkData);
+        pathHandler.handle(networkData, outputWrapper);
     }
 
     private URIEndpointHandler getPathHandler(HttpUpgradeRequest upgradeRequest) {
@@ -125,12 +57,43 @@ public class NIOIncomingSocketHandler implements ModernIncomingConnectionHandler
         return pathHandler;
     }
 
-    private NetworkRequestData builtNetworkRequest(SocketChannel channel, ByteBuffer byteBuffer) {
-        return new NIONetworkRequestData(channel, byteBuffer);
-    }
-
     @Override
     public void handle(ConnectionContext context) throws ConnectionException {
+        var networkData = context.getNetworkRequestData();
+        var readableContext = context.getReadableContext();
 
+        if (readableContext.isHandshakeComplete()) {
+            processMessage(networkData, readableContext.getHttpUpgradeRequest());
+        } else {
+            acceptHandshake(networkData, readableContext);
+        }
+    }
+
+    private void acceptHandshake(NetworkRequestData networkData, ReadableContext readableContext) {
+        try {
+            var upgradeRequest = httpParser.parse(networkData.read());
+            performHandshake(networkData, upgradeRequest);
+            readableContext.setHttpUpgradeRequest(upgradeRequest);
+        } catch (IOException e) {
+            log.error("Error during handshake", e);
+            closeQuietly(networkData);
+        }
+    }
+
+    private void processMessage(NetworkRequestData networkData, HttpUpgradeRequest upgradeRequest) {
+        try {
+            routeToHandler(networkData, upgradeRequest);
+        } catch (IOException e) {
+            log.error("Error routing message", e);
+            closeQuietly(networkData);
+        }
+    }
+
+    private void closeQuietly(NetworkRequestData networkData) {
+        try {
+            networkData.close();
+        } catch (IOException ex) {
+            log.error("Error closing connection", ex);
+        }
     }
 }
