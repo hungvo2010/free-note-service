@@ -6,10 +6,9 @@ import com.freenote.app.server.core.connection.WebSocketConnection;
 import com.freenote.app.server.core.connection.WebSocketSession;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
-import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.http.HttpUpgradeResponse;
-import com.freenote.app.server.model.ws.AppRequestData;
+import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.parser.HttpParser;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
 import com.freenote.app.server.routes.URIEndpointHandler;
@@ -18,7 +17,6 @@ import org.apache.logging.log4j.Logger;
 import otel.metrics.MetricUtils;
 
 import java.io.IOException;
-import java.net.Socket;
 
 import static generated.URIHandlerRegistry.getInstanceByURI;
 
@@ -50,16 +48,15 @@ public class DefaultLegacySessionBasedConnectionHandler implements LegacySession
     }
 
     private void doHandShakeAndRouting(WebSocketSession session) throws IOException {
-        var upgradeRequest = parseRequest(session);
+        var upgradeRequest = parseRequest(session.getNetworkRequestData());
         var handShakeResp = performHandshake(upgradeRequest);
         session.sendHandshakeResponse(handShakeResp);
 
         routeToHandler(session, upgradeRequest);
     }
 
-    private HttpUpgradeRequest parseRequest(WebSocketSession session) throws IOException {
-        var socket = session.getSocket();
-        return httpParser.parse(socket.getInputStream());
+    private HttpUpgradeRequest parseRequest(NetworkRequestData session) throws IOException {
+        return httpParser.parse(session.read());
     }
 
     private HttpUpgradeResponse performHandshake(HttpUpgradeRequest request) {
@@ -73,13 +70,12 @@ public class DefaultLegacySessionBasedConnectionHandler implements LegacySession
     }
 
     private void routeToHandler(WebSocketSession session, HttpUpgradeRequest upgradeRequest) throws IOException {
-        var socket = session.getSocket();
         var pathHandler = getEndpointHandler(upgradeRequest);
-        var inputWrapper = buildNetworkRequestData(session, upgradeRequest);
         var outputWrapper = session.getOutputWrapper();
         MetricUtils.incrementConcurrentUsers();
-        while (!socket.isClosed()) {
-            pathHandler.handle(session.getNetworkRequestData(), outputWrapper);
+        var networkRequestData = session.getNetworkRequestData();
+        while (!networkRequestData.isClosed()) {
+            pathHandler.handle(networkRequestData, outputWrapper);
         }
     }
 
@@ -92,20 +88,13 @@ public class DefaultLegacySessionBasedConnectionHandler implements LegacySession
         return endpointHandler;
     }
 
-    private InputWrapper buildNetworkRequestData(WebSocketSession session, HttpUpgradeRequest request) {
-        var appRequestData = AppRequestData.builder()
-                .requestOrigin(request.getOrigin())
-                .build();
-
-        var inputWrapper = new InputWrapper(session.getSocket());
-        inputWrapper.setSocket(session.getSocket());
-
-        return inputWrapper;
-    }
-
-    private void handleClientDisconnect(WebSocketSession session, Exception e) throws IOException {
+    private void handleClientDisconnect(WebSocketSession session, Exception e) {
         log.error("Client disconnected => self closed: {}", e.getMessage());
-        closeSocket(session.getSocket());
+        try {
+            session.getNetworkRequestData().close();
+        } catch (IOException ex) {
+            log.error("Error closing connection", ex);
+        }
     }
 
     private void handleError(WebSocketSession session, Exception e) {
@@ -118,16 +107,10 @@ public class DefaultLegacySessionBasedConnectionHandler implements LegacySession
             context.sendCurrentResponse();
         } catch (Exception ignore) {
         } finally {
-            closeSocket(session.getSocket());
-        }
-    }
-
-    private void closeSocket(Socket socket) {
-        if (socket != null && !socket.isClosed()) {
             try {
-                socket.close();
-            } catch (IOException e) {
-                log.error("Error closing socket", e);
+                session.getNetworkRequestData().close();
+            } catch (IOException ex) {
+                log.error("Error closing connection", ex);
             }
         }
     }

@@ -23,6 +23,6 @@ public class ByteBufferFrameParserImpl implements WebSocketFrameParser {
     private byte[] getRawBytes(NetworkRequestData networkRequest) {
         var nioRequest = (NIONetworkRequestData) networkRequest;
         nioRequest.prepareForRead();
-        return nioRequest.read();
+        return nioRequest.readFrameBytes();
     }
 }

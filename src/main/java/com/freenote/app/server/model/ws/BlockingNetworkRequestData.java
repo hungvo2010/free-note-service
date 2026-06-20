@@ -25,22 +25,47 @@ public class BlockingNetworkRequestData implements NetworkRequestData {
     }
 
     @Override
-    public byte[] read() throws IOException {
+    public byte[] readFrameBytes() throws IOException {
         return new FullFrameParser().getRawBytes(socket.getInputStream());
     }
 
     @Override
-    public int read(byte[] data) {
-        return 0;
+    public int read(byte[] data) throws IOException {
+        return this.socket.getInputStream().read(data);
     }
 
     @Override
     public void write(byte[] data) throws IOException {
-         IOUtils.writeOutPut(socket.getOutputStream(), data);
+        IOUtils.writeOutPut(socket.getOutputStream(), data);
     }
 
     @Override
-    public void write(WebSocketFrame frame) {
+    public byte[] read() throws IOException {
+        var bytes = new byte[8192];
+        int count = this.read(bytes);
+        if (count == -1) {
+            return new byte[0];
+        }
+        return java.util.Arrays.copyOf(bytes, count);
+    }
 
+    @Override
+    public void close() throws IOException {
+        if (socket != null && !socket.isClosed()) {
+            socket.close();
+        }
+    }
+
+    @Override
+    public boolean isClosed() {
+        return socket != null && socket.isClosed();
+    }
+
+    @Override
+    public Object getRemoteAddress() {
+        if (socket != null) {
+            return socket.getRemoteSocketAddress();
+        }
+        return null;
     }
 }

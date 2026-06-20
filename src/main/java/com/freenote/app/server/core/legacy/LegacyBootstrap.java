@@ -1,10 +1,12 @@
-package com.freenote.app.server.core.startup;
+package com.freenote.app.server.core.legacy;
 
 import com.freenote.app.server.core.config.ServerSocketConfig;
 import com.freenote.app.server.core.connection.IncomingConnectionHandler;
 import com.freenote.app.server.core.context.ConnectionContext;
+import com.freenote.app.server.core.startup.ServerBootstrap;
 import com.freenote.app.server.io.socket.RawServerSocketProvider;
 import com.freenote.app.server.io.socket.ServerSocketProvider;
+import com.freenote.app.server.model.ws.BlockingNetworkRequestData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,8 +37,9 @@ public class LegacyBootstrap implements ServerBootstrap {
                 log.info("Accepted connection from {}", socket.getRemoteSocketAddress());
                 this.virtualExecutorService.submit(() -> {
                     try {
+                        var networkRequestData = new BlockingNetworkRequestData(socket);
                         var connectionContext = ConnectionContext.builder()
-                                .socket(socket)
+                                .networkRequestData(networkRequestData)
                                 .build();
                         handler.handle(connectionContext);
                     } catch (Exception e) {

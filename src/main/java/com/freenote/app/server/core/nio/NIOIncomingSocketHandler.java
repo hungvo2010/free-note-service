@@ -29,17 +29,17 @@ import static generated.URIHandlerRegistry.getInstanceByURI;
 import static otel.SampleGlobalOpenTelemetry.getSampleGlobalTelemetry;
 
 // TODO: confusing name
-public class NIOModernIncomingSocketHandler implements ModernIncomingConnectionHandler, IncomingConnectionHandler {
-    private static final Logger log = LogManager.getLogger(NIOModernIncomingSocketHandler.class);
+public class NIOIncomingSocketHandler implements ModernIncomingConnectionHandler, IncomingConnectionHandler {
+    private static final Logger log = LogManager.getLogger(NIOIncomingSocketHandler.class);
     private final AcceptHandshakeHandler handshakeHandler;
     private final HttpParser httpParser;
 
-    public NIOModernIncomingSocketHandler(AcceptHandshakeHandler handshakeHandler, HttpParser httpParser) {
+    public NIOIncomingSocketHandler(AcceptHandshakeHandler handshakeHandler, HttpParser httpParser) {
         this.handshakeHandler = handshakeHandler;
         this.httpParser = httpParser;
     }
 
-    public NIOModernIncomingSocketHandler() {
+    public NIOIncomingSocketHandler() {
         this(new AcceptHandshakeImpl(), new HttpParserImpl());
     }
 

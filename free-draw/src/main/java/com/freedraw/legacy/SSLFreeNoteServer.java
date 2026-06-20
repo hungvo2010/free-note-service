@@ -1,9 +1,9 @@
 package com.freedraw.legacy;
 
-import com.freenote.app.server.core.NIOWebSocketServer;
+import com.freenote.app.server.core.nio.NIOWebSocketServer;
 import com.freenote.app.server.core.config.SSLConfig;
 import com.freenote.app.server.core.config.ServerSocketConfig;
-import com.freenote.app.server.core.nio.NIOModernIncomingSocketHandler;
+import com.freenote.app.server.core.nio.NIOIncomingSocketHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,7 +20,7 @@ public class SSLFreeNoteServer {
         NIOWebSocketServer server = NIOWebSocketServer.builder()
                 .sslConfig(new SSLConfig(keystorePath, keystorePassword))
                 .socketConfig(new ServerSocketConfig(port))
-                .handler(new NIOModernIncomingSocketHandler())
+                .handler(new NIOIncomingSocketHandler())
                 .build();
         server.start();
     }

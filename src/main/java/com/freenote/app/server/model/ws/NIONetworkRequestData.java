@@ -32,10 +32,10 @@ public class NIONetworkRequestData implements NetworkRequestData {
     }
 
     @Override
-    public byte[] read() {
+    public byte[] readFrameBytes() {
         log.debug("Reading WebSocket frame from ByteBuffer (limit: {}, remaining: {})", byteBuffer.limit(), byteBuffer.remaining());
         try (InputStream inputStream = IOUtils.newInputStream(byteBuffer)) {
-            return IOUtils.getRawBytes(inputStream);
+            return IOUtils.getFrameBytes(inputStream);
         } catch (IOException e) {
             return new byte[0];
         }
@@ -61,8 +61,32 @@ public class NIONetworkRequestData implements NetworkRequestData {
     }
 
     @Override
-    public void write(WebSocketFrame frame) {
+    public byte[] read() {
+        return new byte[0];
+    }
 
+    @Override
+    public void close() throws IOException {
+        if (channel != null && channel.isOpen()) {
+            channel.close();
+        }
+    }
+
+    @Override
+    public boolean isClosed() {
+        return channel != null && !channel.isOpen();
+    }
+
+    @Override
+    public Object getRemoteAddress() {
+        if (channel != null) {
+            try {
+                return channel.getRemoteAddress();
+            } catch (IOException e) {
+                log.warn("Failed to get remote address", e);
+            }
+        }
+        return null;
     }
 
     public void prepareForRead() {

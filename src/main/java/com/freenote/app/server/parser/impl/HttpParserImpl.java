@@ -2,6 +2,7 @@ package com.freenote.app.server.parser.impl;
 
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.parser.HttpParser;
+import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,6 +31,16 @@ public class HttpParserImpl implements HttpParser {
     }
 
     @Override
+    public HttpUpgradeRequest parse(byte[] data) throws IOException {
+        if (data == null || data.length == 0) {
+            return new HttpUpgradeRequest();
+        }
+        try (InputStream inputStream = new ByteArrayInputStream(data)) {
+            return parse(inputStream);
+        }
+    }
+
+    @Override
     public HttpUpgradeRequest parse(ByteBuffer byteBuffer) {
         if (byteBuffer.position() > 0) {
             byteBuffer.flip();
@@ -39,7 +50,7 @@ public class HttpParserImpl implements HttpParser {
             return new HttpUpgradeRequest();
         }
 
-        try (InputStream inputStream = com.freenote.app.server.util.IOUtils.newInputStream(byteBuffer)) {
+        try (InputStream inputStream = IOUtils.newInputStream(byteBuffer)) {
             return parse(inputStream);
         } catch (IOException e) {
             log.error("Failed to parse WebSocket upgrade request from ByteBuffer", e);

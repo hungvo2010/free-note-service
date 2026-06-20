@@ -2,7 +2,7 @@ package com.freedraw.legacy;
 
 import com.freenote.app.server.core.config.ServerSocketConfig;
 import com.freenote.app.server.core.legacy.DefaultLegacySessionBasedConnectionHandler;
-import com.freenote.app.server.core.WebSocketServer;
+import com.freenote.app.server.core.legacy.WebSocketServer;
 import com.freenote.app.server.core.legacy.LegacyConnectionAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

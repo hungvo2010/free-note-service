@@ -2,7 +2,6 @@ package com.freenote.app.server.parser;
 
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.model.InputWrapper;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import lombok.Getter;
 import lombok.Setter;
@@ -116,7 +115,6 @@ public class FullFrameParser {
         return len;
     }
 
-
     public byte[] getRawBytes(InputStream inputStream) throws IOException {
         DataInputStream dis = (inputStream instanceof DataInputStream)
                 ? (DataInputStream) inputStream
@@ -142,13 +140,8 @@ public class FullFrameParser {
 
     }
 
-    public WebSocketFrame parseFrame(InputWrapper inputWrapper) throws IOException {
-        byte[] actualData = getRawBytes(inputWrapper.getInputStream());
-        return FrameFactory.CLIENT.createFrameFromBytes(actualData);
-    }
-
     public WebSocketFrame parseFrame(NetworkRequestData networkRequest) throws IOException {
-        byte[] actualData = networkRequest.read();
+        byte[] actualData = networkRequest.readFrameBytes();
         return FrameFactory.CLIENT.createFrameFromBytes(actualData);
     }
 }

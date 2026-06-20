@@ -1,9 +1,8 @@
-package com.freenote.app.server.core;
+package com.freenote.app.server.core.legacy;
 
 import com.freenote.app.server.core.config.SSLConfig;
 import com.freenote.app.server.core.config.ServerSocketConfig;
 import com.freenote.app.server.core.connection.IncomingConnectionHandler;
-import com.freenote.app.server.core.startup.LegacyBootstrap;
 import com.freenote.app.server.core.startup.ServerBootstrap;
 import com.freenote.app.server.io.socket.RawServerSocketProvider;
 import com.freenote.app.server.io.socket.SSLServerSocketProvider;

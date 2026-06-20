@@ -53,7 +53,7 @@ public class IOUtils {
         return frame;
     }
 
-    public static byte[] getRawBytes(InputStream inputStream) throws IOException {
+    public static byte[] getFrameBytes(InputStream inputStream) throws IOException {
         DataInputStream dis = (inputStream instanceof DataInputStream)
                 ? (DataInputStream) inputStream
                 : new DataInputStream(inputStream);

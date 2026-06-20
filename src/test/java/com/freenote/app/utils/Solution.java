@@ -1,5 +1,7 @@
 package com.freenote.app.utils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 class Solution {
@@ -97,5 +99,12 @@ class Solution {
             result[i] = stack.pop();
         }
         return result;
+    }
+
+    public void longestOne(int[] nums, int k){
+        List<ArrayList<Integer>> res = new ArrayList<>();
+        for (int i = 0; i < nums.length; i++){
+
+        }
     }
 }

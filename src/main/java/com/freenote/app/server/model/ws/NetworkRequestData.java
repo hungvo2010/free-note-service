@@ -9,12 +9,17 @@ public interface NetworkRequestData {
 
     WebSocketFrame buildResponseFrame();
 
-    byte[] read() throws IOException;
+    byte[] readFrameBytes() throws IOException;
 
-    int read(byte[] data);
+    int read(byte[] data) throws IOException;
 
     void write(byte[] data) throws IOException;
 
-    // TODO: thinking about this method, mixed level of abstractions with others
-    void write(WebSocketFrame frame);
+    byte[] read() throws IOException;
+
+    void close() throws IOException;
+
+    boolean isClosed();
+
+    Object getRemoteAddress();
 }

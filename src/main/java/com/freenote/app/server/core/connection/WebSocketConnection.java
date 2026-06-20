@@ -14,7 +14,6 @@ import lombok.Data;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.channels.SocketChannel;
 
 @Data
 @Builder
@@ -53,10 +52,6 @@ public class WebSocketConnection {
 
     public OutputStream getOutputStream() {
         return session.getOutputWrapper().outputStream();
-    }
-
-    public SocketChannel getSocketChannel() {
-        return session.getSocketChannel();
     }
 
     public void sendText(String message) {
