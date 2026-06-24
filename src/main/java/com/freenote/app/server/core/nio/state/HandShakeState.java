@@ -2,7 +2,6 @@ package com.freenote.app.server.core.nio.state;
 
 import com.freenote.app.server.core.connection.IncomingConnectionHandler;
 import com.freenote.app.server.core.context.ConnectionContext;
-import com.freenote.app.server.model.ws.NetworkRequestData;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
@@ -15,7 +14,7 @@ public class HandShakeState implements ConnectionState {
         try {
             handler.handle(context);
             if (context.getReadableContext().isHandshakeComplete()) {
-                return new ProcessingState(context.getReadableContext().getHttpUpgradeRequest());
+                return new MessageState(context.getReadableContext().getHttpUpgradeRequest());
             }
             return this;
         } catch (Exception e) {

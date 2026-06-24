@@ -6,28 +6,18 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import otel.metrics.MetricUtils;
 
-import java.io.IOException;
-import java.net.SocketAddress;
+import java.nio.channels.SelectionKey;
 
 @AllArgsConstructor
 @Getter
 @Builder
-public class ReadableContext {
+public class ReadableContext { // NOTE: only use NIO
+    private final SelectionKey selectionKey;
     private final NetworkRequestData networkRequestData;
     private final TracingContext tracingContext;
     @Setter
     private HttpUpgradeRequest httpUpgradeRequest;
-
-    public void closeChannel() throws IOException {
-        networkRequestData.close();
-        MetricUtils.decrementConcurrentUsers();
-    }
-
-    public SocketAddress getRemoteAddress() throws IOException {
-        return (SocketAddress) networkRequestData.getRemoteAddress();
-    }
 
     public boolean isHandshakeComplete() {
         return httpUpgradeRequest != null;

@@ -7,7 +7,7 @@ import com.freenote.app.server.core.context.ReadableContext;
 import com.freenote.app.server.core.context.TracingContext;
 import com.freenote.app.server.core.nio.state.ConnectionState;
 import com.freenote.app.server.core.nio.state.HandShakeState;
-import com.freenote.app.server.core.nio.state.ProcessingState;
+import com.freenote.app.server.core.nio.state.MessageState;
 import com.freenote.app.server.core.nio.transport.NetworkSelector;
 import com.freenote.app.server.core.startup.ServerBootstrap;
 import com.freenote.app.server.exceptions.SelectorInterruptException;
@@ -22,7 +22,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.*;
 
@@ -49,7 +48,7 @@ public class NIOServerBootstrap implements ServerBootstrap {
     }
 
     private void startBusyWaitingSelector(NetworkSelector selector) throws ExecutionException, InterruptedException {
-        this.virtualExecutorService = Optional.ofNullable(this.virtualExecutorService).orElseGet(() -> (AbstractExecutorService) Executors.newFixedThreadPool(2));
+        this.virtualExecutorService = (AbstractExecutorService) Executors.newFixedThreadPool(2);
         Future<?> blockChannel = this.virtualExecutorService.submit(() -> {
             startSingleNetworkSelector(selector);
         });
@@ -149,9 +148,9 @@ public class NIOServerBootstrap implements ServerBootstrap {
                 .build();
 
         ReadableContext readableContext = ReadableContext.builder()
-                .networkRequestData(networkData)
                 .tracingContext(tracingContext)
-                .httpUpgradeRequest(state instanceof ProcessingState ps ? ps.getRequest() : null)
+                .selectionKey(key)
+                .httpUpgradeRequest(state instanceof MessageState ps ? ps.getRequest() : null)
                 .build();
 
         ConnectionContext context = ConnectionContext.builder()
@@ -176,8 +175,7 @@ public class NIOServerBootstrap implements ServerBootstrap {
         }
     }
 
-    private boolean readChannelData(SocketChannel channel, SelectionKey key,
-                                     NIONetworkRequestData networkData) {
+    private boolean readChannelData(SocketChannel channel, SelectionKey key, NIONetworkRequestData networkData) {
         try {
             if (networkData.readFromChannel() == -1) {
                 cleanupChannel(channel, key, networkData);
@@ -192,8 +190,7 @@ public class NIOServerBootstrap implements ServerBootstrap {
         }
     }
 
-    private void cleanupChannel(SocketChannel channel, SelectionKey key,
-                                NIONetworkRequestData networkData) {
+    private void cleanupChannel(SocketChannel channel, SelectionKey key, NIONetworkRequestData networkData) {
         channelStates.remove(channel);
         channelBuffers.remove(channel);
         key.cancel();
