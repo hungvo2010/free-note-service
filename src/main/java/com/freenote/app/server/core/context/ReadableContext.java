@@ -7,13 +7,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.nio.channels.SelectionKey;
-
 @AllArgsConstructor
 @Getter
 @Builder
 public class ReadableContext { // NOTE: only use NIO
-    private final SelectionKey selectionKey;
     private final NetworkRequestData networkRequestData;
     private final TracingContext tracingContext;
     @Setter
