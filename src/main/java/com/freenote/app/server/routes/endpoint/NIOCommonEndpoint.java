@@ -1,6 +1,6 @@
 package com.freenote.app.server.routes.endpoint;
 
-import com.freenote.app.server.core.connection.WebSocketConnection;
+import com.freenote.app.server.core.model.connection.WebSocketConnection;
 import com.freenote.app.server.parser.ByteBufferFrameParserImpl;
 import lombok.extern.log4j.Log4j2;
 

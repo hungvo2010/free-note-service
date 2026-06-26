@@ -1,4 +1,4 @@
-package com.freenote.app.server.core.context;
+package otel.sdk.context;
 
 import io.opentelemetry.api.trace.Span;
 import lombok.AllArgsConstructor;

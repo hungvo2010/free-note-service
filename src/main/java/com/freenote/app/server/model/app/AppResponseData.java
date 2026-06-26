@@ -1,4 +1,4 @@
-package com.freenote.app.server.model.ws;
+package com.freenote.app.server.model.app;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

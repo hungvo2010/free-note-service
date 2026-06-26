@@ -2,8 +2,8 @@ package com.freenote.app.server.core.legacy;
 
 import com.freenote.app.server.auth.AcceptHandshakeHandler;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
-import com.freenote.app.server.core.connection.WebSocketConnection;
-import com.freenote.app.server.core.connection.WebSocketSession;
+import com.freenote.app.server.core.model.connection.WebSocketConnection;
+import com.freenote.app.server.core.model.connection.WebSocketSession;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;

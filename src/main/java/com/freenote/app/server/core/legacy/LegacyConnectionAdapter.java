@@ -1,7 +1,7 @@
 package com.freenote.app.server.core.legacy;
 
 import com.freenote.app.server.core.connection.IncomingConnectionHandler;
-import com.freenote.app.server.core.connection.WebSocketSession;
+import com.freenote.app.server.core.model.connection.WebSocketSession;
 import com.freenote.app.server.core.context.ConnectionContext;
 import com.freenote.app.server.exceptions.ConnectionException;
 

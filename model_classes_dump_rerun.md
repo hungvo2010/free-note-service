@@ -12,7 +12,7 @@ public enum MsgType {
 ```java
 package com.freenote.app.server.model;
 
-import com.freenote.app.server.model.ws.AppRequestData;
+import com.freenote.app.server.model.app.AppRequestData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -256,7 +256,7 @@ public class TraceRequestData {
 ```java
 package com.freenote.app.server.model.ws;
 
-import com.freenote.app.server.model.ws.TraceResponseData;
+import com.freenote.app.server.model.tracing.TraceResponseData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -275,7 +275,7 @@ public class CommonResponseObject<T extends TraceResponseData> {
 ```java
 package com.freenote.app.server.model.ws;
 
-import com.freenote.app.server.model.ws.TraceRequestData;
+import com.freenote.app.server.model.tracing.TraceRequestData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

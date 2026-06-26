@@ -1,4 +1,4 @@
-package com.freenote.app.server.io.socket;
+package com.freenote.app.server.core.legacy.socket;
 
 import com.freenote.app.server.core.config.ServerSocketConfig;
 import com.freenote.app.server.exceptions.SocketCreationException;

@@ -1,6 +1,6 @@
 package com.freenote.app.server.routes.endpoint;
 
-import com.freenote.app.server.core.connection.WebSocketConnection;
+import com.freenote.app.server.core.model.connection.WebSocketConnection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.ConnectionException;
 import com.freenote.app.server.exceptions.MessageParsingException;

@@ -1,10 +1,10 @@
-package com.freenote.app.server.core.connection;
+package com.freenote.app.server.core.model.connection;
 
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.OutputWrapper;
-import com.freenote.app.server.model.ws.AppRequestData;
-import com.freenote.app.server.model.ws.AppResponseData;
+import com.freenote.app.server.model.app.AppRequestData;
+import com.freenote.app.server.model.app.AppResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.util.IOUtils;
 import com.freenote.app.server.util.JSONUtils;
@@ -41,7 +41,6 @@ public class WebSocketConnection {
     }
 
     private void writeFrame(WebSocketFrame frame) throws IOException {
-//        IOUtils.writeOutPut(getOutputStream(), frame);
         this.session.writeResponse(frame);
     }
 
@@ -68,7 +67,6 @@ public class WebSocketConnection {
         return dataToWrite;
     }
 
-
     private byte[] getFromResponseObject() throws IOException {
         byte[] dataToWrite;
         try (var baos = new ByteArrayOutputStream()) {
@@ -81,7 +79,6 @@ public class WebSocketConnection {
         }
         return dataToWrite;
     }
-
 
     public Object getRemoteAddress() {
         return session.getRemoteAddress();

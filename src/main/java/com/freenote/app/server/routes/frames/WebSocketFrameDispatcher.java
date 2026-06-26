@@ -1,6 +1,6 @@
 package com.freenote.app.server.routes.frames;
 
-import com.freenote.app.server.core.connection.WebSocketConnection;
+import com.freenote.app.server.core.model.connection.WebSocketConnection;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.handler.WebSocketFrameHandler;
 import com.freenote.app.server.frames.ws.WebSocketFrame;

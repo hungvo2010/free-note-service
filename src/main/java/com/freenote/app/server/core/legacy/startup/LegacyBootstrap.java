@@ -1,11 +1,11 @@
-package com.freenote.app.server.core.legacy;
+package com.freenote.app.server.core.legacy.startup;
 
 import com.freenote.app.server.core.config.ServerSocketConfig;
 import com.freenote.app.server.core.connection.IncomingConnectionHandler;
 import com.freenote.app.server.core.context.ConnectionContext;
 import com.freenote.app.server.core.startup.ServerBootstrap;
-import com.freenote.app.server.io.socket.RawServerSocketProvider;
-import com.freenote.app.server.io.socket.ServerSocketProvider;
+import com.freenote.app.server.core.legacy.socket.RawServerSocketProvider;
+import com.freenote.app.server.core.legacy.socket.ServerSocketProvider;
 import com.freenote.app.server.model.ws.BlockingNetworkRequestData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

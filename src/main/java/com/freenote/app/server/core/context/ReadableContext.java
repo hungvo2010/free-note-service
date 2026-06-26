@@ -6,10 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import otel.metrics.MetricUtils;
-
-import java.io.IOException;
-import java.net.SocketAddress;
+import otel.sdk.context.TracingContext;
 
 @AllArgsConstructor
 @Getter
@@ -19,15 +16,6 @@ public class ReadableContext {
     private final TracingContext tracingContext;
     @Setter
     private HttpUpgradeRequest httpUpgradeRequest;
-
-    public void closeChannel() throws IOException {
-        networkRequestData.close();
-        MetricUtils.decrementConcurrentUsers();
-    }
-
-    public SocketAddress getRemoteAddress() throws IOException {
-        return (SocketAddress) networkRequestData.getRemoteAddress();
-    }
 
     public boolean isHandshakeComplete() {
         return httpUpgradeRequest != null;

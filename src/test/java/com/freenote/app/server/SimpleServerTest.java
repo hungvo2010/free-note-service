@@ -1,6 +1,6 @@
 package com.freenote.app.server;
 
-import com.freenote.app.server.launcher.SimpleServer;
+import com.freenote.app.server.core.legacy.launcher.SimpleServer;
 import org.junit.jupiter.api.Test;
 
 import java.net.Socket;

@@ -1,4 +1,4 @@
-package com.freenote.app.server.launcher;
+package com.freenote.app.server.core.legacy.launcher;
 
 import com.freenote.app.server.core.legacy.WebSocketServer;
 import com.freenote.app.server.core.config.ServerSocketConfig;

@@ -2,7 +2,7 @@ package com.freedraw.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.freedraw.models.enums.DraftRequestType;
-import com.freenote.app.server.model.ws.AppResponseData;
+import com.freenote.app.server.model.app.AppResponseData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

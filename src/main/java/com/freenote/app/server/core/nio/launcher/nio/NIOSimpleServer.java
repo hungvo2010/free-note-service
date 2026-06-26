@@ -1,4 +1,4 @@
-package com.freenote.app.server.launcher.nio;
+package com.freenote.app.server.core.nio.launcher.nio;
 
 import com.freenote.app.server.core.nio.NIOWebSocketServer;
 import com.freenote.app.server.core.config.ServerSocketConfig;

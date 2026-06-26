@@ -1,5 +1,6 @@
-package com.freenote.app.server.model.ws;
+package com.freenote.app.server.model.tracing;
 
+import com.freenote.app.server.model.app.AppRequestData;
 import lombok.Data;
 
 import java.util.UUID;

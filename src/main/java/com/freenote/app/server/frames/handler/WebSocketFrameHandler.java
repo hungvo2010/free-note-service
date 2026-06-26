@@ -1,6 +1,6 @@
 package com.freenote.app.server.frames.handler;
 
-import com.freenote.app.server.core.connection.WebSocketConnection;
+import com.freenote.app.server.core.model.connection.WebSocketConnection;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 
 import java.io.IOException;

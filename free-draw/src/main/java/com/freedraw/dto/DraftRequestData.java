@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.freedraw.models.enums.DraftRequestType;
-import com.freenote.app.server.model.ws.AppRequestData;
+import com.freenote.app.server.model.app.AppRequestData;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
