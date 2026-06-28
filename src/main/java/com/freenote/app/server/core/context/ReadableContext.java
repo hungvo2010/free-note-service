@@ -6,12 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import otel.sdk.context.TracingContext;
 
 @AllArgsConstructor
 @Getter
 @Builder
-public class ReadableContext {
+public class ReadableContext { // NOTE: only use NIO
     private final NetworkRequestData networkRequestData;
     private final TracingContext tracingContext;
     @Setter

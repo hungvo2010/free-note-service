@@ -13,7 +13,7 @@ import java.io.IOException;
 @AllArgsConstructor
 @Log4j2
 @Getter
-public class ProcessingState implements ConnectionState {
+public class MessageState implements ConnectionState {
     private final HttpUpgradeRequest request;
 
     @Override
