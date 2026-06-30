@@ -11,22 +11,22 @@ The current code also has several compilation errors (`handler` undefined, `key`
 ## What Changes
 
 - **`ConnectionState` interface**: `handle(handler, context)` → `transition(context)` — state only decides lifecycle transitions, no longer calls the handler
-- **New `NIOConnectionProcessor`**: owns per-connection state map, calls `handler.handle()` then `state.transition()`, manages span lifecycle
-- **`NIOServerSession` simplified**: removes `channelStates`/`channelBuffers` maps, removes dead `socketChannel` field, becomes a thin I/O layer that reads bytes and delegates to the processor
-- **`NIOServerBootstrap` wiring**: creates processor, passes it to session via builder
+- **New `ConnectionPipeline`**: owns per-connection state map, calls `handler.handle()` then `state.transition()`, manages span lifecycle
+- **`NIOServerSession` simplified**: removes `channelStates`/`channelBuffers` maps, removes dead `socketChannel` field, becomes a thin I/O layer that reads bytes and delegates to the pipeline
+- **`NIOServerBootstrap` wiring**: creates pipeline, passes it to session via builder
 - **`ReadableContext` cleanup** (optional): removes unused `networkRequestData` field (zero usages)
 
 ## Capabilities
 
 ### New Capabilities
-- `connection-processor`: A transport-agnostic processor that owns connection lifecycle state, orchestrates handler invocation and state transitions, and manages tracing spans
+- `connection-pipeline`: A transport-agnostic pipeline that owns connection lifecycle state, orchestrates handler invocation and state transitions, and manages tracing spans
 
 ### Modified Capabilities
-- `nio-selector-abstraction`: ConnectionState no longer takes handler parameter; NIOServerSession (not NIOServerBootstrap) owns channel-to-data mapping; NIOConnectionProcessor owns state mapping
+- `nio-selector-abstraction`: ConnectionState no longer takes handler parameter; NIOServerSession (not NIOServerBootstrap) owns channel-to-data mapping; ConnectionPipeline owns state mapping
 - `readable-context-refactor`: Removes unused `networkRequestData` field (optional — can be deferred)
 
 ## Impact
 
-- **Transport pluggability**: Adding NIO.2 requires only implementing a thin transport adapter — the processor, handler, and state machine are reused as-is
-- **Code clarity**: Clear direction — transport reads bytes → processor calls handler → state decides transition → transport cleans up
+- **Transport pluggability**: Adding NIO.2 requires only implementing a thin transport adapter — the pipeline, handler, and state machine are reused as-is
+- **Code clarity**: Clear direction — transport reads bytes → pipeline calls handler → state decides transition → transport cleans up
 - **Bug fixes**: All compilation errors in `NIOServerSession` resolved; span lifecycle correctly managed with try/finally

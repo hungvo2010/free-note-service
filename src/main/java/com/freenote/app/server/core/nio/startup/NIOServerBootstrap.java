@@ -2,6 +2,7 @@ package com.freenote.app.server.core.nio.startup;
 
 import com.freenote.app.server.core.config.ServerSocketConfig;
 import com.freenote.app.server.core.connection.IncomingConnectionHandler;
+import com.freenote.app.server.core.nio.ConnectionPipeline;
 import com.freenote.app.server.core.nio.events.NIOEvent;
 import com.freenote.app.server.core.nio.events.NIOServerSession;
 import com.freenote.app.server.core.nio.transport.NetworkSelector;
@@ -28,17 +29,17 @@ import static com.freenote.app.server.util.RuntimeUtils.logServerInitialization;
 public class NIOServerBootstrap implements ServerBootstrap {
     private static final Logger log = LogManager.getLogger(NIOServerBootstrap.class);
     private AbstractExecutorService virtualExecutorService;
-    private IncomingConnectionHandler handler;
 
 
     @Override
     public void start(IncomingConnectionHandler handler, ServerSocketConfig socketConfig) throws Exception {
-        this.handler = handler;
         var selector = openNetworkSelector();
         try (var serverSocketChannel = tryOpenSocketChannel(socketConfig)) {
+            var connectionPipeline = new ConnectionPipeline(handler);
             var nioServerSession = NIOServerSession.builder()
                     .serverSocketChannel(serverSocketChannel)
                     .selector(selector)
+                    .pipeline(connectionPipeline)
                     .build();
             nioServerSession.registerAcceptEvent();
             logServerInitialization();

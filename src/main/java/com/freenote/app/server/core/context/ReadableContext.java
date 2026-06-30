@@ -1,7 +1,6 @@
 package com.freenote.app.server.core.context;
 
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
-import com.freenote.app.server.model.ws.NetworkRequestData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,8 +10,7 @@ import otel.sdk.context.TracingContext;
 @AllArgsConstructor
 @Getter
 @Builder
-public class ReadableContext { // NOTE: only use NIO
-    private final NetworkRequestData networkRequestData;
+public class ReadableContext {
     private final TracingContext tracingContext;
     @Setter
     private HttpUpgradeRequest httpUpgradeRequest;
