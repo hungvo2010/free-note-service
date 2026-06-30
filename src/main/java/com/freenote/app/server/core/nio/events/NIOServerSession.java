@@ -2,7 +2,6 @@ package com.freenote.app.server.core.nio.events;
 
 import com.freenote.app.server.core.context.ConnectionContext;
 import com.freenote.app.server.core.context.ReadableContext;
-import com.freenote.app.server.core.context.TracingContext;
 import com.freenote.app.server.core.nio.state.ConnectionState;
 import com.freenote.app.server.core.nio.state.HandShakeState;
 import com.freenote.app.server.core.nio.state.MessageState;
@@ -15,6 +14,7 @@ import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import otel.metrics.MetricUtils;
+import otel.sdk.context.TracingContext;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -62,8 +62,6 @@ public class NIOServerSession {
     }
 
     public void handleReadEvent(NIOEvent nioEvent) {
-
-
         try {
             SocketChannel channel = (SocketChannel) nioEvent.getChannel();
             ConnectionState state = channelStates.get(channel);
