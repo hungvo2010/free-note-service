@@ -4,9 +4,11 @@ import com.freenote.app.server.core.config.ServerSocketConfig;
 import com.freenote.app.server.core.connection.IncomingConnectionHandler;
 import com.freenote.app.server.core.nio.ConnectionPipeline;
 import com.freenote.app.server.core.nio.events.NIOEvent;
-import com.freenote.app.server.core.nio.events.NIOServerSession;
+import com.freenote.app.server.core.nio.sessions.NIOServerSession;
 import com.freenote.app.server.core.nio.transport.NetworkSelector;
 import com.freenote.app.server.core.startup.ServerBootstrap;
+import com.freenote.app.server.exceptions.AcceptConnectionException;
+import com.freenote.app.server.exceptions.NIOReadException;
 import com.freenote.app.server.exceptions.SelectorInterruptException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,7 +16,6 @@ import otel.metrics.MetricUtils;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.util.Iterator;
@@ -71,20 +72,19 @@ public class NIOServerBootstrap implements ServerBootstrap {
                 waitForEvents(selector);
                 dispatcherReadyEvents(nioServerSession);
             }
-        } catch (IOException e) {
+        } catch (NIOReadException | AcceptConnectionException | IOException e) {
             log.error("Error during NIO selector loop", e);
         }
     }
 
-    private void dispatcherReadyEvents(NIOServerSession nioServerSession) throws IOException {
+    private void dispatcherReadyEvents(NIOServerSession nioServerSession) throws IOException, NIOReadException {
         var selector = nioServerSession.getSelector();
-        Set<SelectionKey> selectedKeys = selector.getNewSelectionEvents();
-        Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-        while (keyIterator.hasNext()) {
-            SelectionKey key = keyIterator.next();
-            var nioEvent = NIOEvent.builder().selectionKey(key).build();
+        Set<NIOEvent> selectedKeys = selector.getNewSelectionEvents();
+        Iterator<NIOEvent> eventIterator = selectedKeys.iterator();
+        while (eventIterator.hasNext()) {
+            var nioEvent = eventIterator.next();
             handleSelectedKey(nioServerSession, nioEvent);
-            keyIterator.remove();
+            eventIterator.remove();
         }
     }
 
@@ -94,7 +94,7 @@ public class NIOServerBootstrap implements ServerBootstrap {
             throw new SelectorInterruptException("Selector is interrupted or no channels are ready");
     }
 
-    private void handleSelectedKey(NIOServerSession nioServerSession, NIOEvent nioEvent) throws IOException {
+    private void handleSelectedKey(NIOServerSession nioServerSession, NIOEvent nioEvent) throws NIOReadException, AcceptConnectionException {
         if (nioEvent.isNewConnection()) {
             handleNewConnectionEvent(nioServerSession, nioEvent);
         } else if (nioEvent.isNewMessage()) {
@@ -102,12 +102,12 @@ public class NIOServerBootstrap implements ServerBootstrap {
         }
     }
 
-    private void handleNewConnectionEvent(NIOServerSession nioServerSession, NIOEvent nioEvent) throws IOException {
+    private void handleNewConnectionEvent(NIOServerSession nioServerSession, NIOEvent nioEvent) throws AcceptConnectionException {
         nioServerSession.acceptConnection(nioEvent);
         MetricUtils.incrementConcurrentUsers();
     }
 
-    private void handleReadableEvent(NIOServerSession nioServerSession, NIOEvent nioEvent) throws IOException {
+    private void handleReadableEvent(NIOServerSession nioServerSession, NIOEvent nioEvent) throws NIOReadException {
         nioServerSession.handleReadEvent(nioEvent);
     }
 

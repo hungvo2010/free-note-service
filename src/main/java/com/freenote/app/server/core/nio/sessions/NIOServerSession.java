@@ -1,8 +1,10 @@
-package com.freenote.app.server.core.nio.events;
+package com.freenote.app.server.core.nio.sessions;
 
 import com.freenote.app.server.core.nio.ConnectionPipeline;
+import com.freenote.app.server.core.nio.events.NIOEvent;
 import com.freenote.app.server.core.nio.transport.NetworkSelector;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
+import com.freenote.app.server.exceptions.NIOReadException;
 import com.freenote.app.server.model.ws.NIONetworkRequestData;
 import lombok.Builder;
 import lombok.Getter;
@@ -52,7 +54,7 @@ public class NIOServerSession {
         }
     }
 
-    public void handleReadEvent(NIOEvent nioEvent) {
+    public void handleReadEvent(NIOEvent nioEvent) throws NIOReadException {
         try {
             SocketChannel channel = (SocketChannel) nioEvent.getChannel();
             NIONetworkRequestData networkData = channelData.get(channel);
@@ -69,7 +71,7 @@ public class NIOServerSession {
                 cleanupChannel(nioEvent, networkData);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new NIOReadException(e);
         }
     }
 
