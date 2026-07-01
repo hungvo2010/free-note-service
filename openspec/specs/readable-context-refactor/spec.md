@@ -1,23 +1,22 @@
 ## Purpose
 
-Define how ReadableContext carries NetworkRequestData instead of raw NIO types, eliminating SocketChannel, SelectionKey, and ByteBuffer leaks into handler code.
+Define how ReadableContext is decoupled from NetworkRequestData, which is now owned by ConnectionContext. ReadableContext carries only TracingContext and HttpUpgradeRequest.
 
 ## Requirements
 
-### Requirement: ReadableContext carries NetworkRequestData instead of raw NIO types
-`ReadableContext` SHALL carry a `NetworkRequestData` instance instead of raw `SocketChannel`, `SelectionKey`, and `ByteBuffer` fields. The raw transport fields MUST be removed.
+### Requirement: ReadableContext no longer carries NetworkRequestData
 
-#### Scenario: Construct ReadableContext with NetworkRequestData
-- **WHEN** `ReadableContext.builder().networkRequestData(nioNetworkRequestData).tracingContext(tracingContext).build()` is called
-- **THEN** a valid `ReadableContext` is created without any `SocketChannel`, `SelectionKey`, or `ByteBuffer` fields
+`ReadableContext` SHALL NOT carry a `NetworkRequestData` field. `ConnectionContext` already carries `NetworkRequestData` — the duplication in `ReadableContext` is unused (zero usages across the codebase) and confusing. Consumers that need `NetworkRequestData` SHALL obtain it from `ConnectionContext.getNetworkRequestData()`.
 
-#### Scenario: Close connection via ReadableContext
-- **WHEN** `readableContext.closeChannel()` is called
-- **THEN** it delegates to `networkRequestData.close()` instead of calling `channel.close()` directly
+#### Scenario: ReadableContext built without NetworkRequestData
 
-#### Scenario: Get remote address via ReadableContext
-- **WHEN** `readableContext.getRemoteAddress()` is called
-- **THEN** it delegates to `networkRequestData.getRemoteAddress()` instead of calling `channel.getRemoteAddress()`
+- **WHEN** `ReadableContext.builder().tracingContext(tracingContext).httpUpgradeRequest(upgradeRequest).build()` is called
+- **THEN** a valid `ReadableContext` is created with only `TracingContext` and `HttpUpgradeRequest`
+
+#### Scenario: NetworkRequestData accessed via ConnectionContext
+
+- **WHEN** a handler needs the network data for a connection
+- **THEN** it calls `context.getNetworkRequestData()` on the `ConnectionContext`, not on `ReadableContext`
 
 ### Requirement: ReadableContext must not expose SelectionKey
 `ReadableContext` SHALL NOT expose `SelectionKey` to consumers. State management (`setState()`) SHALL NOT call `key.attach()` — state SHALL be managed externally by the selector loop or through a separate mechanism.
