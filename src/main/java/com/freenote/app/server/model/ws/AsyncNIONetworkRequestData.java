@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.CompletionHandler;
 
 public class AsyncNIONetworkRequestData implements NetworkRequestData {
 
@@ -56,9 +57,20 @@ public class AsyncNIONetworkRequestData implements NetworkRequestData {
     public void write(byte[] dataToWrite) {
         if (dataToWrite != null) {
             ByteBuffer buffer = ByteBuffer.wrap(dataToWrite);
-            while (buffer.hasRemaining()) {
-                channel.write(buffer);
-            }
+
+            channel.write(buffer, buffer, new CompletionHandler<>() {
+                @Override
+                public void completed(Integer result, ByteBuffer buffer) {
+                    if (buffer.hasRemaining()) {
+                        channel.write(buffer, buffer, this);
+                    }
+                }
+
+                @Override
+                public void failed(Throwable exc, ByteBuffer buffer) {
+                    exc.printStackTrace();
+                }
+            });
         }
     }
 
@@ -112,7 +124,9 @@ public class AsyncNIONetworkRequestData implements NetworkRequestData {
     public int readFromChannel() throws IOException {
         try {
             byteBuffer.clear();
-            return channel.read(byteBuffer).get();
+            var res = channel.read(byteBuffer).get();
+            log.info("Read {} bytes from channel into ByteBuffer (capacity: {}, position: {}, limit: {})", res, byteBuffer.capacity(), byteBuffer.position(), byteBuffer.limit());
+            return res;
         } catch (Exception e) {
             log.error("Failed to read from channel", e);
             return -1;

@@ -35,7 +35,7 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandler {
         this(new AcceptHandshakeImpl(), new HttpParserImpl());
     }
 
-    private void performHandshake(NetworkRequestData networkData, HttpUpgradeRequest request) throws IOException {
+    private void writeHandshakeResponse(NetworkRequestData networkData, HttpUpgradeRequest request) throws IOException {
         log.info("Performing handshake for: {}", request);
         var handShakeResp = this.handshakeHandler.process(request);
         var outputBytes = handShakeResp.toString().getBytes(StandardCharsets.UTF_8);
@@ -72,7 +72,7 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandler {
     private void acceptHandshake(NetworkRequestData networkData, ReadableContext readableContext) {
         try {
             var upgradeRequest = httpParser.parse(networkData.read());
-            performHandshake(networkData, upgradeRequest);
+            writeHandshakeResponse(networkData, upgradeRequest);
             readableContext.setHttpUpgradeRequest(upgradeRequest);
         } catch (IOException e) {
             log.error("Error during handshake", e);

@@ -58,7 +58,7 @@ public class ConnectionPipeline {
             }
             return true;
         } catch (Exception e) {
-            log.warn("Error processing connection: {}", e.getMessage());
+            log.error("Error processing connection: {}", e.getCause(), e);
             connectionStates.remove(networkData);
             try {
                 networkData.close();
