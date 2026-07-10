@@ -160,7 +160,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
 
     // Observability
-    implementation platform("io.opentelemetry:opentelemetry-bom:1.61.0-SNAPSHOT")
+    implementation platform("io.opentelemetry:opentelemetry-bom:1.63.0-SNAPSHOT")
     implementation('io.opentelemetry:opentelemetry-api')
 }
 

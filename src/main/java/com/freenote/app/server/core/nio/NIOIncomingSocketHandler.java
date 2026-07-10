@@ -18,6 +18,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import static generated.URIHandlerRegistry.getInstanceByURI;
 
@@ -95,5 +97,61 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandler {
         } catch (IOException ex) {
             log.error("Error closing connection", ex);
         }
+    }
+
+
+    public String predictPartyVictory(String senate) {
+        Deque<Character> deque = new ArrayDeque<>();
+        var allPlayers = senate.length();
+        var i = 0;
+        while (i < allPlayers) {
+            var c = senate.charAt(i);
+            if (deque.isEmpty()) {
+                deque.offer(c);
+                deque.offer(c);
+            } else {
+                if (c != deque.peekFirst()) {
+                    int count = 0;
+
+                    while (!deque.isEmpty() && deque.peekFirst() != c && count < 1) {
+                        deque.removeFirst();
+                        count++;
+                    }
+                    if (count == 0) {
+                        return c == 'R' ? "Radiant" : "Dire";
+                    }
+                    else {
+                        deque.addLast(c);
+                    }
+                } else if (c != deque.peekLast()) {
+
+                    int count = 0;
+
+                    while (!deque.isEmpty() && deque.peekLast() != c && count < 1) {
+                        deque.removeLast();
+                        count++;
+                    }
+                    if (count == 0) {
+                        return c == 'R' ? "Radiant" : "Dire";
+                    }
+                    else {
+                        deque.addFirst(c);
+                    }
+                }
+                else {
+                    deque.addFirst(c);
+                    deque.addLast(c);
+                }
+            }
+            i++;
+        }
+        return deque.peekFirst() == 'R' ? "Radiant" : "Dire";
+    }
+
+    public static void main(String[] args) {
+        NIOIncomingSocketHandler handler = new NIOIncomingSocketHandler();
+        String senate = "DDRRR";
+        String result = handler.predictPartyVictory(senate);
+        System.out.println("Predicted winner for senate '" + senate + "': " + result);
     }
 }
