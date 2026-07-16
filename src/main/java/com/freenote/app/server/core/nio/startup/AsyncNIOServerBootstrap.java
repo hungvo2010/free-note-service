@@ -5,6 +5,7 @@ import com.freenote.app.server.core.connection.IncomingConnectionHandler;
 import com.freenote.app.server.core.nio.ConnectionPipeline;
 import com.freenote.app.server.core.nio.sessions.AsyncNIOServerSession;
 import com.freenote.app.server.core.startup.ServerBootstrap;
+import com.freenote.app.server.exceptions.NIOServerInitializationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,17 +22,21 @@ public class AsyncNIOServerBootstrap implements ServerBootstrap {
 
 
     @Override
-    public void start(IncomingConnectionHandler handler, ServerSocketConfig socketConfig) throws Exception {
+    public void start(IncomingConnectionHandler connectionHandler, ServerSocketConfig socketConfig) throws Exception {
         try (var serverSocketChannel = tryOpenSocketChannel(socketConfig)) {
-            var connectionPipeline = new ConnectionPipeline(handler);
-            var nioServerSession = AsyncNIOServerSession.builder()
-                    .asyncServerChannel(serverSocketChannel)
-                    .pipeline(connectionPipeline)
-                    .build();
+            var connectionPipeline = new ConnectionPipeline(connectionHandler);
+            var nioServerSession = buildServerSession(serverSocketChannel, connectionPipeline);
             logServerInitialization();
-            nioServerSession.start();
+            nioServerSession.registerReadEvent();
             Thread.currentThread().join();
         }
+    }
+
+    private AsyncNIOServerSession buildServerSession(AsynchronousServerSocketChannel serverSocketChannel, ConnectionPipeline connectionPipeline) {
+        return AsyncNIOServerSession.builder()
+                .asyncServerChannel(serverSocketChannel)
+                .pipeline(connectionPipeline)
+                .build();
     }
 
     private AsynchronousServerSocketChannel tryOpenSocketChannel(ServerSocketConfig socketConfig) {
@@ -40,7 +45,7 @@ public class AsyncNIOServerBootstrap implements ServerBootstrap {
             asyncServerSocketChannel.bind(new InetSocketAddress(socketConfig.port()));
             return asyncServerSocketChannel;
         } catch (IOException e) {
-            throw new RuntimeException("Failed to open server socket channel", e);
+            throw new NIOServerInitializationException("Failed to open server socket channel", e);
         }
     }
 }

@@ -2,7 +2,6 @@ package com.freenote.app.server.parser;
 
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.model.ws.NIONetworkRequestData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import lombok.extern.log4j.Log4j2;
 
@@ -20,8 +19,8 @@ public class ByteBufferFrameParserImpl implements WebSocketFrameParser {
         return FrameFactory.CLIENT.createFrameFromBytes(rawBytes);
     }
 
-    private byte[] getRawBytes(NetworkRequestData networkRequest) {
-        var nioRequest = (NIONetworkRequestData) networkRequest;
+    private byte[] getRawBytes(NetworkRequestData networkRequest) throws IOException {
+        var nioRequest = networkRequest;
         nioRequest.prepareForRead();
         return nioRequest.readFrameBytes();
     }

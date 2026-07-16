@@ -150,7 +150,7 @@ public class NIOIncomingSocketHandler implements IncomingConnectionHandler {
 
     public static void main(String[] args) {
         NIOIncomingSocketHandler handler = new NIOIncomingSocketHandler();
-        String senate = "DDRRR";
+        String senate = "DRRD";
         String result = handler.predictPartyVictory(senate);
         System.out.println("Predicted winner for senate '" + senate + "': " + result);
     }

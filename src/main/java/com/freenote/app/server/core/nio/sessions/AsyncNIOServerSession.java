@@ -28,7 +28,7 @@ public class AsyncNIOServerSession {
     @Builder.Default
     private final Map<AsynchronousSocketChannel, AsyncNIONetworkRequestData> channelData = new ConcurrentHashMap<>();
 
-    public void start() {
+    public void registerReadEvent() {
         asyncServerChannel.accept(null, new CompletionHandler<AsynchronousSocketChannel, Void>() {
             @Override
             public void completed(AsynchronousSocketChannel socketChannel, Void attachment) {

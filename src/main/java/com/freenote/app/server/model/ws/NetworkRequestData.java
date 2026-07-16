@@ -22,4 +22,6 @@ public interface NetworkRequestData {
     boolean isClosed();
 
     Object getRemoteAddress();
+
+    void prepareForRead();
 }

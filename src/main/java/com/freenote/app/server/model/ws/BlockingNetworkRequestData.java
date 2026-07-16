@@ -70,6 +70,11 @@ public class BlockingNetworkRequestData implements NetworkRequestData {
         return null;
     }
 
+    @Override
+    public void prepareForRead() {
+
+    }
+
     // TODO: break encapsulation
     public OutputStream getOutputStream() {
         try {
