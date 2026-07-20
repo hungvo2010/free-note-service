@@ -36,14 +36,15 @@ public class AsyncNIOServerSession {
                 asyncServerChannel.accept(null, this);
                 var buffer = acceptConnection(socketChannel);
                 // Edge-triggered: Only notified once when data arrives
-                socketChannel.read(buffer, buffer, new CompletionHandler<Integer, ByteBuffer>() {
+                socketChannel.read(buffer, buffer, new CompletionHandler<>() {
                     @Override
                     public void completed(Integer result, ByteBuffer buffer) {
                         var networkData = channelData.get(socketChannel);
-                        if (!readChannelData(networkData)) {
+                        if (!readyToRead(networkData)) {
                             return;
                         }
                         pipeline.process(networkData);
+                        buffer.compact();
                         socketChannel.read(buffer, buffer, this);
                     }
 
@@ -52,7 +53,6 @@ public class AsyncNIOServerSession {
                         try {
                             socketChannel.close();
                         } catch (IOException e) {
-                            // Handle error
                             log.error("Failed to close socket channel", e);
                         }
                     }
@@ -77,7 +77,7 @@ public class AsyncNIOServerSession {
         }
     }
 
-    private boolean readChannelData(AsyncNIONetworkRequestData networkData) {
+    private boolean readyToRead(AsyncNIONetworkRequestData networkData) {
         try {
             networkData.prepareForRead();
             return true;

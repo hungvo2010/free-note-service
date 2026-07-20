@@ -22,32 +22,19 @@ public class ConnectionPipeline {
     private static final Logger log = LogManager.getLogger(ConnectionPipeline.class);
 
     private final Map<NetworkRequestData, ConnectionState> connectionStates = new ConcurrentHashMap<>();
-    private final IncomingConnectionHandler handler;
+    private final IncomingConnectionHandler connectionHandler;
 
     public ConnectionPipeline(IncomingConnectionHandler handler) {
-        this.handler = handler;
+        this.connectionHandler = handler;
     }
 
     public boolean process(NetworkRequestData networkData) {
         ConnectionState state = connectionStates.computeIfAbsent(networkData, k -> new HandShakeState());
-        Span span = buildSpan(state);
         try {
-            TracingContext tracingContext = TracingContext.builder()
-                    .span(span)
-                    .build();
-            ReadableContext readableContext = ReadableContext.builder()
-                    .tracingContext(tracingContext)
-                    .httpUpgradeRequest(state instanceof MessageState ps ? ps.getRequest() : null)
-                    .build();
+            var connectionContext = buildConnectionContext(networkData, state);
+            connectionHandler.handle(connectionContext);
 
-            ConnectionContext context = ConnectionContext.builder()
-                    .networkRequestData(networkData)
-                    .readableContext(readableContext)
-                    .build();
-
-            handler.handle(context);
-
-            ConnectionState nextState = state.transition(context);
+            ConnectionState nextState = state.transition(connectionContext);
             if (nextState == null) {
                 connectionStates.remove(networkData);
                 networkData.close();
@@ -65,9 +52,23 @@ public class ConnectionPipeline {
             } catch (Exception ignored) {
             }
             return false;
-        } finally {
-            span.end();
         }
+    }
+
+    private ConnectionContext buildConnectionContext(NetworkRequestData networkData, ConnectionState state) {
+        Span span = buildSpan(state);
+        TracingContext tracingContext = TracingContext.builder()
+                .span(span)
+                .build();
+        ReadableContext readableContext = ReadableContext.builder()
+                .tracingContext(tracingContext)
+                .httpUpgradeRequest(state instanceof MessageState ps ? ps.getRequest() : null)
+                .build();
+
+        return ConnectionContext.builder()
+                .networkRequestData(networkData)
+                .readableContext(readableContext)
+                .build();
     }
 
     public void disconnect(NetworkRequestData networkData) {
