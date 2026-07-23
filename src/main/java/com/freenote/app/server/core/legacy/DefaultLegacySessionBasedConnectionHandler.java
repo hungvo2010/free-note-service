@@ -60,7 +60,7 @@ public class DefaultLegacySessionBasedConnectionHandler implements LegacySession
     }
 
     private HttpUpgradeResponse performHandshake(HttpUpgradeRequest request) {
-        log.info("Performing handshake for: {}", request);
+        log.debug("Performing handshake for: {}", request);
         var upgradeResponse = this.handshakeHandler.process(request);
         if (!upgradeResponse.getStatusCode().equals("101")) {
             throw new AcceptConnectionException("Handshake failed, connection not accepted");

@@ -63,7 +63,7 @@ public class NIOServerSession {
                 return;
             }
 
-            if (!readChannelData(nioEvent, networkData)) {
+            if (!readyToRead(nioEvent, networkData)) {
                 return;
             }
 
@@ -75,7 +75,7 @@ public class NIOServerSession {
         }
     }
 
-    private boolean readChannelData(NIOEvent nioEvent, NIONetworkRequestData networkData) {
+    private boolean readyToRead(NIOEvent nioEvent, NIONetworkRequestData networkData) {
         try {
             if (networkData.readFromChannel() == -1) {
                 pipeline.disconnect(networkData);

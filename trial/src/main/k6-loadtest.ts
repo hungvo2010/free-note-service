@@ -3,7 +3,12 @@ import { check, sleep } from 'k6';
 
 // --- Load test configuration ---
 export const options = {
-    vus: 100,
+    // NOTE: do NOT add `vus: 100` here. Combined with `stages`, k6 turns `vus`
+    // into the ramping-vus executor's startVUs, so all 100 VUs dial at second 0.
+    // That burst overflows the server's TCP listen backlog (Java default = 50),
+    // and Windows RSTs the excess SYNs:
+    // "connectex: No connection could be made because the target machine actively refused it."
+    // The stages below already ramp 0 -> 10 VUs gradually, which connects cleanly.
     stages: [
         { duration: '10s', target: 10 },
         { duration: '30s', target: 10 },
@@ -55,8 +60,8 @@ export default function () {
         });
 
         // 3. Ping/Pong handlers
-        socket.on('ping', () => console.log(`[VU ${__VU}] PING received`));
-        socket.on('pong', () => console.log(`[VU ${__VU}] PONG received`));
+        // socket.on('ping', () => console.log(`[VU ${__VU}] PING received`));
+        // socket.on('pong', () => console.log(`[VU ${__VU}] PONG received`));
 
         // 4. Error handler
         socket.on('error', function (e) {
@@ -75,6 +80,7 @@ export default function () {
             socket.close();
         }, 480000);
     });
+    console.log("connection result: " + JSON.stringify(res));
 
     // Check that upgrade handshake was successful (HTTP 101)
     check(res, {

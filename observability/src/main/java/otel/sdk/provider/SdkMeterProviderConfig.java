@@ -10,6 +10,9 @@ import java.time.Duration;
 
 public class SdkMeterProviderConfig {
     public static SdkMeterProvider create(Resource resource) {
+        java.util.logging.Logger
+                .getLogger("io.opentelemetry.exporter.logging")
+                .setLevel(java.util.logging.Level.OFF);
         var meterProvider = SdkMeterProvider.builder()
                 .setResource(resource)
                 .registerMetricReader(

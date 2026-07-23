@@ -56,9 +56,9 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
     }
 
     private String getSocketAcceptKey(HttpUpgradeRequest request) {
-        log.info("Received WebSocket upgrade request: {}", request);
+        log.debug("Received WebSocket upgrade request: {}", request);
         var socketAccept = generateAcceptKey(request);
-        log.info("WebSocket handshake accepted with Sec-WebSocket-Accept: {}", socketAccept);
+        log.debug("WebSocket handshake accepted with Sec-WebSocket-Accept: {}", socketAccept);
         return socketAccept;
     }
 
