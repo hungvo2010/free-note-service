@@ -1,5 +1,6 @@
 package com.freedraw.common;
 
+import com.freenote.app.server.core.config.AppConfig;
 import lombok.experimental.UtilityClass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,7 +14,7 @@ public class EnvironmentVariable {
 
     public static String getTargetDirectory() {
         try {
-            String targetDir = System.getenv("FREENOTE_TARGET_DIRECTORY");
+            String targetDir = AppConfig.get("freenote.target.directory", "");
             String platform = System.getProperty("os.name").toLowerCase();
             if (platform.contains("win")) {
                 if (targetDir == null || targetDir.isEmpty()) {
@@ -29,7 +30,7 @@ public class EnvironmentVariable {
             return targetDir;
         }
         catch (Exception e) {
-            log.info("Failed to get target directory from environment variable: {}", e.getMessage());
+            log.info("Failed to get target directory from application.properties: {}", e.getMessage());
             return "/tmp/";
         }
     }

@@ -9,7 +9,7 @@ import otel.metrics.core.RealtimeMetric;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Builder
-public class OtelRealtimeMetric<T extends Number> implements RealtimeMetric<T> {
+public class OtelUpDownRealtimeMetric<T extends Number> implements RealtimeMetric<T> {
     private String title;
     @Builder.Default
     private String desc = "default.otel.realtime.metric";
@@ -19,7 +19,7 @@ public class OtelRealtimeMetric<T extends Number> implements RealtimeMetric<T> {
     private LongUpDownCounter upDownCounter;
     private final AtomicLong internalCounter = new AtomicLong(0);
 
-    public OtelRealtimeMetric<T> register() {
+    public OtelUpDownRealtimeMetric<T> register() {
         this.upDownCounter = meter.upDownCounterBuilder(title)
                 .setDescription(desc)
                 .setUnit(unit)

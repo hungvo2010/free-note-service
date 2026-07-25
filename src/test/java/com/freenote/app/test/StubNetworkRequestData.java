@@ -67,4 +67,8 @@ public class StubNetworkRequestData implements NetworkRequestData {
 
     @Override
     public Object getRemoteAddress() { return null; }
+
+    @Override
+    public void prepareForRead() {
+    }
 }

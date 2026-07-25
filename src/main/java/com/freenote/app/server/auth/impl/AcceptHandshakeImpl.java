@@ -1,6 +1,7 @@
 package com.freenote.app.server.auth.impl;
 
 import com.freenote.app.server.auth.AcceptHandshakeHandler;
+import com.freenote.app.server.core.config.AppConfig;
 import com.freenote.app.server.exceptions.HandshakeException;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.http.HttpUpgradeResponse;
@@ -30,7 +31,7 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
     private static final Logger log = LogManager.getLogger(AcceptHandshakeImpl.class);
 
     static {
-        loadAllowedOriginsFromEnvs();
+        loadAllowedOriginsFromConfig();
     }
 
     @Override
@@ -92,17 +93,17 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
                 || !ALLOWED_ORIGINS.contains(request.getOrigin());
     }
 
-    private static void loadAllowedOriginsFromEnvs() {
-        String additionalOrigins = System.getenv("ALLOWED_ORIGINS");
+    private static void loadAllowedOriginsFromConfig() {
+        String additionalOrigins = AppConfig.get("allowed.origins", "");
         var combined = new ArrayList<>(DEFAULT_ALLOWED_ORIGINS);
         if (isValidCommaSeparated(additionalOrigins)) {
             combined.addAll(Arrays.asList(additionalOrigins.split(",")));
             ALLOWED_ORIGINS = combined;
-            log.info("Loaded additional allowed origins from environment: {}", additionalOrigins);
+            log.info("Loaded additional allowed origins from application.properties: {}", additionalOrigins);
         } else {
             ALLOWED_ORIGINS = DEFAULT_ALLOWED_ORIGINS;
         }
-        log.info("Allowed origins: {}", ALLOWED_ORIGINS);
+        log.debug("Allowed origins: {}", ALLOWED_ORIGINS);
     }
 
     private static boolean isValidCommaSeparated(String additionalOrigins) {

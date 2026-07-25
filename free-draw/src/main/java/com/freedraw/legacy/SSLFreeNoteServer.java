@@ -1,5 +1,6 @@
 package com.freedraw.legacy;
 
+import com.freenote.app.server.core.config.AppConfig;
 import com.freenote.app.server.core.nio.NIOWebSocketServer;
 import com.freenote.app.server.core.config.SSLConfig;
 import com.freenote.app.server.core.config.ServerSocketConfig;
@@ -11,9 +12,9 @@ public class SSLFreeNoteServer {
     private static final Logger log = LogManager.getLogger(SSLFreeNoteServer.class);
 
     public static void main(String[] args) throws Exception {
-        int port = Integer.parseInt(System.getenv().getOrDefault("SSL_PORT", "8189"));
-        String keystorePath = System.getenv().getOrDefault("KEYSTORE_PATH", "keystore.p12");
-        String keystorePassword = System.getenv().getOrDefault("KEYSTORE_PASSWORD", "changeit");
+        int port = AppConfig.getInt("server.ssl.port", 8189);
+        String keystorePath = AppConfig.get("server.ssl.keystore.path", "keystore.p12");
+        String keystorePassword = AppConfig.get("server.ssl.keystore.password", "changeit");
 
         log.info("Starting SSL server with keystore: {}", keystorePath);
 

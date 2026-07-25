@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'java-library'
 }
 
 group = 'com.freenote'
@@ -20,7 +21,7 @@ dependencies {
 
     implementation platform("io.opentelemetry:opentelemetry-bom:${otelVersion}")
     implementation "io.opentelemetry:opentelemetry-api"
-    implementation "io.opentelemetry:opentelemetry-sdk"
+    api "io.opentelemetry:opentelemetry-sdk"
     implementation "io.opentelemetry:opentelemetry-context"
     implementation "io.opentelemetry:opentelemetry-exporter-otlp"
     implementation "io.opentelemetry:opentelemetry-sdk-extension-jaeger-remote-sampler"

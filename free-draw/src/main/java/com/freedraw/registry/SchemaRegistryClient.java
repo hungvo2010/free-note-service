@@ -1,5 +1,6 @@
 package com.freedraw.registry;
 
+import com.freenote.app.server.core.config.AppConfig;
 import io.apicurio.registry.rest.client.RegistryClient;
 import io.apicurio.registry.rest.client.RegistryClientFactory;
 import org.apache.logging.log4j.LogManager;
@@ -7,8 +8,8 @@ import org.apache.logging.log4j.Logger;
 
 public class SchemaRegistryClient {
     private static final Logger log = LogManager.getLogger(SchemaRegistryClient.class);
-    private static final String REGISTRY_URL = System.getenv().getOrDefault(
-            "APICURIO_REGISTRY_URL", 
+    private static final String REGISTRY_URL = AppConfig.get(
+            "apicurio.registry.url",
             "http://localhost:8080/apis/registry/v2"
     );
     
