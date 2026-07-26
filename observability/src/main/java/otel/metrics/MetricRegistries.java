@@ -1,13 +1,18 @@
 package otel.metrics;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import lombok.Getter;
 import otel.metrics.core.impl.OtelAccumulateMetric;
 import otel.metrics.core.impl.OtelLatencyMetric;
 import otel.metrics.core.impl.OtelPointInTimeMetric;
-import otel.metrics.core.impl.OtelRealtimeMetric;
+import otel.metrics.core.impl.OtelUpDownRealtimeMetric;
+import otel.metrics.threads.ThreadMetricsSampler;
 
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -31,15 +36,19 @@ public class MetricRegistries {
     }
 
     private void registerGauge(MetricsEnum metric) {
-        var gauge = OtelPointInTimeMetric.<Long>builder()
+        var builder = OtelPointInTimeMetric.<Long>builder()
                 .meter(meter)
                 .title(metric.getTitle())
                 .desc(metric.getDescription())
                 .unit(metric.getUnit())
-                .type(Long.class)
-                .recordCallback(metric.getCallback())
-                .build()
-                .register();
+                .type(Long.class);
+        if (metric.getAttributedCallbacks() != null) {
+            builder.attributedCallbacks(metric.getAttributedCallbacks());
+        }
+        if (metric.getCallback() != null) {
+            builder.recordCallback(metric.getCallback());
+        }
+        var gauge = builder.build().register();
         registry.put(metric, gauge);
     }
 
@@ -66,7 +75,7 @@ public class MetricRegistries {
     }
 
     private void registerUpDownCounter(MetricsEnum metric) {
-        var upDownCounter = OtelRealtimeMetric.<Long>builder()
+        var upDownCounter = OtelUpDownRealtimeMetric.<Long>builder()
                 .meter(meter)
                 .title(metric.getTitle())
                 .desc(metric.getDescription())
@@ -77,8 +86,8 @@ public class MetricRegistries {
     }
 
     // Explicit Getters to avoid exposing MetricsEnum
-    public OtelRealtimeMetric<Long> getConcurrentUsersCounter() {
-        return (OtelRealtimeMetric<Long>) registry.get(MetricsEnum.WEBSOCKET_CONCURRENT_USERS);
+    public OtelUpDownRealtimeMetric<Long> getConcurrentUsersCounter() {
+        return (OtelUpDownRealtimeMetric<Long>) registry.get(MetricsEnum.WEBSOCKET_CONCURRENT_USERS);
     }
 
     public OtelAccumulateMetric getAcceptedHandshakeCounter() {
@@ -88,9 +97,32 @@ public class MetricRegistries {
     public OtelLatencyMetric getLatencyHistogram() {
         return (OtelLatencyMetric) registry.get(MetricsEnum.WEBSOCKET_LATENCY);
     }
+    public OtelPointInTimeMetric<Long> getPlatformThreadsGauge() {
+        return (OtelPointInTimeMetric<Long>) registry.get(MetricsEnum.JVM_PLATFORM_THREADS);
+    }
 
-    public OtelRealtimeMetric<Long> getInFlightRequestsCounter() {
-        return (OtelRealtimeMetric<Long>) registry.get(MetricsEnum.WEBSOCKET_IN_FLIGHT_REQUESTS);
+    public OtelPointInTimeMetric<Long> getVirtualThreadsGauge() {
+        return (OtelPointInTimeMetric<Long>) registry.get(MetricsEnum.JVM_VIRTUAL_THREADS);
+    }
+
+    public OtelPointInTimeMetric<Long> getDaemonThreadsGauge() {
+        return (OtelPointInTimeMetric<Long>) registry.get(MetricsEnum.JVM_DAEMON_THREADS);
+    }
+
+    public OtelPointInTimeMetric<Long> getPeakThreadsGauge() {
+        return (OtelPointInTimeMetric<Long>) registry.get(MetricsEnum.JVM_PEAK_THREADS);
+    }
+
+    public OtelPointInTimeMetric<Long> getSamplerHealthGauge() {
+        return (OtelPointInTimeMetric<Long>) registry.get(MetricsEnum.JVM_THREAD_SAMPLER_HEALTH);
+    }
+
+    public OtelPointInTimeMetric<Long> getThreadStatesGauge() {
+        return (OtelPointInTimeMetric<Long>) registry.get(MetricsEnum.JVM_THREAD_STATES);
+    }
+
+    public OtelUpDownRealtimeMetric<Long> getInFlightRequestsCounter() {
+        return (OtelUpDownRealtimeMetric<Long>) registry.get(MetricsEnum.WEBSOCKET_IN_FLIGHT_REQUESTS);
     }
 
     @Getter
@@ -118,6 +150,49 @@ public class MetricRegistries {
                 "Number of messages currently being processed",
                 "1",
                 MetricType.UP_DOWN_COUNTER
+        ),
+        JVM_PLATFORM_THREADS(
+                "jvm.threads.platform",
+                "Number of live platform threads (sampled)",
+                "1",
+                MetricType.GAUGE,
+                () -> ThreadMetricsSampler.getInstance().getPlatformThreads()
+        ),
+        JVM_VIRTUAL_THREADS(
+                "jvm.threads.virtual",
+                "Number of live virtual threads (sampled)",
+                "1",
+                MetricType.GAUGE,
+                () -> ThreadMetricsSampler.getInstance().getVirtualThreads()
+        ),
+        JVM_DAEMON_THREADS(
+                "jvm.threads.daemon",
+                "Number of live daemon threads (sampled)",
+                "1",
+                MetricType.GAUGE,
+                () -> ThreadMetricsSampler.getInstance().getDaemonThreads()
+        ),
+        JVM_PEAK_THREADS(
+                "jvm.threads.peak",
+                "Peak number of live platform threads since JVM start (sampled)",
+                "1",
+                MetricType.GAUGE,
+                () -> ThreadMetricsSampler.getInstance().getPeakThreads()
+        ),
+        JVM_THREAD_SAMPLER_HEALTH(
+                "jvm.threads.sampler.seconds_since_last_sample",
+                "Seconds since the last successful thread metrics sampling pass — alerts when sampling is stuck",
+                "s",
+                MetricType.GAUGE,
+                () -> ThreadMetricsSampler.getInstance().getSecondsSinceLastSample()
+        ),
+        JVM_THREAD_STATES(
+                "jvm.threads.state",
+                "Number of live platform threads by state (sampled), tagged with the 'state' attribute",
+                "1",
+                MetricType.GAUGE,
+                null,
+                threadStateCallbacks()
         );
 
         private final String title;
@@ -125,12 +200,45 @@ public class MetricRegistries {
         private final String unit;
         private final MetricType type;
         private Supplier<Long> callback;
+        private Map<Attributes, Supplier<Long>> attributedCallbacks;
 
         MetricsEnum(String title, String description, String unit, MetricType type) {
             this.title = title;
             this.description = description;
             this.unit = unit;
             this.type = type;
+        }
+
+        MetricsEnum(String title, String description, String unit, MetricType type, Supplier<Long> callback) {
+            this.title = title;
+            this.description = description;
+            this.unit = unit;
+            this.type = type;
+            this.callback = callback;
+        }
+
+        MetricsEnum(String title, String description, String unit, MetricType type, Supplier<Long> callback,
+                    Map<Attributes, Supplier<Long>> attributedCallbacks) {
+            this.title = title;
+            this.description = description;
+            this.unit = unit;
+            this.type = type;
+            this.callback = callback;
+            this.attributedCallbacks = attributedCallbacks;
+        }
+
+        /**
+         * One time series per {@link Thread.State}, tagged via a lowercase
+         * {@code state} attribute (e.g. {@code jvm.threads.state{state="blocked"}}).
+         */
+        private static Map<Attributes, Supplier<Long>> threadStateCallbacks() {
+            AttributeKey<String> stateKey = AttributeKey.stringKey("state");
+            Map<Attributes, Supplier<Long>> callbacks = new LinkedHashMap<>();
+            for (Thread.State state : Thread.State.values()) {
+                Attributes attributes = Attributes.of(stateKey, state.name().toLowerCase(Locale.ROOT));
+                callbacks.put(attributes, () -> ThreadMetricsSampler.getInstance().getThreadStateCount(state));
+            }
+            return callbacks;
         }
 
         public enum MetricType {

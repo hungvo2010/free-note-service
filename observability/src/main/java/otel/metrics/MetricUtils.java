@@ -1,6 +1,7 @@
 package otel.metrics;
 
 import otel.metrics.core.impl.OtelLatencyMetric;
+import otel.metrics.threads.ThreadMetricsSampler;
 
 import static otel.SampleGlobalOpenTelemetry.getSampleGlobalTelemetry;
 
@@ -30,4 +31,33 @@ public class MetricUtils {
     public static OtelLatencyMetric getLatencyMetric() {
         return registries.getLatencyHistogram();
     }
+
+    /**
+     * Realtime (sampled every ~1s) number of live platform threads.
+     */
+    public static long getPlatformThreadCount() {
+        return ThreadMetricsSampler.getInstance().getPlatformThreads();
+    }
+
+    /**
+     * Realtime (sampled every ~1s) number of live virtual threads.
+     */
+    public static long getVirtualThreadCount() {
+        return ThreadMetricsSampler.getInstance().getVirtualThreads();
+    }
+
+    /**
+     * Realtime (sampled every ~1s) number of live platform threads in the given state.
+     */
+    public static long getThreadStateCount(Thread.State state) {
+        return ThreadMetricsSampler.getInstance().getThreadStateCount(state);
+    }
+
+    /**
+     * Seconds since the last successful sampling pass — &gt;2× interval means the sampler is stuck.
+     */
+    public static long getThreadSamplerHealth() {
+        return ThreadMetricsSampler.getInstance().getSecondsSinceLastSample();
+    }
+
 }

@@ -55,8 +55,8 @@ public class DefaultLegacySessionBasedConnectionHandler implements LegacySession
         routeToHandler(session, upgradeRequest);
     }
 
-    private HttpUpgradeRequest parseRequest(NetworkRequestData session) throws IOException {
-        return httpParser.parse(session.read());
+    private HttpUpgradeRequest parseRequest(NetworkRequestData networkRequestData) throws IOException {
+        return httpParser.parse(networkRequestData.read());
     }
 
     private HttpUpgradeResponse performHandshake(HttpUpgradeRequest request) {
