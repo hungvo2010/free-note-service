@@ -26,11 +26,19 @@ public final class AppProperties {
     }
 
     public static String getOrDefault(String key, String defaultValue) {
+        String sysProp = System.getProperty(key);
+        if (sysProp != null && !sysProp.isBlank()) {
+            return sysProp;
+        }
         String value = PROPERTIES.getProperty(key);
         return (value != null && !value.isBlank()) ? value : defaultValue;
     }
 
     public static int getIntOrDefault(String key, int defaultValue) {
+        String sysProp = System.getProperty(key);
+        if (sysProp != null && !sysProp.isBlank()) {
+            return Integer.parseInt(sysProp.trim());
+        }
         String value = PROPERTIES.getProperty(key);
         if (value == null || value.isBlank()) {
             return defaultValue;

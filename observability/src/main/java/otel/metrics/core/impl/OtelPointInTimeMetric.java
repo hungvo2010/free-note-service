@@ -54,7 +54,7 @@ public class OtelPointInTimeMetric<T extends Number> implements PointInTimeMetri
     public OtelPointInTimeMetric<T> register() {
         int attributedCount = attributedCallbacks != null ? attributedCallbacks.size() : 0;
         boolean hasSingleCallback = recordCallback != null;
-        log.info(() -> String.format(
+        log.fine(() -> String.format(
                 "register() called — title=%s  attributedCallbacks=%d  singleCallback=%s  thread=%s",
                 title, attributedCount, hasSingleCallback, Thread.currentThread().getName()));
 
@@ -67,7 +67,7 @@ public class OtelPointInTimeMetric<T extends Number> implements PointInTimeMetri
                         if (attributedCallbacks != null) {
                             attributedCallbacks.forEach((attributes, supplier) -> {
                                 Long val = (Long) supplier.get();
-                                log.info(() -> "attr callback — title=" + title + "  attrs=" + attributes + "  val=" + val);
+                                log.fine(() -> "attr callback — title=" + title + "  attrs=" + attributes + "  val=" + val);
                                 measurement.record(val, attributes);
                             });
                         } else if (this.recordCallback != null) {

@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import otel.metrics.MetricUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -50,6 +51,7 @@ public class AsyncNIOServerSession {
 
                     @Override
                     public void failed(Throwable exc, ByteBuffer attachment) {
+                        MetricUtils.decrementConcurrentUsers();
                         try {
                             socketChannel.close();
                         } catch (IOException e) {
@@ -71,6 +73,7 @@ public class AsyncNIOServerSession {
             ByteBuffer buffer = ByteBuffer.allocateDirect(2048);
             NetworkRequestData networkData = new AsyncNIONetworkRequestData(asyncChannel, buffer);
             channelData.put(asyncChannel, (AsyncNIONetworkRequestData) networkData);
+            MetricUtils.incrementConcurrentUsers();
             return buffer;
         } catch (Exception e) {
             throw new AcceptConnectionException("Failed to accept connection", e);
@@ -83,6 +86,7 @@ public class AsyncNIOServerSession {
             return true;
         } catch (Exception e) {
             log.error("I/O error reading from channel {}", e.getMessage());
+            MetricUtils.decrementConcurrentUsers();
             pipeline.disconnect(networkData);
             return false;
         }
