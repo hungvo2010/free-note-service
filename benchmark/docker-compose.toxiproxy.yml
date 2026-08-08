@@ -1,0 +1,23 @@
+# Toxiproxy — TCP traffic shaper for simulating latency, bandwidth limits,
+# slow closes, mid-stream timeouts and partial reads between k6 and your server.
+#
+#   docker compose -f benchmark/docker-compose.toxiproxy.yml up -d
+#
+# Control API:  http://localhost:8474        (used by toxiproxy-control.sh)
+# Proxy listen: localhost:18189  ->  upstream host.docker.internal:8189
+#
+# Toxics (latency, bandwidth, slow_close, timeout, limit_data, slicer) are
+# added/removed at runtime by benchmark/toxiproxy-control.sh, so the proxy
+# stays up across runs and you can tweak conditions live.
+services:
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:latest
+    container_name: freenote-toxiproxy
+    restart: unless-stopped
+    ports:
+      - "8474:8474"     # control API
+      - "18189:18189"   # proxy listen port (forwarded to upstream 8189)
+    # host.docker.internal resolves to the Docker host on macOS/Windows.
+    # The extra_hosts entry also makes it work on Linux.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

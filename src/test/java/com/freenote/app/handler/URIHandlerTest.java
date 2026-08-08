@@ -1,12 +1,13 @@
 package com.freenote.app.handler;
 
-import com.freenote.app.server.frames.base.WebSocketFrame;
+import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
-import com.freenote.app.server.handler.URIEndpointHandler;
-import com.freenote.app.server.handler.impl.NewEchoFrameEndpointHandlerImpl;
-import com.freenote.app.server.model.InputWrapper;
+import com.freenote.app.server.routes.URIEndpointHandler;
+import com.freenote.app.server.routes.endpoint.NewEchoEndpoint;
 import com.freenote.app.server.model.OutputWrapper;
+import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.util.IOUtils;
+import com.freenote.app.test.StubNetworkRequestData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +31,7 @@ class URIHandlerTest {
         clientFrameFactory = new ClientFrameFactory();
     }
 
-    private final URIEndpointHandler mockURIHandler = new NewEchoFrameEndpointHandlerImpl();
+    private final URIEndpointHandler mockURIHandler = new NewEchoEndpoint();
 
     @Test
     void givenWebSocketFrameInputStream_whenHandled_thenEchoesToOutputStream() throws IOException {
@@ -40,18 +41,17 @@ class URIHandlerTest {
         var bytes = byteArrayOutputStream.toByteArray();
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        mockURIHandler.handle(new InputWrapper(), new OutputWrapper(out));
+        mockURIHandler.handle(new StubNetworkRequestData(in), new OutputWrapper(out));
         String result = new String(Arrays.copyOfRange(out.toByteArray(), 2, 2 + "Hello World".length())); // Skip the first two bytes which are the frame type and length
         assertEquals("Hello World", result);
     }
 
     @Test
     void givenEndOfInputStream_whenHandled_thenReturnsFalse() throws IOException {
-        InputStream in = mock(InputStream.class);
-        when(in.read(any(byte[].class))).thenReturn(-1);
-        when(in.read()).thenReturn(-1);
+        NetworkRequestData networkData = mock(NetworkRequestData.class);
+        when(networkData.readFrameBytes()).thenReturn(new byte[0]);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        var result = mockURIHandler.handle(new InputWrapper(), new OutputWrapper(out));
+        var result = mockURIHandler.handle(networkData, new OutputWrapper(out));
         assertFalse(result, "Expected handle to return false on end of input stream");
     }
 }

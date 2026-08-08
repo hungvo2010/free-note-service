@@ -1,0 +1,32 @@
+package otel.sdk.provider;
+
+import io.opentelemetry.exporter.logging.LoggingMetricExporter;
+import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.resources.Resource;
+import otel.sdk.config.AppProperties;
+
+import java.time.Duration;
+
+public class SdkMeterProviderConfig {
+    public static SdkMeterProvider create(Resource resource) {
+        java.util.logging.Logger
+                .getLogger("io.opentelemetry.exporter.logging")
+                .setLevel(java.util.logging.Level.OFF);
+        var meterProvider = SdkMeterProvider.builder()
+                .setResource(resource)
+                .registerMetricReader(
+                        PeriodicMetricReader.builder(LoggingMetricExporter.create())
+                                .setInterval(Duration.ofSeconds(5))
+                                .build())
+                .registerMetricReader(
+                        PrometheusHttpServer.builder()
+                                .setHost(AppProperties.getOrDefault("prometheus.host", "0.0.0.0"))
+                                .setPort(AppProperties.getIntOrDefault("prometheus.port", 9464))
+                                .build())
+                .build();
+        meterProvider.forceFlush();
+        return meterProvider;
+    }
+}

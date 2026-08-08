@@ -1,0 +1,137 @@
+package com.freenote.app.server.routes.endpoint;
+
+import com.freenote.app.server.core.model.connection.WebSocketConnection;
+import com.freenote.app.server.exceptions.ClientDisconnectException;
+import com.freenote.app.server.exceptions.ConnectionException;
+import com.freenote.app.server.exceptions.MessageParsingException;
+import com.freenote.app.server.frames.handler.WebSocketFrameHandler;
+import com.freenote.app.server.frames.ws.WebSocketFrame;
+import com.freenote.app.server.model.OutputWrapper;
+import com.freenote.app.server.model.http.HttpUpgradeRequest;
+import com.freenote.app.server.model.ws.NetworkRequestData;
+import com.freenote.app.server.parser.InputStreamFrameParserImpl;
+import com.freenote.app.server.parser.WebSocketFrameParser;
+import com.freenote.app.server.routes.URIEndpointHandler;
+import com.freenote.app.server.routes.frames.WebSocketFrameDispatcher;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import otel.metrics.MetricUtils;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.List;
+
+public abstract class AbstractEndpointHandler implements URIEndpointHandler, WebSocketFrameHandler {
+    private static final Logger log = LogManager.getLogger(AbstractEndpointHandler.class);
+    private final WebSocketFrameParser frameParser;
+
+    public AbstractEndpointHandler() {
+        this.frameParser = new InputStreamFrameParserImpl();
+    }
+
+    protected AbstractEndpointHandler(WebSocketFrameParser frameParser) {
+        this.frameParser = frameParser;
+    }
+
+    @Override
+    public boolean handle(NetworkRequestData networkRequestData, OutputWrapper outputWrapper) {
+        MetricUtils.incrementInFlightRequests();
+        try {
+            MetricUtils.getLatencyMetric().time(() -> this.serveConnection(networkRequestData, outputWrapper));
+            return true;
+        } catch (ConnectionException e) {
+            log.error("Error handling input stream", e);
+            return false;
+        } finally {
+            MetricUtils.decrementInFlightRequests();
+        }
+    }
+
+    private void serveConnection(NetworkRequestData networkRequestData, OutputWrapper outputWrapper) {
+        try {
+            WebSocketFrame wsFrame = parseFrame(networkRequestData);
+
+            log.debug(wsFrame.toString());
+            WebSocketConnection webSocketConnection = WebSocketConnection.from(networkRequestData, outputWrapper);
+
+            dispatchAndRespond(webSocketConnection, wsFrame);
+        } catch (IOException e) {
+            log.error("Error handling frame", e);
+            throw new ConnectionException("Error handling frame", e);
+        }
+    }
+
+    private void dispatchAndRespond(WebSocketConnection webSocketConnection, WebSocketFrame wsFrame) throws IOException {
+        WebSocketFrameDispatcher.dispatch(this, webSocketConnection, wsFrame);
+        sendResponse(webSocketConnection);
+    }
+
+    private WebSocketFrame parseFrame(NetworkRequestData networkRequestData) throws IOException {
+        return frameParser.parseFrame(networkRequestData);
+    }
+
+    protected void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
+        webSocketConnection.sendCurrentResponse();
+    }
+
+    @Override
+    public boolean continuationHandler(List<WebSocketFrame> clientFrame, NetworkRequestData networkRequestData, OutputWrapper outputWrapper) {
+        return false;
+    }
+
+    @Override
+    public void onMessage(WebSocketConnection webSocketConnection, String message) {
+        onData(webSocketConnection, message);
+    }
+
+    private void handleErrorMessage(MessageParsingException e) {
+        log.error("Failed to parse message", e);
+    }
+
+    public void onData(WebSocketConnection webSocketConnection, String message) {
+        webSocketConnection.sendText(message);
+    }
+
+    @Override
+    public void onMessage(WebSocketConnection webSocketConnection, ByteBuffer message) {
+        onBinaryMessage(webSocketConnection, message);
+    }
+
+    protected void onBinaryMessage(WebSocketConnection webSocketConnection, ByteBuffer message) {
+        log.info("Received binary message of length {}, sender: {}", message.remaining(), webSocketConnection.getRemoteAddress());
+    }
+
+
+    @Override
+    public void onOpen(WebSocketConnection webSocketConnection, HttpUpgradeRequest handshake) {
+
+    }
+
+    @Override
+    public void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote) {
+        log.warn("Received CLOSE frame. No further processing.");
+        throw new ClientDisconnectException("Client sent CLOSE frame");
+    }
+
+    @Override
+    public void onError(WebSocketConnection webSocketConnection, Exception exception) {
+        log.error("Received ERROR frame", exception);
+    }
+
+    @Override
+    public void onPing(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+        onControl(webSocketConnection, payload);
+    }
+
+    public void onControl(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+    }
+
+    @Override
+    public void onPong(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+        onControl(webSocketConnection, payload);
+    }
+
+    @Override
+    public void onContinue(WebSocketConnection webSocketConnection, ByteBuffer payload) {
+    }
+}

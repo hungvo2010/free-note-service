@@ -10,4 +10,6 @@ public interface HttpParser {
     HttpUpgradeRequest parse(InputStream inputStream) throws IOException;
 
     HttpUpgradeRequest parse(ByteBuffer byteBuffer);
+
+    HttpUpgradeRequest parse(byte[] data) throws IOException;
 }
