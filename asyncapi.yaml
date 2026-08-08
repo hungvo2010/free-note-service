@@ -1,0 +1,354 @@
+asyncapi: 3.0.0
+info:
+  title: FreeNote WebSocket API
+  version: 1.0.0
+  description: |-
+    The FreeNote WebSocket API enables real-time drawing and collaboration.
+    
+    ### Features:
+    * Real-time drawing synchronization 🎨
+    * Multi-user collaboration support 👥
+    * Bidirectional communication 🔄
+    * Shape management (add, update, remove) ✏️
+    
+    ### Schema Registry:
+    This API is integrated with Apicurio Registry for schema management and validation.
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  x-schema-registry:
+    vendor: apicurio
+    url: http://localhost:8080/apis/registry/v2
+    description: Apicurio Registry for schema management
+defaultContentType: application/json
+servers:
+  development:
+    host: localhost:8189
+    protocol: ws
+    description: Local development WebSocket server
+    tags:
+      - name: env:development
+        description: Development environment
+      - name: kind:local
+        description: Local server instance
+  production:
+    host: your-domain.com:8189
+    protocol: wss
+    description: Production WebSocket server with SSL/TLS
+    tags:
+      - name: env:production
+        description: Production environment
+      - name: kind:remote
+        description: Remote production server
+channels:
+  freeNoteChannel:
+    address: /freeNote
+    description: Main WebSocket channel for real-time draft/drawing communication
+    messages:
+      draftRequest:
+        $ref: '#/components/messages/draftRequest'
+      draftResponse:
+        $ref: '#/components/messages/draftResponse'
+      heartbeat:
+        $ref: '#/components/messages/heartbeat'
+operations:
+  sendDraftRequest:
+    action: send
+    channel:
+      $ref: '#/channels/freeNoteChannel'
+    summary: Client sends draft requests to the server
+    description: Client publishes draft actions (connect, add, update, remove shapes) to be processed and broadcast
+    messages:
+      - $ref: '#/channels/freeNoteChannel/messages/draftRequest'
+  receiveDraftResponse:
+    action: receive
+    channel:
+      $ref: '#/channels/freeNoteChannel'
+    summary: Client receives draft responses from the server
+    description: Client subscribes to draft action responses broadcast by the server
+    messages:
+      - $ref: '#/channels/freeNoteChannel/messages/draftResponse'
+  sendPing:
+    action: send
+    channel:
+      $ref: '#/channels/freeNoteChannel'
+    summary: Client sends ping to keep connection alive
+    description: WebSocket PING frame to check connection health
+    messages:
+      - $ref: '#/channels/freeNoteChannel/messages/heartbeat'
+  receiveHeartbeat:
+    action: receive
+    channel:
+      $ref: '#/channels/freeNoteChannel'
+    summary: Client receives heartbeat/pong response
+    description: Server responds with heartbeat message containing timing information
+    messages:
+      - $ref: '#/channels/freeNoteChannel/messages/heartbeat'
+components:
+  messages:
+    draftRequest:
+      name: draftRequest
+      title: Draft Request
+      summary: Request to manage shapes in a draft (add, update, remove)
+      contentType: application/json
+      x-schema-registry:
+        groupId: com.freedraw
+        artifactId: DraftRequestData
+        version: 1.0.0
+      payload:
+        $ref: '#/components/schemas/draftRequestPayload'
+      examples:
+        - name: connectRequest
+          summary: Connect to existing draft and retrieve all shapes
+          payload:
+            draftId: "draft-123"
+            requestType: 1
+            content:
+              shapes: []
+        - name: addShapes
+          summary: Add new shapes to the draft
+          payload:
+            draftId: "draft-123"
+            draftName: "My Drawing"
+            requestType: 2
+            content:
+              shapes:
+                - shapeId: "shape-001"
+                  type: "rectangle"
+                  content:
+                    x: 100
+                    y: 150
+                    width: 200
+                    height: 100
+                - shapeId: "shape-002"
+                  type: "circle"
+                  content:
+                    x: 400
+                    y: 300
+                    radius: 50
+        - name: updateShape
+          summary: Update existing shape
+          payload:
+            draftId: "draft-123"
+            requestType: 3
+            content:
+              shapes:
+                - shapeId: "shape-001"
+                  type: "rectangle"
+                  content:
+                    x: 458
+                    y: 379.609375
+                    width: 599
+                    height: 114
+        - name: removeShape
+          summary: Remove a shape from the draft
+          payload:
+            draftId: "draft-123"
+            requestType: 4
+            content:
+              shapes:
+                - shapeId: "shape-001"
+    draftResponse:
+      name: draftResponse
+      title: Draft Response
+      summary: Response containing the draft state and affected shapes
+      contentType: application/json
+      x-schema-registry:
+        groupId: com.freedraw
+        artifactId: DraftResponseData
+        version: 1.0.0
+      payload:
+        $ref: '#/components/schemas/draftResponsePayload'
+      examples:
+        - name: connectResponse
+          summary: Response after connecting to draft with all shapes
+          payload:
+            draftId: "draft-123"
+            draftName: "My Drawing"
+            requestType: 1
+            data:
+              shapes:
+                - shapeId: "shape-001"
+                  type: "rectangle"
+                  content:
+                    x: 100
+                    y: 150
+                    width: 200
+                    height: 100
+                - shapeId: "shape-002"
+                  type: "circle"
+                  content:
+                    x: 400
+                    y: 300
+                    radius: 50
+        - name: shapesAdded
+          summary: Response after adding shapes
+          payload:
+            draftId: "draft-123"
+            draftName: "My Drawing"
+            requestType: 2
+            data:
+              shapes:
+                - shapeId: "shape-001"
+                  type: "rectangle"
+                  content:
+                    x: 100
+                    y: 150
+                    width: 200
+                    height: 100
+        - name: shapeUpdated
+          summary: Response after updating a shape
+          payload:
+            draftId: "draft-123"
+            requestType: 3
+            data:
+              shapes:
+                - shapeId: "shape-001"
+                  type: "rectangle"
+                  content:
+                    x: 458
+                    y: 379.609375
+                    width: 599
+                    height: 114
+    heartbeat:
+      name: heartbeat
+      title: Heartbeat Message
+      summary: WebSocket heartbeat/ping-pong message for connection health monitoring
+      contentType: application/json
+      x-schema-registry:
+        groupId: com.freenote
+        artifactId: HeartbeatMsg
+        version: 1.0.0
+      payload:
+        $ref: '#/components/schemas/heartbeatPayload'
+      examples:
+        - name: pingMessage
+          summary: Client sends ping to check connection
+          payload:
+            msgType: "PING"
+            message: "ping"
+            pingAt: 1706371200000
+        - name: pongResponse
+          summary: Server responds with pong including timing information
+          payload:
+            msgType: "PONG"
+            message: "pong"
+            pingAt: 1706371200000
+            receivedPingAt: 1706371200050
+            pongAt: 1706371200055
+  schemas:
+    draftRequestPayload:
+      type: object
+      required:
+        - requestType
+      properties:
+        draftId:
+          type: string
+          description: Unique identifier for the draft/drawing session
+        draftName:
+          type: string
+          description: Name of the draft
+        senderId:
+          type: string
+          description: Unique identifier for the user sending the request
+        requestType:
+          type: integer
+          description: |-
+            Type of request:
+            - 1: CONNECT - Connect to existing draft and retrieve all shapes (requires draftId)
+            - 2: ADD - Add new shapes to the draft
+            - 3: UPDATE - Update existing shapes (if no draftId, creates new draft)
+            - 4: REMOVE - Remove shapes from the draft
+            - 5: NOOP - No operation
+          enum: [1, 2, 3, 4, 5]
+        content:
+          type: object
+          description: Content wrapper containing shapes array (defaults to empty list if null)
+          properties:
+            shapes:
+              type: array
+              description: List of shapes to add, update, or remove (defaults to empty array, null values are skipped)
+              default: []
+              items:
+                $ref: '#/components/schemas/shapeData'
+    draftResponsePayload:
+      type: object
+      properties:
+        draftId:
+          type: string
+          description: Unique identifier for the draft
+        draftName:
+          type: string
+          description: Name of the draft
+        senderId:
+          type: string
+          description: Unique identifier for the user who sent the original request
+        requestType:
+          type: integer
+          description: |-
+            Type of request that triggered this response:
+            - 1: CONNECT - Connected to draft, returns all shapes
+            - 2: ADD - Shapes added
+            - 3: UPDATE - Shapes updated (or new draft created)
+            - 4: REMOVE - Shapes removed
+            - 5: NOOP - No operation performed
+          enum: [1, 2, 3, 4, 5]
+        data:
+          type: object
+          description: Response data wrapper containing shapes
+          properties:
+            shapes:
+              type: array
+              description: |-
+                List of shapes in the response:
+                - For CONNECT: Returns all shapes in the draft
+                - For ADD/UPDATE/REMOVE: Returns only the affected shapes
+              items:
+                $ref: '#/components/schemas/shapeData'
+    shapeData:
+      type: object
+      required:
+        - shapeId
+      properties:
+        shapeId:
+          type: string
+          description: Unique identifier for the shape
+        type:
+          type: string
+          description: Type of shape (rectangle, circle, line, text, etc.)
+        content:
+          type: object
+          description: Generic content map containing shape-specific data (coordinates, styles, etc.). Defaults to empty map.
+          default: {}
+          additionalProperties: true
+          example:
+            x: 100
+            y: 150
+            width: 200
+            height: 100
+            color: "#FF0000"
+            strokeWidth: 2
+    heartbeatPayload:
+      type: object
+      required:
+        - msgType
+      properties:
+        msgType:
+          type: string
+          description: Message type identifier
+          enum: ["HEARTBEAT", "PING", "PONG"]
+        message:
+          type: string
+          description: Heartbeat message content (typically "ping" or "pong")
+        pingAt:
+          type: integer
+          format: int64
+          description: Timestamp when client sent ping (milliseconds since epoch)
+        receivedPingAt:
+          type: integer
+          format: int64
+          description: Timestamp when server received ping (milliseconds since epoch)
+        pongAt:
+          type: integer
+          format: int64
+          description: Timestamp when server sent pong response (milliseconds since epoch)

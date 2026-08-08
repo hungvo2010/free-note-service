@@ -1,0 +1,95 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'com.freenote'
+version = '0.0.1-SNAPSHOT'
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    annotationProcessor project(":UtilityProcessor")
+    implementation("org.apache.logging.log4j:log4j-core:2.25.1")
+    implementation("org.apache.logging.log4j:log4j-api:2.25.1")
+
+    implementation("org.redisson:redisson:4.1.0")
+
+    // JSON Processing
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.20.0")
+
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.0")
+    compileOnly 'org.projectlombok:lombok:1.18.34'
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
+    implementation(project(":"))
+    implementation(project(":UtilityProcessor"))
+
+    // Apicurio Registry Client
+    implementation("io.apicurio:apicurio-registry-client:2.6.13.Final")
+    implementation("io.apicurio:apicurio-registry-serdes-jsonschema-serde:2.6.13.Final")
+
+    // JSON Schema Validator
+    implementation("com.networknt:json-schema-validator:1.0.87")
+    
+    // AsyncAPI Parser
+    implementation("com.asyncapi:asyncapi-core:1.0.0-EAP")
+
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// Task to run the FreeNote server
+tasks.register('bootRun', JavaExec) {
+    group = 'application'
+    description = 'Run FreeNote WebSocket server'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass.set('com.freedraw.SSLFreeNoteServer')
+    
+    // Optional: pass arguments
+    if (project.hasProperty('args')) {
+        args project.property('args').split(',')
+    }
+}
+
+// Configure shadowJar to create executable fat JAR
+shadowJar {
+    archiveBaseName.set('free-note-service')
+    archiveClassifier.set('all')
+    archiveVersion.set(project.version)
+    
+    manifest {
+        attributes(
+            'Main-Class': 'com.freedraw.SSLFreeNoteServer'
+        )
+    }
+    
+    // Merge service files
+    mergeServiceFiles()
+}
+
+
+// Task to register schemas with Apicurio Registry
+task registerSchemas(type: Exec) {
+    description = 'Register AsyncAPI schemas to Apicurio Registry'
+    group = 'schema'
+    
+    workingDir rootProject.projectDir
+    commandLine 'bash', 'register-schemas.sh'
+    
+    doFirst {
+        println "Registering schemas to Apicurio Registry..."
+    }
+}
+
+// Task to validate AsyncAPI spec
+task validateAsyncAPI(type: Exec) {
+    description = 'Validate AsyncAPI specification'
+    group = 'schema'
+    
+    workingDir rootProject.projectDir
+    commandLine 'bash', '-c', 'npx @asyncapi/cli validate asyncapi.yaml || echo "Install AsyncAPI CLI: npm install -g @asyncapi/cli"'
+}
