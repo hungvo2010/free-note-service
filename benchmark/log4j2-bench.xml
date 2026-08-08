@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Minimal logging config for benchmarking.
+
+    Why this exists:
+      - The default log4j2.xml logs every handshake/message at INFO. That both
+        dominates CPU and (per docs/VIRTUAL_THREAD_LOGGING_ANALYSIS.md) the
+        synchronized ConsoleAppender pins virtual-thread carriers in JDK 21,
+        which would corrupt the comparison.
+      - This config silences app logging to ERROR and writes only to a file
+        (no synchronized ConsoleAppender), so the benchmark measures the I/O
+        threading model, not the logging cost.
+
+    Selected via:  -Dlog4j.configurationFile=file:.../benchmark/log4j2-bench.xml
+-->
+<Configuration status="ERROR">
+    <Properties>
+        <Property name="LOG_PATTERN">%d %-5p %c{1} %m%n</Property>
+    </Properties>
+
+    <Appenders>
+        <File name="bench" fileName="/tmp/logs/bench/server.log" append="false">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.freenote" level="ERROR" additivity="false">
+            <AppenderRef ref="bench"/>
+        </Logger>
+        <Logger name="io.opentelemetry" level="ERROR" additivity="false">
+            <AppenderRef ref="bench"/>
+        </Logger>
+        <Logger name="org.glassfish.tyrus" level="ERROR" additivity="false">
+            <AppenderRef ref="bench"/>
+        </Logger>
+        <Root level="ERROR">
+            <AppenderRef ref="bench"/>
+        </Root>
+    </Loggers>
+</Configuration>

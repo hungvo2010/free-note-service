@@ -1,6 +1,7 @@
 package com.freenote.app.server.auth.impl;
 
 import com.freenote.app.server.auth.AcceptHandshakeHandler;
+import com.freenote.app.server.core.config.AppConfig;
 import com.freenote.app.server.exceptions.HandshakeException;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.http.HttpUpgradeResponse;
@@ -10,10 +11,7 @@ import org.apache.logging.log4j.Logger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Objects;
+import java.util.*;
 
 public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
     private static final String UNIVERSAL_WEBSOCKET_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
@@ -33,11 +31,11 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
     private static final Logger log = LogManager.getLogger(AcceptHandshakeImpl.class);
 
     static {
-        loadAllowedOriginsFromEnvs();
+        loadAllowedOriginsFromConfig();
     }
 
     @Override
-    public HttpUpgradeResponse handle(HttpUpgradeRequest request) {
+    public HttpUpgradeResponse process(HttpUpgradeRequest request) {
         try {
             return acceptUpgradeRequest(request);
         } catch (Exception e) {
@@ -59,9 +57,9 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
     }
 
     private String getSocketAcceptKey(HttpUpgradeRequest request) {
-        log.info("Received WebSocket upgrade request: {}", request);
+        log.debug("Received WebSocket upgrade request: {}", request);
         var socketAccept = generateAcceptKey(request);
-        log.info("WebSocket handshake accepted with Sec-WebSocket-Accept: {}", socketAccept);
+        log.debug("WebSocket handshake accepted with Sec-WebSocket-Accept: {}", socketAccept);
         return socketAccept;
     }
 
@@ -95,16 +93,20 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
                 || !ALLOWED_ORIGINS.contains(request.getOrigin());
     }
 
-    private static void loadAllowedOriginsFromEnvs() {
-        String additionalOrigins = System.getenv("ALLOWED_ORIGINS");
-        if (additionalOrigins != null && !additionalOrigins.trim().isEmpty()) {
-            Collection<String> combined = new java.util.ArrayList<>(DEFAULT_ALLOWED_ORIGINS);
+    private static void loadAllowedOriginsFromConfig() {
+        String additionalOrigins = AppConfig.get("allowed.origins", "");
+        var combined = new ArrayList<>(DEFAULT_ALLOWED_ORIGINS);
+        if (isValidCommaSeparated(additionalOrigins)) {
             combined.addAll(Arrays.asList(additionalOrigins.split(",")));
             ALLOWED_ORIGINS = combined;
-            log.info("Loaded additional allowed origins from environment: {}", additionalOrigins);
+            log.info("Loaded additional allowed origins from application.properties: {}", additionalOrigins);
         } else {
             ALLOWED_ORIGINS = DEFAULT_ALLOWED_ORIGINS;
         }
-        log.info("Allowed origins: {}", ALLOWED_ORIGINS);
+        log.debug("Allowed origins: {}", ALLOWED_ORIGINS);
+    }
+
+    private static boolean isValidCommaSeparated(String additionalOrigins) {
+        return additionalOrigins != null && !additionalOrigins.trim().isEmpty();
     }
 }

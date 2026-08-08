@@ -1,7 +1,7 @@
 package com.freenote.app.server.exceptions;
 
 public class AcceptConnectionException extends RuntimeException {
-    public AcceptConnectionException(Exception e) {
+    public AcceptConnectionException(String s, Exception e) {
         super(e);
     }
 
