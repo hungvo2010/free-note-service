@@ -44,3 +44,10 @@ services:
       - "3000:3000"
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards   # auto-load dashboard JSONs
+      - grafana-data:/var/lib/grafana                                # persist dashboards, users, preferences
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true                               # easy local access without login
+
+volumes:
+  grafana-data:
