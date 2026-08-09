@@ -154,3 +154,4 @@ free-draw/src/main/resources/redis.properties
 /socket-fullchain.pem
 /socket-privkey.pem
 .mcp.json
+/grafana/config/service-account.env
