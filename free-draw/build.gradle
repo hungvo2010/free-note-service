@@ -17,6 +17,10 @@ dependencies {
 
     implementation("org.redisson:redisson:4.1.0")
 
+    // PostgreSQL data store
+    implementation("org.postgresql:postgresql:42.7.3")
+    implementation("com.zaxxer:HikariCP:5.1.0")
+
     // JSON Processing
     implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
     implementation("com.fasterxml.jackson.core:jackson-core:2.20.0")
