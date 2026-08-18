@@ -138,3 +138,27 @@ COMMIT;
 - No sharding across Postgres partitions or Redis cluster slots.
 - No full event-sourcing framework; the action log is a lightweight event log.
 - No change to the `Draft`/`DraftAction`/`ShapeData` entity API in this phase.
+
+## How to Add a New Data Store
+
+The store layer is pluggable via `DraftRepositoryFactory`
+(`com.freedraw.repository.factory`). Adding a new store takes four steps:
+
+1. **Implement the contract** — create `XxxRepositoryImpl implements
+   DraftRepository` (`getDraftById` + `save`) using the same entities
+   (`Draft`, `DraftAction`, `ShapeData`). Follow the append-only action-log
+   invariant of `PostgresDraftRepositoryImpl`: `save` appends only actions
+   beyond the stored count; it never rewrites earlier actions.
+2. **Register it** — add one entry to `DraftRepositoryFactory.REGISTRY`
+   (`store name → supplier`), e.g. `"mongo", MongoDraftRepositoryImpl::new`.
+3. **Select at runtime** — start the server with `-Dstore.type=<name>` (or
+   the `STORE_TYPE` env var). Unknown names fall back to `memory`.
+4. **Bootstrap resources** — mirror `PostgresClient`/`PostgresDraftRepositoryImpl`:
+   a client singleton with a properties file, and idempotent schema
+   initialization (`CREATE TABLE IF NOT EXISTS` + `ON CONFLICT DO NOTHING`
+   seeds) executed on first use.
+
+Patterns every store must keep: same entities, append-only writes, `null`
+(silent) missing-draft reads to match `InMemDraftRepositoryImpl` semantics,
+and no store-side concurrency control until the design's versioning/CA
+mechanism is implemented.
