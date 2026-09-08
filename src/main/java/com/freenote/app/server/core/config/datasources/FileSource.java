@@ -15,7 +15,7 @@ public class FileSource implements ConfigSource {
     public FileSource(String filename) {
         this.configFileName = filename;
         this.priority = 0;
-        loadProperties(filename);
+        loadProperties(configFileName);
     }
 
     public FileSource(String filename, int priority) {
