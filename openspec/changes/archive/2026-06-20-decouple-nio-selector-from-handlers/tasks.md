@@ -47,4 +47,4 @@
 ## 7. Sync and finalize
 
 - [x] 7.1 Sync delta specs to main specs
-- [x] 7.2 Update launchers if `NIOWebSocketServer` construction changes
+- [x] 7.2 Update launchers if `WebSocketServer` construction changes

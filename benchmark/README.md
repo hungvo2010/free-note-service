@@ -92,7 +92,7 @@ The script holds everything constant **except** the server implementation:
 ## Confounds to keep in mind
 
 1. **Different handler pipelines.** The two servers do not share a handler:
-   `vthread` runs `DefaultLegacySessionBasedConnectionHandler`; `nio` runs
+   `vthread` runs `DefaultLegacyConnectionHandler`; `nio` runs
    `ConnectionPipeline` + `NIOIncomingSocketHandler`, which also creates an
    OpenTelemetry span per event. So this is an **end-to-end** comparison of the
    two servers, not a pure isolation of the threading model. To isolate *only*

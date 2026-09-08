@@ -15,7 +15,7 @@ public class NIOCommonEndpoint extends AbstractEndpointHandler {
 
     @Override
     protected void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
-        var networkRequestData = webSocketConnection.getSession().getNetworkRequestData();
+        var networkRequestData = webSocketConnection.getNetworkRequestData();
         byte[] dataToWrite = getDataToWrite(webSocketConnection);
         networkRequestData.write(dataToWrite);
     }

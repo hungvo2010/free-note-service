@@ -18,7 +18,8 @@ import java.io.OutputStream;
 @Data
 @Builder
 public class WebSocketConnection {
-    private final WebSocketSession session;
+    private final NetworkRequestData networkRequestData;
+    private final OutputWrapper outputWrapper;
     private AppRequestData appRequestData;
     private AppResponseData appResponseData;
     private WebSocketFrame requestFrame;
@@ -41,7 +42,7 @@ public class WebSocketConnection {
     }
 
     private void writeFrame(WebSocketFrame frame) throws IOException {
-        this.session.writeResponse(frame);
+        this.networkRequestData.write(IOUtils.frameToBytes(frame));
     }
 
     private void writeAsJsonTextFrame(AppResponseData obj) throws IOException {
@@ -50,7 +51,7 @@ public class WebSocketConnection {
     }
 
     public OutputStream getOutputStream() {
-        return session.getOutputWrapper().outputStream();
+        return outputWrapper.outputStream();
     }
 
     public void sendText(String message) {
@@ -81,14 +82,13 @@ public class WebSocketConnection {
     }
 
     public Object getRemoteAddress() {
-        return session.getRemoteAddress();
+        return networkRequestData.getRemoteAddress();
     }
 
     public static WebSocketConnection from(NetworkRequestData requestData, OutputWrapper outputWrapper) {
-        var session = WebSocketSession.builder()
-                .networkRequestData(requestData).build();
         return WebSocketConnection.builder()
-                .session(session)
+                .networkRequestData(requestData)
+                .outputWrapper(outputWrapper)
                 .build();
     }
 }

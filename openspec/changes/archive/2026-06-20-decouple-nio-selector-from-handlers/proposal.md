@@ -25,7 +25,7 @@
 
 ## Impact
 
-- Affected code: `NIOIncomingSocketHandler`, `ReadableContext`, `NIOWebSocketServer`, `NIOServerBootstrap`, `NIONetworkRequestData`, `ModernIncomingConnectionHandler`
+- Affected code: `NIOIncomingSocketHandler`, `ReadableContext`, `WebSocketServer`, `NIOServerBootstrap`, `NIONetworkRequestData`, `ModernIncomingConnectionHandler`
 - No API changes to endpoint handlers (`URIEndpointHandler` consumers unaffected)
 - **BREAKING**: `ReadableContext` field types change (raw NIO → `NetworkRequestData`); `NIOIncomingSocketHandler` public API changes
 - Related: `ProcessingState` / `ConnectionState` state machine classes (NIO-specific, may be simplified)

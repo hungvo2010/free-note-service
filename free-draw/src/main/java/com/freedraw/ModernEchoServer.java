@@ -1,8 +1,9 @@
 package com.freedraw;
 
 import com.freenote.app.server.core.config.ServerSocketConfig;
+import com.freenote.app.server.core.legacy.WebSocketServer;
+import com.freenote.app.server.core.legacy.startup.LegacyBootstrap;
 import com.freenote.app.server.core.nio.NIOIncomingSocketHandler;
-import com.freenote.app.server.core.nio.NIOWebSocketServer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,9 +23,10 @@ public class ModernEchoServer {
         log.info("Starting server on port: {}", port);
         GlobalOpenTelemetry.set(create());
         SampleGlobalOpenTelemetry.init();
-        NIOWebSocketServer server = NIOWebSocketServer.builder()
+        WebSocketServer server = WebSocketServer.builder()
                 .socketConfig(new ServerSocketConfig(port))
                 .handler(new NIOIncomingSocketHandler())
+                .serverBootstrap(new LegacyBootstrap())
                 .build();
         server.start();
     }

@@ -55,3 +55,10 @@ The `NetworkRequestData` interface SHALL provide an `Object getRemoteAddress()` 
 #### Scenario: Get remote address when unavailable
 - **WHEN** `getRemoteAddress()` is called and the underlying transport cannot determine the address
 - **THEN** it returns `null`
+
+### Requirement: OutputWrapper accepts NetworkRequestData
+`OutputWrapper` SHALL provide a static factory method `OutputWrapper.from(NetworkRequestData)` that internally creates an `OutputStream` backed by `networkRequestData.write(byte[])`. This eliminates the need for `channel.socket().getOutputStream()` without changing the `URIEndpointHandler` interface.
+
+#### Scenario: Construct OutputWrapper from NetworkRequestData
+- **WHEN** `OutputWrapper.from(networkRequestData)` is called
+- **THEN** an `OutputWrapper` is created whose `outputStream()` writes bytes via `networkRequestData.write(byte[])`

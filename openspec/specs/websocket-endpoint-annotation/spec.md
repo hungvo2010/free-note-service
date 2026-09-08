@@ -83,8 +83,8 @@ The annotation processor SHALL generate a separate `URIHandlerRegistry` per comp
 - **WHEN** module A has endpoints `/echo` and `/heartbeat` and module B has endpoints `/echo` and `/freeNote`
 - **THEN** module A's launcher can route to `/heartbeat` but not `/freeNote`, and module B's launcher can route to `/freeNote` but not `/heartbeat`
 
-### Requirement: Route resolution in DefaultLegacySessionBasedConnectionHandler
-`DefaultLegacySessionBasedConnectionHandler` SHALL resolve the WebSocket handler for a given HTTP upgrade request by calling `getInstanceByURI(upgradeRequest.getPath())` on the module's generated `URIHandlerRegistry`.
+### Requirement: Route resolution in DefaultLegacyConnectionHandler
+`DefaultLegacyConnectionHandler` SHALL resolve the WebSocket handler for a given HTTP upgrade request by calling `getInstanceByURI(upgradeRequest.getPath())` on the module's generated `URIHandlerRegistry`.
 
 #### Scenario: Request to registered URI
 - **WHEN** an HTTP upgrade request targets a path registered in the module's `URIHandlerRegistry`

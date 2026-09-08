@@ -31,11 +31,10 @@ public class NIOServerBootstrap implements ServerBootstrap {
     private static final Logger log = LogManager.getLogger(NIOServerBootstrap.class);
     private AbstractExecutorService virtualExecutorService;
 
-
     @Override
-    public void start(IncomingConnectionHandler handler, ServerSocketConfig socketConfig) throws Exception {
-        var selector = openNetworkSelector();
+    public void start(IncomingConnectionHandler handler, ServerSocketConfig socketConfig) {
         try (var serverSocketChannel = tryOpenSocketChannel(socketConfig)) {
+            var selector = openNetworkSelector();
             var connectionPipeline = new ConnectionPipeline(handler);
             var nioServerSession = NIOServerSession.builder()
                     .serverSocketChannel(serverSocketChannel)
@@ -45,6 +44,8 @@ public class NIOServerBootstrap implements ServerBootstrap {
             nioServerSession.registerAcceptEvent();
             logServerInitialization();
             startBusyWaitingSelector(nioServerSession);
+        } catch (Exception e) {
+            log.error("Failed to start NIO server", e);
         }
     }
 

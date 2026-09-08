@@ -9,7 +9,6 @@ import com.freenote.app.server.exceptions.NIOServerInitializationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.util.concurrent.AbstractExecutorService;
@@ -20,15 +19,16 @@ public class AsyncNIOServerBootstrap implements ServerBootstrap {
     private static final Logger log = LogManager.getLogger(AsyncNIOServerBootstrap.class);
     private AbstractExecutorService virtualExecutorService;
 
-
     @Override
-    public void start(IncomingConnectionHandler connectionHandler, ServerSocketConfig socketConfig) throws Exception {
+    public void start(IncomingConnectionHandler connectionHandler, ServerSocketConfig socketConfig) {
         try (var serverSocketChannel = tryOpenSocketChannel(socketConfig)) {
             var connectionPipeline = new ConnectionPipeline(connectionHandler);
             var nioServerSession = buildServerSession(serverSocketChannel, connectionPipeline);
             logServerInitialization();
             nioServerSession.registerReadEvent();
             Thread.currentThread().join();
+        } catch (Exception e) {
+            throw new NIOServerInitializationException("Failed to open server socket channel", e);
         }
     }
 
@@ -44,7 +44,7 @@ public class AsyncNIOServerBootstrap implements ServerBootstrap {
             var asyncServerSocketChannel = AsynchronousServerSocketChannel.open();
             asyncServerSocketChannel.bind(new InetSocketAddress(socketConfig.port()));
             return asyncServerSocketChannel;
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new NIOServerInitializationException("Failed to open server socket channel", e);
         }
     }

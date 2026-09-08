@@ -3,7 +3,6 @@ package com.freenote.app.server.core.legacy;
 import com.freenote.app.server.core.config.SSLConfig;
 import com.freenote.app.server.core.config.ServerSocketConfig;
 import com.freenote.app.server.core.connection.IncomingConnectionHandler;
-import com.freenote.app.server.core.legacy.startup.LegacyBootstrap;
 import com.freenote.app.server.core.startup.ServerBootstrap;
 import lombok.Builder;
 import org.apache.logging.log4j.LogManager;
@@ -15,11 +14,10 @@ public class WebSocketServer {
     private ServerSocketConfig socketConfig;
     private SSLConfig sslConfig;
     private IncomingConnectionHandler handler;
+    private ServerBootstrap serverBootstrap;
 
     public void start() throws Exception {
         log.info("Starting WebSocket Server on port {}", socketConfig.port());
-
-        ServerBootstrap bootstrap = new LegacyBootstrap();
-        bootstrap.start(handler, socketConfig);
+        this.serverBootstrap.start(handler, socketConfig);
     }
 }

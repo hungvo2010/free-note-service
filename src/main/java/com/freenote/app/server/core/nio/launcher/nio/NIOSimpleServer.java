@@ -1,7 +1,7 @@
 package com.freenote.app.server.core.nio.launcher.nio;
 
-import com.freenote.app.server.core.nio.NIOWebSocketServer;
 import com.freenote.app.server.core.config.ServerSocketConfig;
+import com.freenote.app.server.core.legacy.WebSocketServer;
 import com.freenote.app.server.core.nio.NIOIncomingSocketHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,7 +15,7 @@ public class NIOSimpleServer {
     }
 
     public static void run(int port) throws Exception {
-        NIOWebSocketServer server = NIOWebSocketServer.builder()
+        WebSocketServer server = WebSocketServer.builder()
                 .socketConfig(new ServerSocketConfig(port))
                 .handler(new NIOIncomingSocketHandler())
                 .build();

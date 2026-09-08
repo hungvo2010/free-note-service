@@ -1,9 +1,9 @@
 package com.freenote.app.server.core.legacy.launcher;
 
 import com.freenote.app.server.core.config.ServerSocketConfig;
-import com.freenote.app.server.core.legacy.DefaultLegacySessionBasedConnectionHandler;
-import com.freenote.app.server.core.legacy.LegacyConnectionAdapter;
+import com.freenote.app.server.core.legacy.ThreadPerConnectionHandler;
 import com.freenote.app.server.core.legacy.WebSocketServer;
+import com.freenote.app.server.core.legacy.startup.LegacyBootstrap;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import otel.SampleGlobalOpenTelemetry;
 
@@ -21,7 +21,8 @@ public class SimpleServer {
         SampleGlobalOpenTelemetry.init();
         WebSocketServer server = WebSocketServer.builder()
                 .socketConfig(new ServerSocketConfig(port))
-                .handler(new LegacyConnectionAdapter(new DefaultLegacySessionBasedConnectionHandler()))
+                .handler(new ThreadPerConnectionHandler())
+                .serverBootstrap(new LegacyBootstrap())
                 .build();
         server.start();
     }
