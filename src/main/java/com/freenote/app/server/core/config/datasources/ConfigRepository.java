@@ -1,6 +1,7 @@
 package com.freenote.app.server.core.config.datasources;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ConfigRepository {
     private List<ConfigSource> configSources = new ArrayList<>();
@@ -35,14 +36,14 @@ public class ConfigRepository {
     private List<ConfigSource> sortedDataSources() {
         return this.configSources.stream()
                 .sorted(Comparator.comparingInt(ConfigSource::priority).reversed())
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public String get(String configKey) {
         return this.configMap.get(configKey);
     }
 
-    public ConfigSource resolve(String activeProfile) {
+    public FileSource resolve(String activeProfile) {
         return new FileSource("application-" + activeProfile + ".properties", 10);
     }
 }

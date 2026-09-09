@@ -21,7 +21,7 @@ public class FreeNoteApplication {
             var configRepo = new ConfigRepository();
             configRepo.load();
             var activeProfile = configRepo.getActiveProfile();
-            if (activeProfile != null && activeProfile.equals("default")) {
+            if (activeProfile != null && !activeProfile.equals("default")) {
                 configRepo.loadSource(configRepo.resolve(activeProfile));
             }
 
