@@ -1,8 +1,8 @@
 package com.freenote.app.server.core.startup;
 
+import com.freenote.app.server.core.config.SSLConfig;
 import com.freenote.app.server.core.config.ServerSocketConfig;
 import com.freenote.app.server.core.config.datasources.ConfigRepository;
-import com.freenote.app.server.core.connection.IncomingConnectionHandler;
 import com.freenote.app.server.core.legacy.WebSocketServer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import org.apache.logging.log4j.LogManager;
@@ -32,14 +32,16 @@ public class FreeNoteApplication {
             );
 
             WebSocketServer server = WebSocketServer.builder()
+                    .sslConfig(
+                            new SSLConfig(
+                                    configRepo.getOrDefault("server.ssl.keystore.path", "keystore.p12"),
+                                    configRepo.getOrDefault("server.ssl.keystore.password", "changeit"))
+                    )
                     .socketConfig(new ServerSocketConfig(startingPort))
-                    .handler(
-                            IncomingConnectionHandler.fromType(
-                                    Optional.ofNullable(configRepo.get("freenote.connection.type"))
-                                            .orElse("thread-per-connection")))
-                    .serverBootstrap(
-                            ServerBootstrap.create(Optional.ofNullable(configRepo.get("freenote.server.type"))
-                                    .orElse("thread-per-connection")))
+                    .serverType(
+                            Optional.ofNullable(configRepo.get("freenote.server.type"))
+                                    .orElse("thread-per-connection")
+                    )
                     .build();
             server.start();
         } catch (Exception ex) {

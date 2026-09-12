@@ -20,6 +20,7 @@ public class LegacyBootstrap implements ServerBootstrap {
     private ServerSocketProvider serverSocketProvider = new RawServerSocketProvider();
     private static final Logger log = LogManager.getLogger(LegacyBootstrap.class);
 
+    @Override
     public void start(IncomingConnectionHandler handler, ServerSocketConfig config) {
         logServerInitialization();
         try {

@@ -43,6 +43,10 @@ public class ConfigRepository {
         return this.configMap.get(configKey);
     }
 
+    public String getOrDefault(String configKey, String defaultValue) {
+        return this.configMap.getOrDefault(configKey, defaultValue);
+    }
+
     public FileSource resolve(String activeProfile) {
         return new FileSource("application-" + activeProfile + ".properties", 10);
     }
