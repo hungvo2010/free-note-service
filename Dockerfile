@@ -1,5 +1,5 @@
 # Build stage
-FROM gradle:jdk21 AS build
+FROM gradle:8-jdk21-alpine AS build
 WORKDIR /app
 COPY . .
 RUN ./gradlew :free-draw:shadowJar --no-daemon

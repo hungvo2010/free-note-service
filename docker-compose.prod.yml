@@ -1,0 +1,101 @@
+# Production-ish single-host stack for home-laptop-server.
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# TLS is NOT terminated here: `tailscale serve --bg --https=443 \
+#   http://127.0.0.1:8189` runs on the host and fronts the app port.
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: free-note-service:local
+    # TLS is terminated by tailscale serve on the host, so run the plain
+    # (non-TLS) entrypoint. /config is first on the classpath so it overrides
+    # the application.properties baked into app.jar.
+    entrypoint:
+      - java
+      - -cp
+      - /config:/app/app.jar
+      - com.freedraw.legacy.FreeNoteApplication
+    volumes:
+      - ./deploy/config:/config:ro
+    ports:
+      - "127.0.0.1:8189:8189"   # tailscale serve -> here
+      - "127.0.0.1:9464:9464"   # prometheus scrape
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - apicurio-registry
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: freedraw
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--requirepass", "averystrongpassword"]
+    volumes:
+      - redis-data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
+    restart: unless-stopped
+
+  apicurio-registry:
+    image: apicurio/apicurio-registry:latest-snapshot
+    environment:
+      REGISTRY_LOG_LEVEL: INFO
+      QUARKUS_PROFILE: prod
+    ports:
+      - "127.0.0.1:9081:8080"
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    command: ["--query.max-clock-skew-adjustment=5s"]
+    ports:
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
+      - "127.0.0.1:16686:16686"
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_SERVICE_ACCOUNTS_ENABLED=true
+    env_file:
+      - ./grafana/config/service-account.env
+    ports:
+      - "127.0.0.1:3000:3000"
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:
