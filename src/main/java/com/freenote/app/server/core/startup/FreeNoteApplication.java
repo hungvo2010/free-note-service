@@ -31,11 +31,14 @@ public class FreeNoteApplication {
                     Optional.ofNullable(configRepo.get("freenote.active.port")).orElse("8888")
             );
 
+            var sslEnabled = Boolean.parseBoolean(configRepo.getOrDefault("server.ssl.enabled", "false"));
             WebSocketServer server = WebSocketServer.builder()
                     .sslConfig(
-                            new SSLConfig(
-                                    configRepo.getOrDefault("server.ssl.keystore.path", "keystore.p12"),
-                                    configRepo.getOrDefault("server.ssl.keystore.password", "changeit"))
+                            sslEnabled ?
+                                    new SSLConfig(
+                                            configRepo.getOrDefault("server.ssl.keystore.path", "keystore.p12"),
+                                            configRepo.getOrDefault("server.ssl.keystore.password", "changeit"))
+                                    : null
                     )
                     .socketConfig(new ServerSocketConfig(startingPort))
                     .serverType(

@@ -1,0 +1,36 @@
+x-free-note: &free-note
+  image: free-note-service:local
+  build:
+    context: .
+  # HAProxy terminates TLS, so run the raw (non-TLS) server on 8189.
+  # FreeNoteApplication reads server.ssl.enabled (default false); the image's
+  # default entrypoint runs SSLFreeNoteServer, which is TLS-only.
+  entrypoint: ["java", "-cp", "app.jar", "com.freenote.app.server.core.startup.FreeNoteApplication"]
+  expose:
+    - "8189"
+
+services:
+  app1:
+    <<: *free-note
+
+  app2:
+    <<: *free-note
+
+  app3:
+    <<: *free-note
+
+  haproxy:
+    image: haproxy:3.3
+    depends_on:
+      - app1
+      - app2
+      - app3
+    ports:
+      - "80:80"       # HTTP -> HTTPS redirect
+      - "443:443"     # wss:// terminates here
+      - "8404:8404"   # stats UI: http://localhost:8404/stats
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      # HAProxy's `crt` file may omit the key: it then auto-loads <crt>.key.
+      - ./socket-fullchain.pem:/usr/local/etc/haproxy/certs/full.pem:ro
+      - ./socket-privkey.pem:/usr/local/etc/haproxy/certs/full.pem.key:ro
