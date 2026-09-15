@@ -19,6 +19,7 @@ public class SSLFreeNoteServer {
 
         WebSocketServer server = WebSocketServer.builder()
                 .sslConfig(new SSLConfig(keystorePath, keystorePassword))
+                .serverType("thread-per-connection")
                 .socketConfig(new ServerSocketConfig(port))
                 .build();
         server.start();
