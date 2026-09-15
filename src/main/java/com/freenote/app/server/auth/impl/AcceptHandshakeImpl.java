@@ -25,7 +25,9 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
             "http://localhost:8084",
             "http://localhost:8085",
             "http://localhost:8086",
-            "http://localhost:8080"
+            "http://localhost:8080",
+            "https://free-note-ui.vercel.app",
+            "https://home-laptop-server.tail71ae46.ts.net"
     );
     private static Collection<String> ALLOWED_ORIGINS;
     private static final Logger log = LogManager.getLogger(AcceptHandshakeImpl.class);
