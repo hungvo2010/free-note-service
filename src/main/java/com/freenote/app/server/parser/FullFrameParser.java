@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -122,7 +123,13 @@ public class FullFrameParser {
 
         // Read first two bytes of the frame header
         var b0 = dis.read();
+        if (b0 == -1) {
+            throw new EOFException("Client closed the connection (EOF at frame header)");
+        }
         var b1 = dis.read();
+        if (b1 == -1) {
+            throw new EOFException("Client closed the connection (EOF at frame length)");
+        }
         setFinOpcodeByte(b0);
         setMasked(b1);
         this.buildExtendedPayload(dis, payloadLen7);

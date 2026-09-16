@@ -43,7 +43,7 @@ public class ThreadPerConnectionHandler implements IncomingConnectionHandler {
             MetricUtils.incrementAcceptedHandshakeCount(1);
             doHandShakeAndRouting(networkRequestData);
         } catch (ClientDisconnectException | AcceptConnectionException connectionException) {
-            MetricUtils.decrementConcurrentUsers();
+            // concurrent-users đã được decrement trong routeToHandler#finally
             handleClientDisconnect(networkRequestData, connectionException);
         } catch (Exception e) {
             handleError(networkRequestData, e);
@@ -76,8 +76,19 @@ public class ThreadPerConnectionHandler implements IncomingConnectionHandler {
         var pathHandler = getEndpointHandler(upgradeRequest);
         var outputWrapper = OutputWrapper.from(networkRequestData);
         MetricUtils.incrementConcurrentUsers();
-        while (!networkRequestData.isClosed()) {
-            pathHandler.handle(networkRequestData, outputWrapper);
+        try {
+            while (!networkRequestData.isClosed()) {
+                // handle() trả false khi client đã ngắt / hết dữ liệu -> PHẢI thoát vòng lặp.
+                // Không dựa vào socket.isClosed(): với SSLSocket sau close_notify nó vẫn false,
+                // nên trước đây vòng lặp quay nóng + spam log vô hạn cho tới khi hết đĩa.
+                if (!pathHandler.handle(networkRequestData, outputWrapper)) {
+                    log.info("Client disconnected, stopping read loop for {}", networkRequestData.getRemoteAddress());
+                    break;
+                }
+            }
+        } finally {
+            MetricUtils.decrementConcurrentUsers();
+            networkRequestData.close();
         }
     }
 
@@ -91,7 +102,7 @@ public class ThreadPerConnectionHandler implements IncomingConnectionHandler {
     }
 
     private void handleClientDisconnect(NetworkRequestData networkRequestData, Exception e) {
-        log.error("Client disconnected => self closed: {}", e.getMessage());
+        log.info("Client disconnected => self closed: {}", e.getMessage());
         try {
             networkRequestData.close();
         } catch (IOException ex) {

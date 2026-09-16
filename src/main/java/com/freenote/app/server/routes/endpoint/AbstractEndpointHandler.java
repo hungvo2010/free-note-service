@@ -17,7 +17,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import otel.metrics.MetricUtils;
 
+import java.io.EOFException;
 import java.io.IOException;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -40,11 +42,32 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
             MetricUtils.getLatencyMetric().time(() -> this.serveConnection(networkRequestData, outputWrapper));
             return true;
         } catch (ConnectionException e) {
-            log.error("Error handling input stream", e);
+            if (isClientDisconnect(e)) {
+                // Client tự đóng kết nối là chuyện bình thường -> không log stack trace (tránh log storm)
+                log.debug("Client disconnected: {}", e.getMessage());
+            } else {
+                log.error("Error handling input stream", e);
+            }
             return false;
         } finally {
             MetricUtils.decrementInFlightRequests();
         }
+    }
+
+    /**
+     * EOF / socket đã shutdown / connection reset = client đóng, không phải lỗi server.
+     * Những case này KHÔNG được log ở mức ERROR kèm stack trace.
+     */
+    private boolean isClientDisconnect(Throwable throwable) {
+        for (Throwable t = throwable; t != null; t = t.getCause()) {
+            if (t instanceof EOFException || t instanceof SocketException) {
+                return true;
+            }
+            if (t == t.getCause()) {
+                break;
+            }
+        }
+        return false;
     }
 
     private void serveConnection(NetworkRequestData networkRequestData, OutputWrapper outputWrapper) {
@@ -56,7 +79,11 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
 
             dispatchAndRespond(webSocketConnection, wsFrame);
         } catch (IOException e) {
-            log.error("Error handling frame", e);
+            if (isClientDisconnect(e)) {
+                log.debug("Client disconnected while reading frame: {}", e.getMessage());
+            } else {
+                log.error("Error handling frame", e);
+            }
             throw new ConnectionException("Error handling frame", e);
         }
     }

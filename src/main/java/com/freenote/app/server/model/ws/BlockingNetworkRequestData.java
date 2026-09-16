@@ -4,15 +4,47 @@ import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.parser.FullFrameParser;
 import com.freenote.app.server.util.IOUtils;
 
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class BlockingNetworkRequestData implements NetworkRequestData {
     private final Socket socket;
+    /**
+     * Lấy MỘT lần rồi dùng lại cho mọi lần đọc.
+     * Với SSLSocket, sau khi peer gửi close_notify thì getInputStream() NÉM
+     * SocketException("Socket input is already shutdown") chứ không trả stream,
+     * nên gọi lại nó trong vòng lặp là nguồn của log storm.
+     */
+    private final InputStream inputStream;
+    private volatile boolean readClosed;
 
     public BlockingNetworkRequestData(Socket socket) {
         this.socket = socket;
+        this.inputStream = openInputStream(socket);
+    }
+
+    private static InputStream openInputStream(Socket socket) {
+        try {
+            return socket.getInputStream();
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to obtain input stream from socket", e);
+        }
+    }
+
+    /**
+     * Đánh dấu phía client đã đóng / EOF để vòng đọc phía trên dừng lại
+     * (socket.isClosed() không đủ tin cậy với SSLSocket sau close_notify).
+     */
+    public void markReadClosed() {
+        this.readClosed = true;
+    }
+
+    public boolean isReadClosed() {
+        return readClosed;
     }
 
     @Override
@@ -27,12 +59,33 @@ public class BlockingNetworkRequestData implements NetworkRequestData {
 
     @Override
     public byte[] readFrameBytes() throws IOException {
-        return new FullFrameParser().getRawBytes(socket.getInputStream());
+        if (readClosed) {
+            throw new EOFException("Connection already closed by peer");
+        }
+        try {
+            return new FullFrameParser().getRawBytes(inputStream);
+        } catch (SocketException e) {
+            // SSLSocket ném exception này khi peer đã close_notify thay vì trả -1
+            markReadClosed();
+            throw new EOFException("Client closed the connection: " + e.getMessage());
+        }
     }
 
     @Override
     public int read(byte[] data) throws IOException {
-        return this.socket.getInputStream().read(data);
+        if (readClosed) {
+            return -1;
+        }
+        try {
+            int read = inputStream.read(data);
+            if (read == -1) {
+                markReadClosed();
+            }
+            return read;
+        } catch (SocketException e) {
+            markReadClosed();
+            return -1;
+        }
     }
 
     @Override
@@ -59,7 +112,7 @@ public class BlockingNetworkRequestData implements NetworkRequestData {
 
     @Override
     public boolean isClosed() {
-        return socket != null && socket.isClosed();
+        return readClosed || socket == null || socket.isClosed();
     }
 
     @Override
