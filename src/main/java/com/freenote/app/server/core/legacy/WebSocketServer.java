@@ -3,6 +3,7 @@ package com.freenote.app.server.core.legacy;
 import com.freenote.app.server.core.config.SSLConfig;
 import com.freenote.app.server.core.config.ServerSocketConfig;
 import com.freenote.app.server.core.connection.IncomingConnectionHandler;
+import com.freenote.app.server.core.legacy.startup.LegacyBootstrap;
 import com.freenote.app.server.core.startup.ServerBootstrap;
 import lombok.Builder;
 import org.apache.logging.log4j.LogManager;
@@ -23,6 +24,13 @@ public class WebSocketServer {
             this.handler = IncomingConnectionHandler.fromType(serverType);
             this.serverBootstrap = ServerBootstrap.create(serverType);
             return this;
+        }
+
+        public WebSocketServer build() {
+            this.serverBootstrap = this.sslConfig != null
+                    ? LegacyBootstrap.createSSLBootstrap(sslConfig)
+                    : this.serverBootstrap;
+            return new WebSocketServer(socketConfig, sslConfig, serverType, handler, serverBootstrap);
         }
     }
 
