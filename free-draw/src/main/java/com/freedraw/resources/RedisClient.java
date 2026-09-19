@@ -1,5 +1,6 @@
 package com.freedraw.resources;
 
+import com.freedraw.common.EnvironmentVariable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.redisson.Redisson;
@@ -9,6 +10,7 @@ import org.redisson.config.Config;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 public class RedisClient {
     private static final Logger log = LogManager.getLogger(RedisClient.class);
@@ -46,7 +48,7 @@ public class RedisClient {
 
     private static RedissonClient createRedissonClient() {
         Config config = new Config();
-        
+
         String host = properties.getProperty("redis.host", "localhost");
         int port = Integer.parseInt(properties.getProperty("redis.port", "6379"));
         String password = properties.getProperty("redis.password", "");
@@ -56,7 +58,7 @@ public class RedisClient {
         int minIdleSize = Integer.parseInt(properties.getProperty("redis.connection.minimum.idle.size", "10"));
 
         String address = String.format("redis://%s:%d", host, port);
-        
+
         config.useSingleServer()
                 .setAddress(address)
                 .setDatabase(database)
@@ -71,7 +73,7 @@ public class RedisClient {
         log.info("Connecting to Redis at {}", address);
         RedissonClient client = Redisson.create(config);
         log.info("Redis connection established successfully");
-        
+
         return client;
     }
 
@@ -80,5 +82,18 @@ public class RedisClient {
             redissonClient.shutdown();
             log.info("Redis connection closed");
         }
+    }
+
+    public static void notifyStickyServer(String senderId, String payloadJson) {
+        if (senderId == null || senderId.isEmpty()) {
+            log.warn("Skipping sticky routing: recipient has no senderId");
+            return;
+        }
+        var serverId = EnvironmentVariable.getHostName();
+        log.info("SenderId: {}, ServerId: {}", senderId, serverId);
+        var mapSenderServer = getRedissonClient().getMapCache(RedisKeys.MAP_SENDER_SERVER);
+        mapSenderServer.put(senderId, serverId, 60, TimeUnit.SECONDS);
+        var serverTopic = getRedissonClient().getTopic(RedisKeys.SERVER_PREFIX + serverId);
+        serverTopic.publish(payloadJson);
     }
 }

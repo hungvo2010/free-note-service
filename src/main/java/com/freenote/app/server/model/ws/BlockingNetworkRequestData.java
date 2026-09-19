@@ -3,6 +3,8 @@ package com.freenote.app.server.model.ws;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.parser.FullFrameParser;
 import com.freenote.app.server.util.IOUtils;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 
+@EqualsAndHashCode
 public class BlockingNetworkRequestData implements NetworkRequestData {
     private final Socket socket;
     /**
@@ -20,6 +23,7 @@ public class BlockingNetworkRequestData implements NetworkRequestData {
      * nên gọi lại nó trong vòng lặp là nguồn của log storm.
      */
     private final InputStream inputStream;
+    @Getter
     private volatile boolean readClosed;
 
     public BlockingNetworkRequestData(Socket socket) {
@@ -41,10 +45,6 @@ public class BlockingNetworkRequestData implements NetworkRequestData {
      */
     public void markReadClosed() {
         this.readClosed = true;
-    }
-
-    public boolean isReadClosed() {
-        return readClosed;
     }
 
     @Override

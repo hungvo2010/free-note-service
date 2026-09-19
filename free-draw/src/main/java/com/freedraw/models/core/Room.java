@@ -1,11 +1,9 @@
 package com.freedraw.models.core;
 
-import com.freenote.app.server.frames.ws.WebSocketFrame;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 import java.util.*;
 
 public class Room {
@@ -13,7 +11,7 @@ public class Room {
     @Getter
     private final String roomId;
     @Getter
-    private final Set<Connection> connections;
+    private final Set<AppConnection> connections;
 
     public Room(String draftId) {
         this.roomId = hashDraftId(draftId);
@@ -31,27 +29,11 @@ public class Room {
         System.out.println("b4a04191-0547-43d1-a50b-adf676a1e6b0".hashCode());
     }
 
-    public void addMember(Connection connection) {
+    public void addMember(AppConnection connection) {
         connections.add(connection);
     }
 
-    public void broadCastMessage(List<Connection> connections, WebSocketFrame data) {
-        log.info("Broadcasting message to {} members", connections.size());
-        for (Connection connection : connections) {
-            sendMember(connection, data);
-        }
-    }
-
-    private void sendMember(Connection connection, WebSocketFrame data) {
-        try {
-            connection.writeData(data);
-        } catch (IOException e) {
-            log.error("Error broadcasting to member: {}", e.getMessage());
-        }
-    }
-
-
-    public List<Connection> getConnectionsInRoomToBroadcast(List<Connection> excludeConnections) {
+    public List<AppConnection> getConnectionsInRoomToBroadcast(List<AppConnection> excludeConnections) {
         return this
                 .getConnections()
                 .stream()
@@ -59,17 +41,17 @@ public class Room {
                 .toList();
     }
 
-    private boolean isEligibleForBroadcast(List<Connection> excludeConnections, Connection connection) {
+    private boolean isEligibleForBroadcast(List<AppConnection> excludeConnections, AppConnection connection) {
         return !excludeConnections.contains(connection) && connection.isOpen();
     }
 
-    public void remove(Connection newConnection) {
-        for (Iterator<Connection> iterator = connections.iterator(); iterator.hasNext(); ) {
-            Connection connection = iterator.next();
-            if (connection.equals(newConnection)) {
+    public void remove(AppConnection newConnection) {
+        for (Iterator<AppConnection> iterator = connections.iterator(); iterator.hasNext(); ) {
+            AppConnection connection = iterator.next();
+            if (Objects.equals(connection, newConnection)) {
                 iterator.remove();
                 connection.close();
-                log.info("Connection removed from room: {}", roomId);
+                log.info("Connection sent event, skip broadcast: {}", roomId);
                 break;
             }
         }

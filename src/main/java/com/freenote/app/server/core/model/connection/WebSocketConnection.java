@@ -13,7 +13,6 @@ import lombok.Data;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 @Data
 @Builder
@@ -48,10 +47,6 @@ public class WebSocketConnection {
     private void writeAsJsonTextFrame(AppResponseData obj) throws IOException {
         String json = JSONUtils.toJSONString(obj);
         writeFrame(FrameFactory.SERVER.createTextFrame(json));
-    }
-
-    public OutputStream getOutputStream() {
-        return outputWrapper.outputStream();
     }
 
     public void sendText(String message) {

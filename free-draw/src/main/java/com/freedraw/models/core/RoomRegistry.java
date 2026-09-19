@@ -26,7 +26,7 @@ public class RoomRegistry {
         }
         return instance;
     }
-    public void removeConnection(Connection connection) {
+    public void removeConnection(AppConnection connection) {
         if (connection == null) return;
         rooms.values().forEach(room -> room.remove(connection));
         log.debug("Connection removed from all relevant rooms.");

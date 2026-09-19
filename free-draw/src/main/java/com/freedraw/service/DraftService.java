@@ -34,7 +34,7 @@ public class DraftService {
 
         validateExistingRequest(data);
         
-        Draft draft = getDraftOrThrow(data.getDraftId());
+        Draft draft = getDraft(data.getDraftId());
         applyActionToDraft(draft, data);
         
         draftRepository.save(draft);
@@ -62,7 +62,7 @@ public class DraftService {
         return draft;
     }
 
-    private Draft getDraftOrThrow(String id) {
+    private Draft getDraft(String id) {
         Draft draft = draftRepository.getDraftById(id);
         if (draft == null) {
             throw new DraftNotFoundException("Draft ID: " + id);

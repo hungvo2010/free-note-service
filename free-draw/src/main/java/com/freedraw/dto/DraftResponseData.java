@@ -28,10 +28,6 @@ public class DraftResponseData extends AppResponseData {
         this.data = new DraftResponseContent(shapes);
     }
 
-    public DraftResponseData(HeartbeatMsg heartbeat) {
-
-    }
-
     public DraftResponseData() {
     }
 }

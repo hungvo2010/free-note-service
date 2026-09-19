@@ -28,10 +28,13 @@ public class EnvironmentVariable {
             }
             Files.createDirectories(Path.of(targetDir));
             return targetDir;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.info("Failed to get target directory from application.properties: {}", e.getMessage());
             return "/tmp/";
         }
+    }
+
+    public static String getHostName() {
+        return System.getenv().getOrDefault("HOSTNAME", "server-local");
     }
 }

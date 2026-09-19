@@ -6,10 +6,11 @@ import com.freedraw.dto.DraftResponseData;
 import com.freedraw.dto.HeartbeatMsg;
 import com.freedraw.entities.Draft;
 import com.freedraw.entities.DraftAction;
-import com.freedraw.models.core.Connection;
+import com.freedraw.models.core.AppConnection;
 import com.freedraw.models.core.Room;
 import com.freedraw.models.core.RoomRegistry;
 import com.freedraw.repository.InMemDraftRepositoryImpl;
+import com.freedraw.resources.RedisClient;
 import com.freedraw.service.DraftService;
 import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.core.model.connection.WebSocketConnection;
@@ -23,6 +24,7 @@ import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -40,7 +42,7 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
             if (heartbeat != null && heartbeat.getMsgType() == MsgType.PING) {
                 log.info("Received Heartbeat PING");
                 heartbeat.setMsgType(MsgType.PONG);
-                webSocketConnection.setAppResponseData(new DraftResponseData(heartbeat));
+                webSocketConnection.setResponseFrame(FrameUtil.createApplicationFrame(heartbeat));
                 return;
             }
 
@@ -54,7 +56,7 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
             var draft = draftService.handleDraftRequest(draftRequest);
             var responseData = buildResponseAction(draft, draftRequest);
             webSocketConnection.setAppResponseData(responseData);
-            broadcastMessage(draft.getDraftId(), Connection.from(webSocketConnection),
+            broadcastMessage(draft.getDraftId(), new AppConnection(webSocketConnection, draftRequest.getSenderId()),
                     FrameUtil.createApplicationFrame(responseData)  // Use responseData instead of lastAction
             );
         } catch (Exception ex) {
@@ -75,13 +77,13 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
                 .senderId(draftRequest.getSenderId())
                 .build();
 
-        log.info("Response: {}", JSONUtils.toJSONString(responseData));
+//        log.info("Response: {}", JSONUtils.toJSONString(responseData));
         return responseData;
     }
 
     @Override
     public void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote) {
-        roomRegistry.removeConnection(new Connection(webSocketConnection.getOutputStream()));
+        roomRegistry.removeConnection(new AppConnection(webSocketConnection));
         throw new ClientDisconnectException("Client sent CLOSE frame");
     }
 
@@ -100,18 +102,32 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
         return draft.getActions().get(draft.getActions().size() - 1);
     }
 
-    private void broadcastMessage(String roomId, Connection newConnection, WebSocketFrame clientResponse) {
+    private void broadcastMessage(String roomId, AppConnection newConnection, WebSocketFrame clientResponse) {
         var targetRoom = roomRegistry.getRoomById(roomId);
         try {
             targetRoom.addMember(newConnection);
             var connectionsToBroadcast = targetRoom.getConnectionsInRoomToBroadcast(List.of(newConnection));
-            targetRoom.broadCastMessage(connectionsToBroadcast, clientResponse);
+            broadCastMessage(connectionsToBroadcast, clientResponse);
         } catch (Exception e) {
+            log.error("Error broadcasting message: {}", e);
             removeConnection(targetRoom, newConnection);
         }
     }
 
-    private void removeConnection(Room targetRoom, Connection newConnection) {
+    private void broadCastMessage(List<AppConnection> connections, WebSocketFrame clientResponse) {
+        log.info("Broadcasting message to {} members", connections.size());
+        for (AppConnection connection : connections) {
+            try {
+                connection.writeData(clientResponse);
+                RedisClient.notifyStickyServer(connection.getSenderId(),
+                        new String(clientResponse.getPayloadData()));
+            } catch (IOException e) {
+                log.error("Error broadcasting to member: {}", e);
+            }
+        }
+    }
+
+    private void removeConnection(Room targetRoom, AppConnection newConnection) {
         targetRoom.remove(newConnection);
     }
 
