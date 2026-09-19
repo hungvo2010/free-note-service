@@ -5,30 +5,6 @@
 # TLS is NOT terminated here: `tailscale serve --bg --https=443 \
 #   http://127.0.0.1:8189` runs on the host and fronts the app port.
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: free-note-service:local
-    # TLS is terminated by tailscale serve on the host, so run the plain
-    # (non-TLS) entrypoint. /config is first on the classpath so it overrides
-    # the application.properties baked into app.jar.
-    entrypoint:
-      - java
-      - -cp
-      - /config:/app/app.jar
-      - com.freedraw.legacy.FreeNoteApplication
-    volumes:
-      - ./deploy/config:/config:ro
-    ports:
-      - "8189:8189"   # tailscale serve -> here
-      - "9464:9464"   # prometheus scrape
-    restart: unless-stopped
-    depends_on:
-      - postgres
-      - redis
-      - apicurio-registry
-
   postgres:
     image: postgres:16-alpine
     environment:

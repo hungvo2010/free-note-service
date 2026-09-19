@@ -64,6 +64,20 @@ tasks.register('bootRun', JavaExec) {
     }
 }
 
+// Run the plain (non-TLS) server directly on the host against Docker infra.
+// deploy/config-local is placed FIRST on the classpath so it overrides both
+// the root and free-draw application.properties / redis.properties / postgres.properties.
+tasks.register('runFreeNote', JavaExec) {
+    group = 'application'
+    description = 'Run com.freedraw.legacy.FreeNoteApplication against local Docker infra'
+    classpath = files(rootProject.file('deploy/config-local')) + sourceSets.main.runtimeClasspath
+    mainClass.set('com.freedraw.legacy.FreeNoteApplication')
+    // The Gradle launcher may run on an older JDK; use the project's Java 21 toolchain.
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(21)
+    })
+}
+
 // Configure shadowJar to create executable fat JAR
 shadowJar {
     archiveBaseName.set('free-note-service')
