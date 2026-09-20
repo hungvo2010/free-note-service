@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew :free-draw:compileJava)",
+      "Bash(javap *)",
+      "mcp__plugin_aiup-core_context7__query-docs",
+      "mcp__plugin_aiup-core_context7__resolve-library-id"
+    ]
+  }
+}

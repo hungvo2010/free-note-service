@@ -1,6 +1,8 @@
 package com.freedraw.resources;
 
 import com.freedraw.common.EnvironmentVariable;
+import com.freedraw.dto.DraftResponseData;
+import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.redisson.Redisson;
@@ -84,16 +86,26 @@ public class RedisClient {
         }
     }
 
-    public static void notifyStickyServer(String senderId, String payloadJson) {
-        if (senderId == null || senderId.isEmpty()) {
+    public static void claimMember(String memberId) {
+        var mapSenderServer = getRedissonClient().getMapCache(RedisKeys.MAP_SENDER_SERVER);
+        mapSenderServer.put(memberId, EnvironmentVariable.getHostName(), 60, TimeUnit.SECONDS);
+    }
+
+    public static void notifyStickyServer(String recipientId, DraftResponseData payload) {
+        if (recipientId == null || recipientId.isEmpty()) {
             log.warn("Skipping sticky routing: recipient has no senderId");
             return;
         }
-        var serverId = EnvironmentVariable.getHostName();
-        log.info("SenderId: {}, ServerId: {}", senderId, serverId);
         var mapSenderServer = getRedissonClient().getMapCache(RedisKeys.MAP_SENDER_SERVER);
-        mapSenderServer.put(senderId, serverId, 60, TimeUnit.SECONDS);
+        var serverId = mapSenderServer.get(recipientId);
+        if (serverId == null) {
+            log.warn("No server claimed for recipient {}, skipping routing", recipientId);
+            return;
+        }
+        payload.setRecipientId(recipientId);
+        log.info("RecipientId: {}, ServerId: {}", recipientId, serverId);
+        
         var serverTopic = getRedissonClient().getTopic(RedisKeys.SERVER_PREFIX + serverId);
-        serverTopic.publish(payloadJson);
+        serverTopic.publish(JSONUtils.toJSONString(payload));
     }
 }

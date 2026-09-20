@@ -13,12 +13,13 @@ public class NIOCommonEndpoint extends AbstractEndpointHandler {
         super(new ByteBufferFrameParserImpl());
     }
 
-    @Override
-    protected void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
-        var networkRequestData = webSocketConnection.getNetworkRequestData();
-        byte[] dataToWrite = getDataToWrite(webSocketConnection);
-        networkRequestData.write(dataToWrite);
-    }
+//    @Override
+//    protected void sendResponse(WebSocketConnection webSocketConnection) throws IOException {
+//        var networkRequestData = webSocketConnection.getNetworkRequestData();
+//        byte[] dataToWrite = getDataToWrite(webSocketConnection);
+//        networkRequestData.write(dataToWrite);
+//
+//    }
 
     private byte[] getDataToWrite(WebSocketConnection webSocketConnection) throws IOException {
         return webSocketConnection.getPayloadBytes();

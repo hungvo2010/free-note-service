@@ -20,6 +20,7 @@ public class DraftResponseData extends AppResponseData {
     private String draftName;
     private DraftRequestType requestType;
     private String senderId;
+    private String recipientId;
     private DraftResponseContent data;
 
     public DraftResponseData(String draftId, String draftName, List<ShapeData> shapes) {
