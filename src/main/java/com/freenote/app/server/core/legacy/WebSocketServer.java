@@ -2,9 +2,7 @@ package com.freenote.app.server.core.legacy;
 
 import com.freenote.app.server.core.config.SSLConfig;
 import com.freenote.app.server.core.config.ServerSocketConfig;
-import com.freenote.app.server.core.connection.IncomingConnectionHandler;
-import com.freenote.app.server.core.legacy.startup.LegacyBootstrap;
-import com.freenote.app.server.core.startup.ServerBootstrap;
+import com.freenote.app.server.core.startup.IoModel;
 import lombok.Builder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,27 +13,10 @@ public class WebSocketServer {
     private ServerSocketConfig socketConfig;
     private SSLConfig sslConfig;
     private String serverType;
-    private IncomingConnectionHandler handler;
-    private ServerBootstrap serverBootstrap;
-
-    public static class WebSocketServerBuilder {
-        public WebSocketServerBuilder serverType(String serverType) {
-            this.serverType = serverType;
-            this.handler = IncomingConnectionHandler.fromType(serverType);
-            this.serverBootstrap = ServerBootstrap.create(serverType);
-            return this;
-        }
-
-        public WebSocketServer build() {
-            this.serverBootstrap = this.sslConfig != null
-                    ? LegacyBootstrap.createSSLBootstrap(sslConfig)
-                    : this.serverBootstrap;
-            return new WebSocketServer(socketConfig, sslConfig, serverType, handler, serverBootstrap);
-        }
-    }
 
     public void start() throws Exception {
         log.info("Starting WebSocket Server on port {}", socketConfig.port());
-        this.serverBootstrap.start(handler, socketConfig);
+        var ioModel = IoModel.of(serverType, sslConfig);
+        ioModel.acceptLoop().start(ioModel.handler(), socketConfig);
     }
 }
