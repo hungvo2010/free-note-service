@@ -10,6 +10,7 @@ import com.freedraw.legacy.ConnectionsRegistry;
 import com.freedraw.models.core.AppConnection;
 import com.freedraw.models.core.Room;
 import com.freedraw.models.core.RoomRegistry;
+import com.freedraw.repository.DraftRepository;
 import com.freedraw.repository.InMemDraftRepositoryImpl;
 import com.freedraw.resources.RedisClient;
 import com.freedraw.service.DraftService;
@@ -31,8 +32,12 @@ import java.util.List;
 public class FreeNoteEndpoint extends AbstractEndpointHandler {
     private static final Logger log = LogManager.getLogger(FreeNoteEndpoint.class);
     private static final DraftResponseData DEFAULT_MESSAGE_PAYLOAD = new DraftResponseData();
-    private final DraftService draftService = new DraftService(new InMemDraftRepositoryImpl());
+    private DraftService draftService = new DraftService(new InMemDraftRepositoryImpl());
     private final RoomRegistry roomRegistry = RoomRegistry.getInstance();
+
+    public void setDraftRepository(DraftRepository draftRepository) {
+        this.draftService = new DraftService(draftRepository);
+    }
 
     @Override
     public void onData(WebSocketConnection webSocketConnection, String message) {
