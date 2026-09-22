@@ -40,7 +40,6 @@ public class ThreadPerConnectionHandler implements IncomingConnectionHandler {
     public void handle(ConnectionContext context) {
         var networkRequestData = context.getNetworkRequestData();
         try {
-            MetricUtils.incrementAcceptedHandshakeCount(1);
             doHandShakeAndRouting(networkRequestData);
         } catch (ClientDisconnectException | AcceptConnectionException connectionException) {
             // concurrent-users đã được decrement trong routeToHandler#finally
@@ -54,8 +53,9 @@ public class ThreadPerConnectionHandler implements IncomingConnectionHandler {
         var upgradeRequest = parseRequest(networkRequestData);
         var handShakeResp = performHandshake(upgradeRequest);
         networkRequestData.write(handShakeResp.toRawBytes());
+        MetricUtils.incrementAcceptedHandshakeCount(1);
 
-        routeToHandler(networkRequestData, upgradeRequest);
+        pollToEndpointHandler(networkRequestData, upgradeRequest);
     }
 
     private HttpUpgradeRequest parseRequest(NetworkRequestData networkRequestData) throws IOException {
@@ -72,7 +72,7 @@ public class ThreadPerConnectionHandler implements IncomingConnectionHandler {
         return upgradeResponse;
     }
 
-    private void routeToHandler(NetworkRequestData networkRequestData, HttpUpgradeRequest upgradeRequest) throws IOException {
+    private void pollToEndpointHandler(NetworkRequestData networkRequestData, HttpUpgradeRequest upgradeRequest) throws IOException {
         var pathHandler = getEndpointHandler(upgradeRequest);
         var outputWrapper = OutputWrapper.from(networkRequestData);
         MetricUtils.incrementConcurrentUsers();
