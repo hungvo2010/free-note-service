@@ -37,14 +37,7 @@ public class LegacyBootstrap implements ServerBootstrap {
     public void start(IncomingConnectionHandler handler, ServerSocketConfig config) {
         logServerInitialization();
         try {
-            Thread t = Thread.ofVirtual()
-                    .name("my-worker")
-                    .unstarted(() -> {
-                        log.warn("Running in virtual thread: {}, Is Virtual: {}", Thread.currentThread(), Thread.currentThread().isVirtual());
-                    });
-
-            t.start();
-            t.join();
+            logVirtualThreadWarn();
             try (var serverSocket = serverSocketProvider.createServerSocket(config)) {
                 while (!serverSocket.isClosed()) {
                     log.info("Waiting for connection on port {}", config);
@@ -66,5 +59,15 @@ public class LegacyBootstrap implements ServerBootstrap {
         } catch (Exception ex) {
             log.error("Error starting server", ex);
         }
+    }
+
+    private void logVirtualThreadWarn(){
+        Thread t = Thread.ofVirtual()
+                    .name("my-worker")
+                    .unstarted(() -> {
+                        log.warn("Running in virtual thread: {}, Is Virtual: {}", Thread.currentThread(), Thread.currentThread().isVirtual());
+                    });
+        t.start();
+        t.join();
     }
 }
