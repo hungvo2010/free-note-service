@@ -1,14 +1,14 @@
 package com.freenote.app.server.core.startup;
 
 import com.freenote.app.server.core.config.SSLConfig;
-import com.freenote.app.server.core.connection.IncomingConnectionHandler;
+import com.freenote.app.server.core.connection.PerConnectionHandler;
 import com.freenote.app.server.core.legacy.ThreadPerConnectionHandler;
 import com.freenote.app.server.core.legacy.startup.LegacyBootstrap;
 import com.freenote.app.server.core.nio.NIOIncomingSocketHandler;
 import com.freenote.app.server.core.nio.startup.AsyncNIOServerBootstrap;
 import com.freenote.app.server.core.nio.startup.NIOServerBootstrap;
 
-public record IoModel(ServerBootstrap acceptLoop, IncomingConnectionHandler handler) {
+public record IoModel(ServerBootstrap acceptLoop, PerConnectionHandler handler) {
 
     public static IoModel of(String serverType, SSLConfig sslConfig) {
         if (sslConfig != null) {

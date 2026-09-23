@@ -1,7 +1,7 @@
 package com.freenote.app.server.core.nio.startup;
 
 import com.freenote.app.server.core.config.ServerSocketConfig;
-import com.freenote.app.server.core.connection.IncomingConnectionHandler;
+import com.freenote.app.server.core.connection.PerConnectionHandler;
 import com.freenote.app.server.core.nio.ConnectionPipeline;
 import com.freenote.app.server.core.nio.sessions.AsyncNIOServerSession;
 import com.freenote.app.server.core.startup.ServerBootstrap;
@@ -20,7 +20,7 @@ public class AsyncNIOServerBootstrap implements ServerBootstrap {
     private AbstractExecutorService virtualExecutorService;
 
     @Override
-    public void start(IncomingConnectionHandler connectionHandler, ServerSocketConfig socketConfig) {
+    public void start(PerConnectionHandler connectionHandler, ServerSocketConfig socketConfig) {
         try (var serverSocketChannel = tryOpenSocketChannel(socketConfig)) {
             var connectionPipeline = new ConnectionPipeline(connectionHandler);
             var nioServerSession = buildServerSession(serverSocketChannel, connectionPipeline);

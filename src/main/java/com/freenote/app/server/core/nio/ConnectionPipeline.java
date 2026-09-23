@@ -1,6 +1,6 @@
 package com.freenote.app.server.core.nio;
 
-import com.freenote.app.server.core.connection.IncomingConnectionHandler;
+import com.freenote.app.server.core.connection.PerConnectionHandler;
 import com.freenote.app.server.core.context.ConnectionContext;
 import com.freenote.app.server.core.context.ReadableContext;
 import com.freenote.app.server.core.nio.state.ConnectionState;
@@ -22,9 +22,9 @@ public class ConnectionPipeline {
     private static final Logger log = LogManager.getLogger(ConnectionPipeline.class);
 
     private final Map<NetworkRequestData, ConnectionState> connectionStates = new ConcurrentHashMap<>();
-    private final IncomingConnectionHandler connectionHandler;
+    private final PerConnectionHandler connectionHandler;
 
-    public ConnectionPipeline(IncomingConnectionHandler handler) {
+    public ConnectionPipeline(PerConnectionHandler handler) {
         this.connectionHandler = handler;
     }
 

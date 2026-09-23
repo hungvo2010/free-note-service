@@ -8,9 +8,7 @@ import com.freedraw.entities.Draft;
 import com.freedraw.entities.DraftAction;
 import com.freedraw.legacy.ConnectionsRegistry;
 import com.freedraw.models.core.AppConnection;
-import com.freedraw.models.core.Room;
 import com.freedraw.models.core.RoomRegistry;
-import com.freedraw.repository.DraftRepository;
 import com.freedraw.repository.InMemDraftRepositoryImpl;
 import com.freedraw.resources.RedisClient;
 import com.freedraw.service.DraftService;
@@ -34,10 +32,6 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
     private static final DraftResponseData DEFAULT_MESSAGE_PAYLOAD = new DraftResponseData();
     private DraftService draftService = new DraftService(new InMemDraftRepositoryImpl());
     private final RoomRegistry roomRegistry = RoomRegistry.getInstance();
-
-    public void setDraftRepository(DraftRepository draftRepository) {
-        this.draftService = new DraftService(draftRepository);
-    }
 
     @Override
     public void onData(WebSocketConnection webSocketConnection, String message) {
@@ -118,7 +112,7 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
             broadCastMessage(connectionsToBroadcast, responseData);
         } catch (Exception e) {
             log.error("Error broadcasting message: {}", e);
-            removeConnection(targetRoom, newConnection);
+            targetRoom.remove(newConnection);
         }
     }
 
@@ -128,9 +122,4 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
             RedisClient.notifyStickyServer(connection.getSenderId(), message);
         }
     }
-
-    private void removeConnection(Room targetRoom, AppConnection newConnection) {
-        targetRoom.remove(newConnection);
-    }
-
 }

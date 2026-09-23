@@ -2,7 +2,7 @@ package com.freenote.app.server.core.nio;
 
 import com.freenote.app.server.auth.AcceptHandshakeHandler;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
-import com.freenote.app.server.core.connection.IncomingConnectionHandler;
+import com.freenote.app.server.core.connection.PerConnectionHandler;
 import com.freenote.app.server.core.context.ConnectionContext;
 import com.freenote.app.server.core.context.ReadableContext;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
@@ -23,7 +23,7 @@ import java.util.Deque;
 
 import static generated.URIHandlerRegistry.getInstanceByURI;
 
-public class NIOIncomingSocketHandler implements IncomingConnectionHandler {
+public class NIOIncomingSocketHandler implements PerConnectionHandler {
     private static final Logger log = LogManager.getLogger(NIOIncomingSocketHandler.class);
     private final AcceptHandshakeHandler handshakeHandler;
     private final HttpParser httpParser;

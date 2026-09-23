@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Arrays;
 
 @EqualsAndHashCode
 public class BlockingNetworkRequestData implements NetworkRequestData {
@@ -100,7 +101,7 @@ public class BlockingNetworkRequestData implements NetworkRequestData {
         if (count == -1) {
             return new byte[0];
         }
-        return java.util.Arrays.copyOf(bytes, count);
+        return Arrays.copyOf(bytes, count);
     }
 
     @Override
