@@ -8,7 +8,7 @@ import com.freenote.app.server.core.model.connection.WebSocketConnection;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.ConnectionException;
-import com.freenote.app.server.model.OutputWrapper;
+import com.freenote.app.server.model.NetworkResponseData;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.parser.HttpParser;
@@ -45,10 +45,18 @@ public class ThreadPerConnectionHandler implements PerConnectionHandler {
         } catch (ClientDisconnectException | AcceptConnectionException connectionException) {
             // concurrent-users đã được decrement trong routeToHandler#finally
             log.info("Client disconnected => self closed: {}", connectionException.getMessage());
-            networkRequestData.close();
+            closeRequest(networkRequestData);
         } catch (Exception e) {
             log.error("Error handling socket: ", e);
             handleError(networkRequestData);
+        }
+    }
+
+    private void closeRequest(NetworkRequestData networkRequestData) {
+        try {
+            networkRequestData.close();
+        } catch (IOException e) {
+            throw new ConnectionException("Error closing connection", e);
         }
     }
 
@@ -70,22 +78,22 @@ public class ThreadPerConnectionHandler implements PerConnectionHandler {
     }
 
     private void pollToEndpointHandler(NetworkRequestData networkRequestData, HttpUpgradeRequest upgradeRequest) throws IOException {
-        var pathHandler = getEndpointHandler(upgradeRequest);
-        var outputWrapper = OutputWrapper.from(networkRequestData);
+        var endpointHandler = getEndpointHandler(upgradeRequest);
+        var responseData = NetworkResponseData.from(networkRequestData);
         MetricUtils.incrementConcurrentUsers();
         try {
             while (!networkRequestData.isClosed()) {
                 // handle() trả false khi client đã ngắt / hết dữ liệu -> PHẢI thoát vòng lặp.
                 // Không dựa vào socket.isClosed(): với SSLSocket sau close_notify nó vẫn false,
                 // nên trước đây vòng lặp quay nóng + spam log vô hạn cho tới khi hết đĩa.
-                if (!pathHandler.handle(networkRequestData, outputWrapper)) {
+                if (!endpointHandler.handle(networkRequestData, responseData)) {
                     log.info("Client disconnected, stopping read loop for {}", networkRequestData.getRemoteAddress());
                     break;
                 }
             }
         } finally {
             MetricUtils.decrementConcurrentUsers();
-            networkRequestData.close();
+            closeRequest(networkRequestData);
         }
     }
 
@@ -100,16 +108,12 @@ public class ThreadPerConnectionHandler implements PerConnectionHandler {
 
     private void handleError(NetworkRequestData networkRequestData) {
         try {
-            var context = WebSocketConnection.from(networkRequestData, OutputWrapper.from(networkRequestData));
+            var context = WebSocketConnection.from(networkRequestData, NetworkResponseData.from(networkRequestData));
             context.sendText("Internal Server Error");
             context.sendCurrentResponse();
         } catch (Exception ignore) {
         } finally {
-            try {
-                networkRequestData.close();
-            } catch (IOException ex) {
-                log.error("Error closing connection", ex);
-            }
+            closeRequest(networkRequestData);
         }
     }
 }

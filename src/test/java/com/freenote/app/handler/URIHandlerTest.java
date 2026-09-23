@@ -4,7 +4,7 @@ import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.routes.URIEndpointHandler;
 import com.freenote.app.server.routes.endpoint.NewEchoEndpoint;
-import com.freenote.app.server.model.OutputWrapper;
+import com.freenote.app.server.model.NetworkResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.util.IOUtils;
 import com.freenote.app.test.StubNetworkRequestData;
@@ -41,7 +41,7 @@ class URIHandlerTest {
         var bytes = byteArrayOutputStream.toByteArray();
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        mockURIHandler.handle(new StubNetworkRequestData(in), new OutputWrapper(out));
+        mockURIHandler.handle(new StubNetworkRequestData(in), new NetworkResponseData(out));
         String result = new String(Arrays.copyOfRange(out.toByteArray(), 2, 2 + "Hello World".length())); // Skip the first two bytes which are the frame type and length
         assertEquals("Hello World", result);
     }
@@ -51,7 +51,7 @@ class URIHandlerTest {
         NetworkRequestData networkData = mock(NetworkRequestData.class);
         when(networkData.readFrameBytes()).thenReturn(new byte[0]);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        var result = mockURIHandler.handle(networkData, new OutputWrapper(out));
+        var result = mockURIHandler.handle(networkData, new NetworkResponseData(out));
         assertFalse(result, "Expected handle to return false on end of input stream");
     }
 }

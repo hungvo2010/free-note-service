@@ -1,28 +1,19 @@
 package com.freenote.app.server.model;
 
 import com.freenote.app.server.model.ws.NetworkRequestData;
-import com.freenote.app.server.model.ws.NIONetworkRequestData;
-import com.freenote.app.server.model.ws.BlockingNetworkRequestData;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-public record OutputWrapper(OutputStream outputStream) {
+public record NetworkResponseData(OutputStream outputStream) {
 
     /**
-     * Creates an OutputWrapper backed by a NetworkRequestData.
+     * Creates a NetworkResponseData backed by a NetworkRequestData.
      * Writes are delegated to {@code networkData.write(byte[])}.
      * Eliminates the need for {@code channel.socket().getOutputStream()}.
      */
-    public static OutputWrapper from(NetworkRequestData networkData) {
-        if (networkData instanceof NIONetworkRequestData nio) {
-            return new OutputWrapper(nio.getOutputStream());
-        }
-        if (networkData instanceof BlockingNetworkRequestData blocking) {
-            return new OutputWrapper(blocking.getOutputStream());
-        }
-        // Generic fallback for any NetworkRequestData implementation
-        return new OutputWrapper(new OutputStream() {
+    public static NetworkResponseData from(NetworkRequestData networkData) {
+        return new NetworkResponseData(new OutputStream() {
             @Override
             public void write(int b) throws IOException {
                 networkData.write(new byte[]{(byte) b});

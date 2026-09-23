@@ -7,7 +7,7 @@ import com.freenote.app.server.core.context.ConnectionContext;
 import com.freenote.app.server.core.context.ReadableContext;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.exceptions.ConnectionException;
-import com.freenote.app.server.model.OutputWrapper;
+import com.freenote.app.server.model.NetworkResponseData;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.parser.HttpParser;
@@ -46,8 +46,8 @@ public class NIOIncomingSocketHandler implements PerConnectionHandler {
 
     private void routeToHandler(NetworkRequestData networkData, HttpUpgradeRequest upgradeRequest) throws IOException {
         var pathHandler = getPathHandler(upgradeRequest);
-        var outputWrapper = OutputWrapper.from(networkData);
-        pathHandler.handle(networkData, outputWrapper);
+        var responseData = NetworkResponseData.from(networkData);
+        pathHandler.handle(networkData, responseData);
     }
 
     private URIEndpointHandler getPathHandler(HttpUpgradeRequest upgradeRequest) {

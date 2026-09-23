@@ -2,7 +2,7 @@ package com.freenote.app.server.core.model.connection;
 
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.model.OutputWrapper;
+import com.freenote.app.server.model.NetworkResponseData;
 import com.freenote.app.server.model.app.AppRequestData;
 import com.freenote.app.server.model.app.AppResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
@@ -18,7 +18,7 @@ import java.io.IOException;
 @Builder
 public class WebSocketConnection {
     private final NetworkRequestData networkRequestData;
-    private final OutputWrapper outputWrapper;
+    private final NetworkResponseData responseData;
     private AppRequestData appRequestData;
     private AppResponseData appResponseData;
     private WebSocketFrame requestFrame;
@@ -80,10 +80,10 @@ public class WebSocketConnection {
         return networkRequestData.getRemoteAddress();
     }
 
-    public static WebSocketConnection from(NetworkRequestData requestData, OutputWrapper outputWrapper) {
+    public static WebSocketConnection from(NetworkRequestData requestData, NetworkResponseData responseData) {
         return WebSocketConnection.builder()
                 .networkRequestData(requestData)
-                .outputWrapper(outputWrapper)
+                .responseData(responseData)
                 .build();
     }
 }

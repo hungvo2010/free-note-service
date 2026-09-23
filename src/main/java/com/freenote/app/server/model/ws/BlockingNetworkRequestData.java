@@ -9,7 +9,6 @@ import lombok.Getter;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Arrays;
@@ -129,12 +128,4 @@ public class BlockingNetworkRequestData implements NetworkRequestData {
 
     }
 
-    // TODO: break encapsulation
-    public OutputStream getOutputStream() {
-        try {
-            return socket.getOutputStream();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to get output stream from socket", e);
-        }
-    }
 }

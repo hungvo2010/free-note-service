@@ -6,7 +6,7 @@ import com.freenote.app.server.exceptions.ConnectionException;
 import com.freenote.app.server.exceptions.MessageParsingException;
 import com.freenote.app.server.frames.handler.WebSocketFrameHandler;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.model.OutputWrapper;
+import com.freenote.app.server.model.NetworkResponseData;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.parser.InputStreamFrameParserImpl;
@@ -36,10 +36,10 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
     }
 
     @Override
-    public boolean handle(NetworkRequestData networkRequestData, OutputWrapper outputWrapper) {
+    public boolean handle(NetworkRequestData networkRequestData, NetworkResponseData responseData) {
         MetricUtils.incrementInFlightRequests();
         try {
-            MetricUtils.getLatencyMetric().time(() -> this.serveConnection(networkRequestData, outputWrapper));
+            MetricUtils.getLatencyMetric().time(() -> this.serveConnection(networkRequestData, responseData));
             return true;
         } catch (ConnectionException e) {
             if (isClientDisconnect(e)) {
@@ -70,12 +70,12 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
         return false;
     }
 
-    private void serveConnection(NetworkRequestData networkRequestData, OutputWrapper outputWrapper) {
+    private void serveConnection(NetworkRequestData networkRequestData, NetworkResponseData responseData) {
         try {
             WebSocketFrame wsFrame = parseFrame(networkRequestData);
 
             log.debug(wsFrame.toString());
-            WebSocketConnection webSocketConnection = WebSocketConnection.from(networkRequestData, outputWrapper);
+            WebSocketConnection webSocketConnection = WebSocketConnection.from(networkRequestData, responseData);
 
             dispatchAndRespond(webSocketConnection, wsFrame);
         } catch (IOException e) {
@@ -102,7 +102,7 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
     }
 
     @Override
-    public boolean continuationHandler(List<WebSocketFrame> clientFrame, NetworkRequestData networkRequestData, OutputWrapper outputWrapper) {
+    public boolean continuationHandler(List<WebSocketFrame> clientFrame, NetworkRequestData networkRequestData, NetworkResponseData responseData) {
         return false;
     }
 

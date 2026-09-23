@@ -7,7 +7,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
@@ -133,24 +132,4 @@ public class AsyncNIONetworkRequestData implements NetworkRequestData {
         }
     }
 
-    /**
-     * Returns an OutputStream backed by {@link #write(byte[])}.
-     * Used to construct {@code OutputWrapper} without accessing
-     * {@code channel.socket().getOutputStream()}.
-     */
-    public OutputStream getOutputStream() {
-        return new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-                AsyncNIONetworkRequestData.this.write(new byte[]{(byte) b});
-            }
-
-            @Override
-            public void write(byte[] b, int off, int len) throws IOException {
-                byte[] chunk = new byte[len];
-                System.arraycopy(b, off, chunk, 0, len);
-                AsyncNIONetworkRequestData.this.write(chunk);
-            }
-        };
-    }
 }

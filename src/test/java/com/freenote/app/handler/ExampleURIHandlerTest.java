@@ -2,7 +2,7 @@ package com.freenote.app.handler;
 
 import com.freenote.app.server.routes.URIEndpointHandler;
 import com.freenote.app.server.routes.endpoint.FragmentedEndpoint;
-import com.freenote.app.server.model.OutputWrapper;
+import com.freenote.app.server.model.NetworkResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.test.StubNetworkRequestData;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ class ExampleURIHandlerTest {
 
         URIEndpointHandler handler = new FragmentedEndpoint();
 
-        boolean result = handler.handle(new StubNetworkRequestData(input), new OutputWrapper(output));
+        boolean result = handler.handle(new StubNetworkRequestData(input), new NetworkResponseData(output));
 
         assertFalse(result);
         assertEquals("", output.toString());
@@ -37,9 +37,9 @@ class ExampleURIHandlerTest {
 
         // null NetworkRequestData → NPE when calling read()
         assertThrows(NullPointerException.class,
-                () -> handler.handle(null, new OutputWrapper(new ByteArrayOutputStream())));
+                () -> handler.handle(null, new NetworkResponseData(new ByteArrayOutputStream())));
 
-        // null OutputWrapper → record allows null, NPE happens when outputStream() is called
+        // null NetworkResponseData → record allows null, NPE happens when outputStream() is called
         // Give the mock valid frame bytes via read(byte[]) so execution reaches the write path
         var networkData = mock(NetworkRequestData.class);
         byte[] frameBytes = new byte[]{(byte) 0x81, 0x05, 'H', 'e', 'l', 'l', 'o'};
