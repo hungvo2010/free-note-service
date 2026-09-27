@@ -7,15 +7,11 @@ import com.freenote.app.server.core.nio.state.ConnectionState;
 import com.freenote.app.server.core.nio.state.HandShakeState;
 import com.freenote.app.server.core.nio.state.MessageState;
 import com.freenote.app.server.model.ws.NetworkRequestData;
-import io.opentelemetry.api.trace.Span;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import otel.sdk.context.TracingContext;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static otel.SampleGlobalOpenTelemetry.getSampleGlobalTelemetry;
 
 public class ConnectionPipeline {
 
@@ -56,12 +52,7 @@ public class ConnectionPipeline {
     }
 
     private ConnectionContext buildConnectionContext(NetworkRequestData networkData, ConnectionState state) {
-        Span span = buildSpan(state);
-        TracingContext tracingContext = TracingContext.builder()
-                .span(span)
-                .build();
         ReadableContext readableContext = ReadableContext.builder()
-                .tracingContext(tracingContext)
                 .httpUpgradeRequest(state instanceof MessageState ps ? ps.getRequest() : null)
                 .build();
 
@@ -73,15 +64,5 @@ public class ConnectionPipeline {
 
     public void disconnect(NetworkRequestData networkData) {
         connectionStates.remove(networkData);
-    }
-
-    private Span buildSpan(ConnectionState state) {
-        String spanName = state instanceof HandShakeState ? "websocket.handshake" : "websocket.message";
-        return getSampleGlobalTelemetry().getTracer().spanBuilder(spanName)
-                .setAttribute("server.address", "localhost")
-                .setAttribute("server.port", -1)
-                .setAttribute("network.transport", "tcp")
-                .setAttribute("app.websocket.state", state.getClass().getSimpleName())
-                .startSpan();
     }
 }
