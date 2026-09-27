@@ -4,7 +4,7 @@ import com.freenote.app.server.auth.AcceptHandshakeHandler;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
 import com.freenote.app.server.core.connection.PerConnectionHandler;
 import com.freenote.app.server.core.context.ConnectionContext;
-import com.freenote.app.server.core.context.ReadableContext;
+import com.freenote.app.server.core.nio.state.MessageState;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.exceptions.ConnectionException;
 import com.freenote.app.server.model.NetworkResponseData;
@@ -60,25 +60,25 @@ public class NIOIncomingSocketHandler implements PerConnectionHandler {
     }
 
     @Override
-    public void handle(ConnectionContext context) throws ConnectionException {
+    public HttpUpgradeRequest handle(ConnectionContext context) throws ConnectionException {
         var networkData = context.getNetworkRequestData();
-        var readableContext = context.getReadableContext();
 
-        if (readableContext.isHandshakeComplete()) {
-            processMessage(networkData, readableContext.getHttpUpgradeRequest());
-        } else {
-            acceptHandshake(networkData, readableContext);
+        if (context.getState() instanceof MessageState messageState) {
+            processMessage(networkData, messageState.getRequest());
+            return null;
         }
+        return acceptHandshake(networkData);
     }
 
-    private void acceptHandshake(NetworkRequestData networkData, ReadableContext readableContext) {
+    private HttpUpgradeRequest acceptHandshake(NetworkRequestData networkData) {
         try {
             var upgradeRequest = httpParser.parse(networkData.read());
             writeHandshakeResponse(networkData, upgradeRequest);
-            readableContext.setHttpUpgradeRequest(upgradeRequest);
+            return upgradeRequest;
         } catch (IOException e) {
             log.error("Error during handshake", e);
             closeQuietly(networkData);
+            return null;
         }
     }
 

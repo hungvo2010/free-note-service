@@ -37,7 +37,7 @@ public class ThreadPerConnectionHandler implements PerConnectionHandler {
     }
 
     @Override
-    public void handle(ConnectionContext context) throws ConnectionException, IOException {
+    public HttpUpgradeRequest handle(ConnectionContext context) throws ConnectionException, IOException {
         var networkRequestData = context.getNetworkRequestData();
         try {
             var upgradeRequest = doHandShakeAndRouting(networkRequestData);
@@ -50,6 +50,7 @@ public class ThreadPerConnectionHandler implements PerConnectionHandler {
             log.error("Error handling socket: ", e);
             handleError(networkRequestData);
         }
+        return null;
     }
 
     private void closeRequest(NetworkRequestData networkRequestData) {

@@ -11,7 +11,7 @@ public class MessageState implements ConnectionState {
     private final HttpUpgradeRequest request;
 
     @Override
-    public ConnectionState transition(ConnectionContext context) {
+    public ConnectionState transition(ConnectionContext context, HttpUpgradeRequest upgradeRequest) {
         if (context.getNetworkRequestData().isClosed()) {
             return null;
         }

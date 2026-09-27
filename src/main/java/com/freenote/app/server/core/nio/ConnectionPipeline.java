@@ -2,10 +2,8 @@ package com.freenote.app.server.core.nio;
 
 import com.freenote.app.server.core.connection.PerConnectionHandler;
 import com.freenote.app.server.core.context.ConnectionContext;
-import com.freenote.app.server.core.context.ReadableContext;
 import com.freenote.app.server.core.nio.state.ConnectionState;
 import com.freenote.app.server.core.nio.state.HandShakeState;
-import com.freenote.app.server.core.nio.state.MessageState;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,9 +26,9 @@ public class ConnectionPipeline {
         ConnectionState state = connectionStates.computeIfAbsent(networkData, k -> new HandShakeState());
         try {
             var connectionContext = buildConnectionContext(networkData, state);
-            connectionHandler.handle(connectionContext);
+            var upgradeRequest = connectionHandler.handle(connectionContext);
 
-            ConnectionState nextState = state.transition(connectionContext);
+            ConnectionState nextState = state.transition(connectionContext, upgradeRequest);
             if (nextState == null) {
                 connectionStates.remove(networkData);
                 networkData.close();
@@ -52,13 +50,9 @@ public class ConnectionPipeline {
     }
 
     private ConnectionContext buildConnectionContext(NetworkRequestData networkData, ConnectionState state) {
-        ReadableContext readableContext = ReadableContext.builder()
-                .httpUpgradeRequest(state instanceof MessageState ps ? ps.getRequest() : null)
-                .build();
-
         return ConnectionContext.builder()
                 .networkRequestData(networkData)
-                .readableContext(readableContext)
+                .state(state)
                 .build();
     }
 
