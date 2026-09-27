@@ -3,7 +3,7 @@ package com.freenote.app.server.core.nio;
 import com.freenote.app.server.auth.AcceptHandshakeHandler;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
 import com.freenote.app.server.core.connection.PerConnectionHandler;
-import com.freenote.app.server.core.context.ConnectionContext;
+import com.freenote.app.server.core.event.ConnectionEvent;
 import com.freenote.app.server.core.nio.state.MessageState;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.exceptions.ConnectionException;
@@ -60,10 +60,10 @@ public class NIOIncomingSocketHandler implements PerConnectionHandler {
     }
 
     @Override
-    public HttpUpgradeRequest handle(ConnectionContext context) throws ConnectionException {
-        var networkData = context.getNetworkRequestData();
+    public HttpUpgradeRequest handle(ConnectionEvent event) throws ConnectionException {
+        var networkData = event.getNetworkRequestData();
 
-        if (context.getState() instanceof MessageState messageState) {
+        if (event.getState() instanceof MessageState messageState) {
             processMessage(networkData, messageState.getRequest());
             return null;
         }

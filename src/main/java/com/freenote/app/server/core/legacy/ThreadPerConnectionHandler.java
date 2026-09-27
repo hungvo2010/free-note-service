@@ -3,7 +3,7 @@ package com.freenote.app.server.core.legacy;
 import com.freenote.app.server.auth.AcceptHandshakeHandler;
 import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
 import com.freenote.app.server.core.connection.PerConnectionHandler;
-import com.freenote.app.server.core.context.ConnectionContext;
+import com.freenote.app.server.core.event.ConnectionEvent;
 import com.freenote.app.server.core.model.connection.WebSocketConnection;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
@@ -37,8 +37,8 @@ public class ThreadPerConnectionHandler implements PerConnectionHandler {
     }
 
     @Override
-    public HttpUpgradeRequest handle(ConnectionContext context) throws ConnectionException, IOException {
-        var networkRequestData = context.getNetworkRequestData();
+    public HttpUpgradeRequest handle(ConnectionEvent event) throws ConnectionException, IOException {
+        var networkRequestData = event.getNetworkRequestData();
         try {
             var upgradeRequest = doHandShakeAndRouting(networkRequestData);
             pollToEndpointHandler(networkRequestData, upgradeRequest);

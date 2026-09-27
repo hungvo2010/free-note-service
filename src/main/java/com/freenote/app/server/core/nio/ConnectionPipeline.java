@@ -1,7 +1,7 @@
 package com.freenote.app.server.core.nio;
 
 import com.freenote.app.server.core.connection.PerConnectionHandler;
-import com.freenote.app.server.core.context.ConnectionContext;
+import com.freenote.app.server.core.event.ConnectionEvent;
 import com.freenote.app.server.core.nio.state.ConnectionState;
 import com.freenote.app.server.core.nio.state.HandShakeState;
 import com.freenote.app.server.model.ws.NetworkRequestData;
@@ -25,10 +25,10 @@ public class ConnectionPipeline {
     public boolean process(NetworkRequestData networkData) {
         ConnectionState state = connectionStates.computeIfAbsent(networkData, k -> new HandShakeState());
         try {
-            var connectionContext = buildConnectionContext(networkData, state);
-            var upgradeRequest = connectionHandler.handle(connectionContext);
+            var connectionEvent = buildConnectionEvent(networkData, state);
+            var upgradeRequest = connectionHandler.handle(connectionEvent);
 
-            ConnectionState nextState = state.transition(connectionContext, upgradeRequest);
+            ConnectionState nextState = state.transition(connectionEvent, upgradeRequest);
             if (nextState == null) {
                 connectionStates.remove(networkData);
                 networkData.close();
@@ -49,8 +49,8 @@ public class ConnectionPipeline {
         }
     }
 
-    private ConnectionContext buildConnectionContext(NetworkRequestData networkData, ConnectionState state) {
-        return ConnectionContext.builder()
+    private ConnectionEvent buildConnectionEvent(NetworkRequestData networkData, ConnectionState state) {
+        return ConnectionEvent.builder()
                 .networkRequestData(networkData)
                 .state(state)
                 .build();

@@ -3,7 +3,7 @@ package com.freenote.app.server.core.legacy.startup;
 import com.freenote.app.server.core.config.SSLConfig;
 import com.freenote.app.server.core.config.ServerSocketConfig;
 import com.freenote.app.server.core.connection.PerConnectionHandler;
-import com.freenote.app.server.core.context.ConnectionContext;
+import com.freenote.app.server.core.event.ConnectionEvent;
 import com.freenote.app.server.core.legacy.socket.RawServerSocketProvider;
 import com.freenote.app.server.core.legacy.socket.SSLServerSocketProvider;
 import com.freenote.app.server.core.legacy.socket.ServerSocketProvider;
@@ -43,8 +43,8 @@ public class LegacyBootstrap implements ServerBootstrap {
                 while (!serverSocket.isClosed()) {
                     log.info("Waiting for connection on port {}", config);
                     var clientSocket = serverSocket.accept(); // block method
-                    var connectionContext = buildConnectionContext(clientSocket);
-                    this.virtualExecutorService.submit(() -> perConnectionHandler(handler, connectionContext));
+                    var connectionEvent = buildConnectionEvent(clientSocket);
+                    this.virtualExecutorService.submit(() -> perConnectionHandler(handler, connectionEvent));
                 }
             }
         } catch (Exception ex) {
@@ -52,16 +52,16 @@ public class LegacyBootstrap implements ServerBootstrap {
         }
     }
 
-    private ConnectionContext buildConnectionContext(Socket clientSocket) {
+    private ConnectionEvent buildConnectionEvent(Socket clientSocket) {
         var networkRequestData = new BlockingNetworkRequestData(clientSocket);
-        return ConnectionContext.builder()
+        return ConnectionEvent.builder()
                 .networkRequestData(networkRequestData)
                 .build();
     }
 
-    private void perConnectionHandler(PerConnectionHandler perConnectionHandler, ConnectionContext connectionContext) {
+    private void perConnectionHandler(PerConnectionHandler perConnectionHandler, ConnectionEvent connectionEvent) {
         try {
-            perConnectionHandler.handle(connectionContext);
+            perConnectionHandler.handle(connectionEvent);
         } catch (Exception e) {
             log.error("Error handling connection", e);
         }
