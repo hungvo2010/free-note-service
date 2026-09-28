@@ -1,6 +1,6 @@
 package com.freenote.app.server;
 
-import com.freenote.app.server.core.legacy.launcher.SimpleServer;
+import com.freenote.app.server.core.startup.FreeNoteApplication;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
@@ -74,7 +74,7 @@ class ServerRunnerTest {
 
         var serverThread = new Thread(() -> {
             try {
-                SimpleServer.run(8189);
+                new FreeNoteApplication().run(8189, null);
                 pipeOutputStream.flush();
             } catch (Exception ex) {
                 log.error("Failed to start server", ex);

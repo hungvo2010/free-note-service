@@ -1,6 +1,6 @@
 package com.freenote.app.server;
 
-import com.freenote.app.server.core.legacy.launcher.SimpleServer;
+import com.freenote.app.server.core.startup.FreeNoteApplication;
 import org.junit.jupiter.api.Test;
 
 import java.net.Socket;
@@ -12,7 +12,7 @@ public class SimpleServerTest {
     void testMainRunsInBackground() throws Exception {
         Thread t = new Thread(() -> {
             try {
-                SimpleServer.main(new String[]{"9091"});
+                FreeNoteApplication.main(new String[]{"9091"});
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
