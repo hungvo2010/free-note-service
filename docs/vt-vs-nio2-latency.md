@@ -2,7 +2,7 @@
 
 ## Setup
 
-| | SimpleServer (Legacy VT) | ModernEchoServer (Async NIO.2) |
+| | FreeNoteApplication (Legacy VT) | ModernEchoServer (Async NIO.2) |
 |---|---|---|
 | I/O model | Blocking `InputStream.read()` | `AsynchronousSocketChannel` + OS callbacks |
 | Connection model | 1 virtual thread per connection | 0 threads per connection |

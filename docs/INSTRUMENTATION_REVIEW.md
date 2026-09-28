@@ -249,9 +249,9 @@ before `init()` is an NPE rather than a silent no-op.
 
 Two more class-load-order dependencies of the same kind: `MetricUtils:9` captures
 `getSampleGlobalTelemetry().getMetricRegistries()` into a static field, and
-`PersistenceManager:20-21` captures a tracer and a histogram. The three entry points
-(`SimpleServer:18-19`, `core/startup/FreeNoteApplication:28-29`,
-`freedraw/legacy/FreeNoteApplication:33-34`) do happen to order this correctly — `set(create())`
+`PersistenceManager:20-21` captures a tracer and a histogram. The two entry points
+(`core/startup/FreeNoteApplication:28-29`, `freedraw/legacy/FreeNoteApplication:33-34`)
+do happen to order this correctly — `set(create())`
 then `init()` — but nothing enforces it, and the failure mode is silent.
 
 Also `SampleGlobalOpenTelemetry:37-40` builds `RuntimeTelemetry` into a local variable that is
