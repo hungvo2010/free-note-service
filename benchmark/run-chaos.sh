@@ -38,9 +38,10 @@ mkdir -p "$OUT"
 JAVA="${JAVA_HOME:-}/bin/java"; [[ -x "$JAVA" ]] || JAVA=java
 JCMD="${JAVA_HOME:-}/bin/jcmd"; [[ -x "$JCMD" ]] || JCMD=jcmd
 
+MAIN="com.freenote.app.server.core.startup.FreeNoteApplication"
 case "$SERVER" in
-    vthread) MAIN="com.freenote.app.server.core.legacy.launcher.SimpleServer" ;;
-    nio)     MAIN="com.freenote.app.server.core.nio.launcher.nio.NIOSimpleServer" ;;
+    vthread) SERVER_TYPE="thread-per-connection" ;;
+    nio)     SERVER_TYPE="nio" ;;
     *) echo "SERVER must be 'vthread' or 'nio'" >&2; exit 1 ;;
 esac
 
@@ -75,7 +76,7 @@ echo ">> target url: $TARGET_URL"
 # --- start server ---
 "$JAVA" -Xms"$HEAP" -Xmx"$HEAP" -XX:+UseZGC -XX:NativeMemoryTracking=detail \
     -Dlog4j.configurationFile=file:"$BENCH/log4j2-bench.xml" \
-    -cp "$JAR" "$MAIN" "$PORT" >"$OUT/server.stdout" 2>"$OUT/server.stderr" &
+    -cp "$JAR" "$MAIN" "$PORT" "$SERVER_TYPE" >"$OUT/server.stdout" 2>"$OUT/server.stderr" &
 PID=$!
 echo ">> started $SERVER  pid=$PID  port=$PORT"
 for _ in $(seq 1 60); do lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1 && break; sleep 0.5; done

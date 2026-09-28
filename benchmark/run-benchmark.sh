@@ -54,10 +54,11 @@ echo ">> Fat jar: $JAR"
 mkdir -p "$RESULTS_DIR"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 
-# label|main-class  (label is used in output filenames)
+# label|server-type  (label is used in output filenames)
+MAIN="com.freenote.app.server.core.startup.FreeNoteApplication"
 SERVERS=(
-    "vthread|com.freenote.app.server.core.legacy.launcher.SimpleServer"
-    "nio|com.freenote.app.server.core.nio.launcher.nio.NIOSimpleServer"
+    "vthread|thread-per-connection"
+    "nio|nio"
 )
 
 # JVM flags applied identically to BOTH servers (fixed heap, NMT, quiet logging).
@@ -89,14 +90,14 @@ wait_port_free() {
 
 # ----------------------------- per-server run ------------------------------
 run_one() {
-    local label="$1" mainClass="$2"
+    local label="$1" serverType="$2"
     local out="$RESULTS_DIR/${label}-${MODE}-${STAMP}"
     mkdir -p "$out"
 
     echo ""
     echo "==================== $label ($MODE) ===================="
 
-    "$JAVA" "${JVM_FLAGS[@]}" -cp "$JAR" "$mainClass" "$PORT" \
+    "$JAVA" "${JVM_FLAGS[@]}" -cp "$JAR" "$MAIN" "$PORT" "$serverType" \
         >"$out/server.stdout" 2>"$out/server.stderr" &
     local pid=$!
     echo ">> started $label  pid=$pid  port=$PORT"
@@ -155,8 +156,8 @@ run_one() {
 
 # ----------------------------- main ----------------------------------------
 for s in "${SERVERS[@]}"; do
-    IFS='|' read -r label main <<< "$s"
-    run_one "$label" "$main"
+    IFS='|' read -r label serverType <<< "$s"
+    run_one "$label" "$serverType"
 done
 
 echo ""
