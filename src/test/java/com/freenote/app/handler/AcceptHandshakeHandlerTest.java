@@ -1,6 +1,6 @@
 package com.freenote.app.handler;
 
-import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
+import com.freenote.app.server.handshaker.impl.AcceptHandshakeImpl;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.http.HttpUpgradeResponse;
 import org.junit.jupiter.api.Test;

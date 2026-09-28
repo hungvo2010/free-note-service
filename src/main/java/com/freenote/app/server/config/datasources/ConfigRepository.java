@@ -1,4 +1,4 @@
-package com.freenote.app.server.core.config.datasources;
+package com.freenote.app.server.config.datasources;
 
 import java.util.*;
 import java.util.stream.Collectors;

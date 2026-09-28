@@ -1,8 +1,8 @@
 package com.freedraw.legacy;
 
-import com.freenote.app.server.core.config.AppConfig;
-import com.freenote.app.server.core.config.SSLConfig;
-import com.freenote.app.server.core.config.ServerSocketConfig;
+import com.freenote.app.server.config.AppConfig;
+import com.freenote.app.server.config.SSLConfig;
+import com.freenote.app.server.config.ServerSocketConfig;
 import com.freenote.app.server.core.legacy.WebSocketServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

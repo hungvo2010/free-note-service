@@ -6,6 +6,6 @@ import com.freenote.app.server.model.http.HttpUpgradeRequest;
 
 import java.io.IOException;
 
-public interface PerConnectionHandler {
+public interface PerClientConnectionHandler {
     HttpUpgradeRequest handle(ConnectionEvent event) throws ConnectionException, IOException;
 }

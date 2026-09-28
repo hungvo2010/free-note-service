@@ -13,7 +13,7 @@ import com.freedraw.repository.InMemDraftRepositoryImpl;
 import com.freedraw.resources.RedisClient;
 import com.freedraw.service.DraftService;
 import com.freenote.annotations.WebSocketEndpoint;
-import com.freenote.app.server.core.model.connection.WebSocketConnection;
+import com.freenote.app.server.model.connection.WebSocketConnection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.model.enums.MsgType;

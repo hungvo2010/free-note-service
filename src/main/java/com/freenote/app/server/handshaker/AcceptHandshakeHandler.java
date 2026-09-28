@@ -1,4 +1,4 @@
-package com.freenote.app.server.auth;
+package com.freenote.app.server.handshaker;
 
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.http.HttpUpgradeResponse;

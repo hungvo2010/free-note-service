@@ -1,8 +1,8 @@
 package com.freenote.app.server.core.startup;
 
-import com.freenote.app.server.core.config.SSLConfig;
-import com.freenote.app.server.core.config.ServerSocketConfig;
-import com.freenote.app.server.core.config.datasources.ConfigRepository;
+import com.freenote.app.server.config.SSLConfig;
+import com.freenote.app.server.config.ServerSocketConfig;
+import com.freenote.app.server.config.datasources.ConfigRepository;
 import com.freenote.app.server.core.legacy.WebSocketServer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import org.apache.logging.log4j.LogManager;

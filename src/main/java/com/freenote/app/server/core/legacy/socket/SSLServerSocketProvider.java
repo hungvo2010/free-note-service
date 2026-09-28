@@ -1,7 +1,7 @@
 package com.freenote.app.server.core.legacy.socket;
 
-import com.freenote.app.server.core.config.SSLConfig;
-import com.freenote.app.server.core.config.ServerSocketConfig;
+import com.freenote.app.server.config.SSLConfig;
+import com.freenote.app.server.config.ServerSocketConfig;
 import com.freenote.app.server.exceptions.SocketCreationException;
 
 import javax.net.ssl.KeyManagerFactory;

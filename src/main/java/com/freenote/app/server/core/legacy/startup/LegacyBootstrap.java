@@ -1,8 +1,8 @@
 package com.freenote.app.server.core.legacy.startup;
 
-import com.freenote.app.server.core.config.SSLConfig;
-import com.freenote.app.server.core.config.ServerSocketConfig;
-import com.freenote.app.server.core.connection.PerConnectionHandler;
+import com.freenote.app.server.config.SSLConfig;
+import com.freenote.app.server.config.ServerSocketConfig;
+import com.freenote.app.server.core.connection.PerClientConnectionHandler;
 import com.freenote.app.server.core.event.ConnectionEvent;
 import com.freenote.app.server.core.legacy.socket.RawServerSocketProvider;
 import com.freenote.app.server.core.legacy.socket.SSLServerSocketProvider;
@@ -35,7 +35,7 @@ public class LegacyBootstrap implements ServerBootstrap {
     }
 
     @Override
-    public void start(PerConnectionHandler handler, ServerSocketConfig config) {
+    public void start(PerClientConnectionHandler handler, ServerSocketConfig config) {
         logServerInitialization();
         try {
             logVirtualThreadWarn();
@@ -59,7 +59,7 @@ public class LegacyBootstrap implements ServerBootstrap {
                 .build();
     }
 
-    private void perConnectionHandler(PerConnectionHandler perConnectionHandler, ConnectionEvent connectionEvent) {
+    private void perConnectionHandler(PerClientConnectionHandler perConnectionHandler, ConnectionEvent connectionEvent) {
         try {
             perConnectionHandler.handle(connectionEvent);
         } catch (Exception e) {

@@ -1,6 +1,6 @@
-package com.freenote.app.server.core.config.datasources;
+package com.freenote.app.server.config.datasources;
 
-import com.freenote.app.server.core.config.AppConfig;
+import com.freenote.app.server.config.AppConfig;
 
 import java.io.IOException;
 import java.io.InputStream;

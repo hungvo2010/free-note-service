@@ -1,10 +1,10 @@
 package com.freenote.app.server.core.legacy;
 
-import com.freenote.app.server.auth.AcceptHandshakeHandler;
-import com.freenote.app.server.auth.impl.AcceptHandshakeImpl;
-import com.freenote.app.server.core.connection.PerConnectionHandler;
+import com.freenote.app.server.handshaker.AcceptHandshakeHandler;
+import com.freenote.app.server.handshaker.impl.AcceptHandshakeImpl;
+import com.freenote.app.server.core.connection.PerClientConnectionHandler;
 import com.freenote.app.server.core.event.ConnectionEvent;
-import com.freenote.app.server.core.model.connection.WebSocketConnection;
+import com.freenote.app.server.model.connection.WebSocketConnection;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.ConnectionException;
@@ -22,7 +22,7 @@ import java.io.IOException;
 
 import static generated.URIHandlerRegistry.getInstanceByURI;
 
-public class ThreadPerConnectionHandler implements PerConnectionHandler {
+public class ThreadPerConnectionHandler implements PerClientConnectionHandler {
     private static final Logger log = LogManager.getLogger(ThreadPerConnectionHandler.class);
     private final AcceptHandshakeHandler handshakeHandler;
     private final HttpParser httpParser;

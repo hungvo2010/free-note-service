@@ -1,6 +1,6 @@
 package com.freenote.app.server.core.legacy.launcher;
 
-import com.freenote.app.server.core.config.ServerSocketConfig;
+import com.freenote.app.server.config.ServerSocketConfig;
 import com.freenote.app.server.core.legacy.WebSocketServer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import otel.SampleGlobalOpenTelemetry;

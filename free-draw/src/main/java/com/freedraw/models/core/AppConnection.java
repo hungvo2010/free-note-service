@@ -1,6 +1,6 @@
 package com.freedraw.models.core;
 
-import com.freenote.app.server.core.model.connection.WebSocketConnection;
+import com.freenote.app.server.model.connection.WebSocketConnection;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

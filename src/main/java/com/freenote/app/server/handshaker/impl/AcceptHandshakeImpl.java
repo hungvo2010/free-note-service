@@ -1,7 +1,7 @@
-package com.freenote.app.server.auth.impl;
+package com.freenote.app.server.handshaker.impl;
 
-import com.freenote.app.server.auth.AcceptHandshakeHandler;
-import com.freenote.app.server.core.config.AppConfig;
+import com.freenote.app.server.handshaker.AcceptHandshakeHandler;
+import com.freenote.app.server.config.AppConfig;
 import com.freenote.app.server.exceptions.HandshakeException;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.http.HttpUpgradeResponse;

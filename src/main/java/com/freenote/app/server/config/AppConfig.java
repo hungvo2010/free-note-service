@@ -1,4 +1,4 @@
-package com.freenote.app.server.core.config;
+package com.freenote.app.server.config;
 
 import lombok.experimental.UtilityClass;
 import org.apache.logging.log4j.LogManager;

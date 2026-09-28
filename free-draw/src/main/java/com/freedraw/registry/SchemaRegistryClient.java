@@ -1,6 +1,6 @@
 package com.freedraw.registry;
 
-import com.freenote.app.server.core.config.AppConfig;
+import com.freenote.app.server.config.AppConfig;
 import io.apicurio.registry.rest.client.RegistryClient;
 import io.apicurio.registry.rest.client.RegistryClientFactory;
 import org.apache.logging.log4j.LogManager;

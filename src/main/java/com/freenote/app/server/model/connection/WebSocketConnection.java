@@ -1,4 +1,4 @@
-package com.freenote.app.server.core.model.connection;
+package com.freenote.app.server.model.connection;
 
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;

@@ -1,6 +1,6 @@
 package com.freenote.app.server.core.legacy.socket;
 
-import com.freenote.app.server.core.config.ServerSocketConfig;
+import com.freenote.app.server.config.ServerSocketConfig;
 import com.freenote.app.server.exceptions.SocketCreationException;
 
 import java.io.IOException;
