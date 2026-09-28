@@ -16,7 +16,7 @@ import static otel.sdk.provider.OpenTelemetrySdkConfig.create;
 public class FreeNoteApplication {
     private static final Logger log = LogManager.getLogger(FreeNoteApplication.class);
 
-    public void run() {
+    public void run(Integer portOverride, String serverTypeOverride) {
         try {
             var configRepo = new ConfigRepository();
             configRepo.load();
@@ -27,9 +27,8 @@ public class FreeNoteApplication {
 
             GlobalOpenTelemetry.set(create());
             SampleGlobalOpenTelemetry.init();
-            var startingPort = Integer.parseInt(
-                    Optional.ofNullable(configRepo.get("freenote.active.port")).orElse("8888")
-            );
+            var startingPort = portOverride != null ? portOverride
+                    : Integer.parseInt(Optional.ofNullable(configRepo.get("freenote.active.port")).orElse("8888"));
 
             var sslEnabled = Boolean.parseBoolean(configRepo.getOrDefault("server.ssl.enabled", "false"));
             WebSocketServer server = WebSocketServer.builder()
@@ -42,8 +41,9 @@ public class FreeNoteApplication {
                     )
                     .socketConfig(new ServerSocketConfig(startingPort))
                     .serverType(
-                            Optional.ofNullable(configRepo.get("freenote.server.type"))
-                                    .orElse("thread-per-connection")
+                            serverTypeOverride != null ? serverTypeOverride
+                                    : Optional.ofNullable(configRepo.get("freenote.server.type"))
+                                            .orElse("thread-per-connection")
                     )
                     .build();
             server.start();
@@ -53,7 +53,9 @@ public class FreeNoteApplication {
     }
 
     public static void main(String[] args) {
-        var freeNoteApp = new FreeNoteApplication();
-        freeNoteApp.run();
+        new FreeNoteApplication().run(
+                args.length >= 1 ? Integer.parseInt(args[0]) : null,
+                args.length >= 2 ? args[1] : null
+        );
     }
 }
