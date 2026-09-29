@@ -3,7 +3,6 @@ package com.freenote.app.server;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -200,7 +199,7 @@ public class SSLWebSocketClient {
             // Extract payload and convert to string
             byte[] payload = frame.getPayloadData();
             if (frame.isMasked()) {
-                payload = FrameUtil.maskPayload(payload, frame.getMaskingKey());
+                payload = WebSocketFrame.applyMask(payload, frame.getMaskingKey());
             }
 
             String message = new String(payload, StandardCharsets.UTF_8);

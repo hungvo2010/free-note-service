@@ -18,7 +18,7 @@ import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.model.enums.MsgType;
 import com.freenote.app.server.endpoints.AbstractEndpointHandler;
-import com.freenote.app.server.util.FrameUtil;
+import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,6 +32,7 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
     private static final DraftResponseData DEFAULT_MESSAGE_PAYLOAD = new DraftResponseData();
     private DraftService draftService = new DraftService(new InMemDraftRepositoryImpl());
     private final RoomRegistry roomRegistry = RoomRegistry.getInstance();
+    private final ServerFrameFactory frameFactory = new ServerFrameFactory();
 
     @Override
     public void onData(WebSocketConnection webSocketConnection, String message) {
@@ -41,7 +42,7 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
                 log.info("Received Heartbeat PING");
                 ConnectionsRegistry.refresh(webSocketConnection.getNetworkRequestData());
                 heartbeat.setMsgType(MsgType.PONG);
-                webSocketConnection.setResponseFrame(FrameUtil.createApplicationFrame(heartbeat));
+                webSocketConnection.setResponseFrame(frameFactory.createApplicationFrame(heartbeat));
                 return;
             }
 

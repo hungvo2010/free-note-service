@@ -9,8 +9,6 @@ import lombok.Setter;
 import java.io.*;
 import java.util.Arrays;
 
-import static com.freenote.app.server.util.FrameUtil.boolToBit;
-
 @Getter
 @Setter
 public abstract class WebSocketFrame implements Serializable, Externalizable {
@@ -100,7 +98,7 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
     public abstract void writeFrameMaskHeader(ObjectOutput out) throws IOException;
 
     private void writeFrameOpcode(ObjectOutput out) throws IOException {
-        var firstByte = (byte) ((boolToBit(fin) << 7) | (boolToBit(rsv1) << 6) | (boolToBit(rsv2) << 5) | (boolToBit(rsv3) << 4) | (opcode & 0x0F));
+        var firstByte = (byte) (((fin ? 1 : 0) << 7) | ((rsv1 ? 1 : 0) << 6) | ((rsv2 ? 1 : 0) << 5) | ((rsv3 ? 1 : 0) << 4) | (opcode & 0x0F));
         out.writeByte(firstByte);
     }
 
@@ -110,6 +108,17 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
     }
 
     public abstract int getTotalFrameLength();
+
+    public static byte[] applyMask(byte[] payload, byte[] maskingKey) {
+        if (maskingKey.length != 4) {
+            throw new InvalidFrameException("Masking key must be 4 bytes long");
+        }
+        byte[] result = new byte[payload.length];
+        for (int i = 0; i < payload.length; i++) {
+            result[i] = (byte) (payload[i] ^ maskingKey[i % 4]);
+        }
+        return result;
+    }
 
     @Override
     public String toString() {

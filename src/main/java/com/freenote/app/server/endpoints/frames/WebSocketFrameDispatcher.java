@@ -4,7 +4,6 @@ import com.freenote.app.server.model.connection.WebSocketConnection;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.handler.WebSocketFrameHandler;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.util.FrameUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -55,11 +54,11 @@ public class WebSocketFrameDispatcher {
     }
 
     public static String getContent(WebSocketFrame frame) {
-        byte[] payload = frame.isMasked() ? FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
+        byte[] payload = frame.isMasked() ? WebSocketFrame.applyMask(frame.getPayloadData(), frame.getMaskingKey()) : frame.getPayloadData();
         return new String(payload, StandardCharsets.UTF_8);
     }
 
     public static ByteBuffer getBuffer(WebSocketFrame frame) {
-        return ByteBuffer.wrap(FrameUtil.maskPayload(frame.getPayloadData(), frame.getMaskingKey()));
+        return ByteBuffer.wrap(WebSocketFrame.applyMask(frame.getPayloadData(), frame.getMaskingKey()));
     }
 }

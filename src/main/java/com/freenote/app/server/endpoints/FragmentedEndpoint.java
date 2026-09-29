@@ -9,7 +9,6 @@ import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.NetworkResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
-import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +44,7 @@ public class FragmentedEndpoint implements URIEndpointHandler {
             }
             IOUtils.writeOutPut(responseData.outputStream(), frameFactory.createTextFrame(
                     new String(
-                            FrameUtil.maskPayload(
+                            WebSocketFrame.applyMask(
                                     clientFrame.getPayloadData(),
                                     clientFrame.getMaskingKey()
                             ),
@@ -76,7 +75,7 @@ public class FragmentedEndpoint implements URIEndpointHandler {
             int read;
             for (var clientFrame : clientFrames) {
                 largeFrame.addFragmentMessage((DataFrame) clientFrame);
-                log.info("Frame content: {}", new String(FrameUtil.maskPayload(clientFrame.getPayloadData(), clientFrame.getMaskingKey()), StandardCharsets.UTF_8));
+                log.info("Frame content: {}", new String(WebSocketFrame.applyMask(clientFrame.getPayloadData(), clientFrame.getMaskingKey()), StandardCharsets.UTF_8));
             }
             do {
                 log.info("Reading more data...");

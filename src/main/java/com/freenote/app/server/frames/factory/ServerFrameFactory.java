@@ -4,11 +4,16 @@ import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
+import com.freenote.app.server.util.JSONUtils;
 
 public class ServerFrameFactory implements FrameFactory {
     @Override
     public WebSocketFrame createTextFrame(String text) {
         return new DataFrame(FrameType.TEXT.getOpCode(), text.getBytes());
+    }
+
+    public WebSocketFrame createApplicationFrame(Object payload) {
+        return createTextFrame(JSONUtils.toJSONString(payload));
     }
 
     @Override

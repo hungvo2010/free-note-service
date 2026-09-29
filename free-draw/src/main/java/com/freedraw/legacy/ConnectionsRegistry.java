@@ -4,7 +4,7 @@ import com.freedraw.dto.DraftResponseData;
 import com.freedraw.models.core.AppConnection;
 import com.freedraw.resources.RedisClient;
 import com.freenote.app.server.model.ws.NetworkRequestData;
-import com.freenote.app.server.util.FrameUtil;
+import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.apache.logging.log4j.LogManager;
@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ConnectionsRegistry {
     private static final Logger log = LogManager.getLogger(ConnectionsRegistry.class);
+    private static final ServerFrameFactory FRAME_FACTORY = new ServerFrameFactory();
     private static final Cache<String, AppConnection> MEMBERS = CacheBuilder.newBuilder()
             .expireAfterWrite(90, TimeUnit.SECONDS)
             .build();
@@ -47,7 +48,7 @@ public class ConnectionsRegistry {
             return;
         }
         try {
-            connection.writeData(FrameUtil.createApplicationFrame(message));
+            connection.writeData(FRAME_FACTORY.createApplicationFrame(message));
         } catch (IOException e) {
             log.error("Failed to deliver message to recipient {}", message.getRecipientId(), e);
         }

@@ -4,7 +4,6 @@ import com.freenote.app.server.exceptions.InvalidFrameStateException;
 import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.util.FrameUtil;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -57,7 +56,7 @@ public class LargeFrame {
     }
 
     private void addFragment(DataFrame fragment) {
-        var rawPayload = FrameUtil.maskPayload(fragment.getPayloadData(), fragment.getMaskingKey());
+        var rawPayload = WebSocketFrame.applyMask(fragment.getPayloadData(), fragment.getMaskingKey());
         this.fragmentMessages.add((DataFrame) serverFrameFactory.createBinaryFrame(rawPayload));
     }
 

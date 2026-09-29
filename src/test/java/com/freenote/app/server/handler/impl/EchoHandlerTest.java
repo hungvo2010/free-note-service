@@ -3,8 +3,7 @@ package com.freenote.app.server.handler.impl;
 import com.freenote.app.server.endpoints.URIEndpointHandler;
 import com.freenote.app.server.endpoints.NewEchoEndpoint;
 import com.freenote.app.server.model.NetworkResponseData;
-import com.freenote.app.server.model.ws.NetworkRequestData;
-import com.freenote.app.server.util.FrameUtil;
+import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.test.StubNetworkRequestData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,7 +46,7 @@ class EchoHandlerTest {
         String message = "Hello Masked";
         byte[] payload = message.getBytes(StandardCharsets.UTF_8);
         byte[] maskingKey = {0x01, 0x02, 0x03, 0x04};
-        byte[] maskedPayload = FrameUtil.maskPayload(payload, maskingKey);
+        byte[] maskedPayload = WebSocketFrame.applyMask(payload, maskingKey);
 
         // Create completion frame with masking
         byte[] frameData = createMaskedTextFrame(message, maskingKey);
@@ -242,7 +241,7 @@ class EchoHandlerTest {
 
     private byte[] createMaskedTextFrame(String message, byte[] maskingKey) {
         byte[] payload = message.getBytes(StandardCharsets.UTF_8);
-        byte[] maskedPayload = FrameUtil.maskPayload(payload, maskingKey);
+        byte[] maskedPayload = WebSocketFrame.applyMask(payload, maskingKey);
         ByteArrayOutputStream frame = new ByteArrayOutputStream();
 
         try {
