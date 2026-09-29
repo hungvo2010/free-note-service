@@ -4,11 +4,12 @@ import com.freenote.app.server.handshaker.AcceptHandshakeHandler;
 import com.freenote.app.server.handshaker.impl.AcceptHandshakeImpl;
 import com.freenote.app.server.core.connection.PerClientConnectionHandler;
 import com.freenote.app.server.core.event.ConnectionEvent;
+import com.freenote.app.server.endpoints.EndpointResolver;
 import com.freenote.app.server.model.connection.WebSocketConnection;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.exceptions.ConnectionException;
-import com.freenote.app.server.model.NetworkResponseData;
+import com.freenote.app.server.model.ws.NetworkResponseData;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.parser.HttpParser;
@@ -20,20 +21,20 @@ import otel.metrics.MetricUtils;
 
 import java.io.IOException;
 
-import static generated.URIHandlerRegistry.getInstanceByURI;
-
 public class ThreadPerConnectionHandler implements PerClientConnectionHandler {
     private static final Logger log = LogManager.getLogger(ThreadPerConnectionHandler.class);
     private final AcceptHandshakeHandler handshakeHandler;
     private final HttpParser httpParser;
+    private final EndpointResolver endpointResolver;
 
-    public ThreadPerConnectionHandler(AcceptHandshakeHandler handshakeHandler, HttpParser httpParser) {
+    public ThreadPerConnectionHandler(AcceptHandshakeHandler handshakeHandler, HttpParser httpParser, EndpointResolver endpointResolver) {
         this.handshakeHandler = handshakeHandler;
         this.httpParser = httpParser;
+        this.endpointResolver = endpointResolver;
     }
 
-    public ThreadPerConnectionHandler() {
-        this(new AcceptHandshakeImpl(), new HttpParserImpl());
+    public ThreadPerConnectionHandler(EndpointResolver endpointResolver) {
+        this(new AcceptHandshakeImpl(), new HttpParserImpl(), endpointResolver);
     }
 
     @Override
@@ -99,7 +100,7 @@ public class ThreadPerConnectionHandler implements PerClientConnectionHandler {
     }
 
     private URIEndpointHandler getEndpointHandler(HttpUpgradeRequest upgradeRequest) {
-        var endpointHandler = (URIEndpointHandler) (getInstanceByURI(upgradeRequest.getPath()));
+        var endpointHandler = endpointResolver.resolve(upgradeRequest.getPath());
         if (endpointHandler == null) {
             log.warn("No handler found for URI: {}", upgradeRequest.getPath());
             throw new AcceptConnectionException("No handler for URI: " + upgradeRequest.getPath());

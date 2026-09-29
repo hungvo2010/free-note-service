@@ -1,7 +1,7 @@
 package com.freenote.app.server.endpoints;
 
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.model.NetworkResponseData;
+import com.freenote.app.server.model.ws.NetworkResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 
 import java.io.IOException;

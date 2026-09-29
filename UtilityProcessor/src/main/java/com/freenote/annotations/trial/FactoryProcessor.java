@@ -1,9 +1,7 @@
-package com.freenote.processors;
+package com.freenote.annotations.trial;
 
-import com.freenote.annotations.Factory;
-import com.freenote.exceptions.ProcessingException;
-import com.freenote.processors.group.FactoryAnnotatedClass;
-import com.freenote.processors.group.FactoryGroupedClasses;
+import com.freenote.annotations.trial.group.FactoryAnnotatedClass;
+import com.freenote.annotations.trial.group.FactoryGroupedClasses;
 import com.google.auto.service.AutoService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static com.freenote.utils.LogUtils.error;
+import static com.freenote.utils.MessagerUtils.error;
 
 @AutoService(Processor.class)
 public class FactoryProcessor extends AbstractProcessor {

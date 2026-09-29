@@ -4,8 +4,8 @@ import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
 import javax.tools.Diagnostic;
 
-public class LogUtils {
-    private LogUtils() {
+public class MessagerUtils {
+    private MessagerUtils() {
     }
 
     public static void error(Messager messager, Element e, String msg) {

@@ -7,17 +7,18 @@ import com.freenote.app.server.core.legacy.startup.LegacyBootstrap;
 import com.freenote.app.server.core.nio.NIOIncomingSocketHandler;
 import com.freenote.app.server.core.nio.startup.AsyncNIOServerBootstrap;
 import com.freenote.app.server.core.nio.startup.NIOServerBootstrap;
+import com.freenote.app.server.endpoints.EndpointResolver;
 
 public record IoModel(ServerBootstrap acceptLoop, PerClientConnectionHandler handler) {
 
-    public static IoModel of(String serverType, SSLConfig sslConfig) {
+    public static IoModel of(String serverType, SSLConfig sslConfig, EndpointResolver endpointResolver) {
         if (sslConfig != null) {
-            return new IoModel(LegacyBootstrap.createSSLBootstrap(sslConfig), new ThreadPerConnectionHandler());
+            return new IoModel(LegacyBootstrap.createSSLBootstrap(sslConfig), new ThreadPerConnectionHandler(endpointResolver));
         }
         return switch (serverType == null ? "thread-per-connection" : serverType) {
-            case "nio" -> new IoModel(new NIOServerBootstrap(), new NIOIncomingSocketHandler());
-            case "nio2" -> new IoModel(new AsyncNIOServerBootstrap(), new NIOIncomingSocketHandler());
-            default -> new IoModel(new LegacyBootstrap(), new ThreadPerConnectionHandler());
+            case "nio" -> new IoModel(new NIOServerBootstrap(), new NIOIncomingSocketHandler(endpointResolver));
+            case "nio2" -> new IoModel(new AsyncNIOServerBootstrap(), new NIOIncomingSocketHandler(endpointResolver));
+            default -> new IoModel(new LegacyBootstrap(), new ThreadPerConnectionHandler(endpointResolver));
         };
     }
 }

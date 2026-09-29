@@ -1,9 +1,9 @@
 package com.freenote.app;
 
-import com.freenote.annotations.Singleton;
-import com.freenote.annotations.URIHandleAnnotation;
+import com.freenote.annotations.trial.Singleton;
+import com.freenote.annotations.trial.URIHandleAnnotation;
 import com.freenote.app.server.endpoints.URIEndpointHandler;
-import com.freenote.exceptions.TwoSingletonException;
+import com.freenote.annotations.trial.TwoSingletonException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

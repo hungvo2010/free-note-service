@@ -4,7 +4,7 @@ import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.endpoints.URIEndpointHandler;
 import com.freenote.app.server.endpoints.NewEchoEndpoint;
-import com.freenote.app.server.model.NetworkResponseData;
+import com.freenote.app.server.model.ws.NetworkResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.util.IOUtils;
 import com.freenote.app.test.StubNetworkRequestData;

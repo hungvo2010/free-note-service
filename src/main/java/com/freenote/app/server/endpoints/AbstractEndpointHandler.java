@@ -6,7 +6,7 @@ import com.freenote.app.server.exceptions.ConnectionException;
 import com.freenote.app.server.exceptions.MessageParsingException;
 import com.freenote.app.server.frames.handler.WebSocketFrameHandler;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.model.NetworkResponseData;
+import com.freenote.app.server.model.ws.NetworkResponseData;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.parser.impl.InputStreamFrameParserImpl;

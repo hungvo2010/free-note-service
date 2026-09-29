@@ -45,6 +45,7 @@ public class FreeNoteApplication {
                                     : Optional.ofNullable(configRepo.get("freenote.server.type"))
                                             .orElse("thread-per-connection")
                     )
+                    .endpointResolver(path -> null)
                     .build();
             server.start();
         } catch (Exception ex) {

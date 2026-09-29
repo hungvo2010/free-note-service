@@ -2,7 +2,7 @@ package com.freenote.app.server.handler.impl;
 
 import com.freenote.app.server.endpoints.URIEndpointHandler;
 import com.freenote.app.server.endpoints.NewEchoEndpoint;
-import com.freenote.app.server.model.NetworkResponseData;
+import com.freenote.app.server.model.ws.NetworkResponseData;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.test.StubNetworkRequestData;
 import org.junit.jupiter.api.BeforeEach;

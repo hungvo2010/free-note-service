@@ -1,7 +1,7 @@
-package com.freenote.processors.group;
+package com.freenote.annotations.trial.group;
 
 
-import com.freenote.exceptions.ProcessingException;
+import com.freenote.annotations.trial.ProcessingException;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;

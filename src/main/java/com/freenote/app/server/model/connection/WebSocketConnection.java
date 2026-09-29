@@ -2,7 +2,7 @@ package com.freenote.app.server.model.connection;
 
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.model.NetworkResponseData;
+import com.freenote.app.server.model.ws.NetworkResponseData;
 import com.freenote.app.server.model.app.AppRequestData;
 import com.freenote.app.server.model.app.AppResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;

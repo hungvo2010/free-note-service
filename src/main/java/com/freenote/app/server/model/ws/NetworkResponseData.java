@@ -1,17 +1,9 @@
-package com.freenote.app.server.model;
-
-import com.freenote.app.server.model.ws.NetworkRequestData;
+package com.freenote.app.server.model.ws;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
 public record NetworkResponseData(OutputStream outputStream) {
-
-    /**
-     * Creates a NetworkResponseData backed by a NetworkRequestData.
-     * Writes are delegated to {@code networkData.write(byte[])}.
-     * Eliminates the need for {@code channel.socket().getOutputStream()}.
-     */
     public static NetworkResponseData from(NetworkRequestData networkData) {
         return new NetworkResponseData(new OutputStream() {
             @Override

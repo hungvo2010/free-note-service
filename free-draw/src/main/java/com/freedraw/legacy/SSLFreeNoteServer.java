@@ -4,6 +4,7 @@ import com.freenote.app.server.config.AppConfig;
 import com.freenote.app.server.config.SSLConfig;
 import com.freenote.app.server.config.ServerSocketConfig;
 import com.freenote.app.server.core.legacy.WebSocketServer;
+import com.freenote.app.server.endpoints.URIEndpointHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,6 +22,7 @@ public class SSLFreeNoteServer {
                 .sslConfig(new SSLConfig(keystorePath, keystorePassword))
                 .serverType("thread-per-connection")
                 .socketConfig(new ServerSocketConfig(port))
+                .endpointResolver(path -> (URIEndpointHandler) generated.URIHandlerRegistry.getInstanceByURI(path))
                 .build();
         server.start();
     }

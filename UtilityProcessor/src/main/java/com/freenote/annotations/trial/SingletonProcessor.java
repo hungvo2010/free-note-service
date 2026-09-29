@@ -1,13 +1,12 @@
-package com.freenote.processors;
+package com.freenote.annotations.trial;
 
-import com.freenote.annotations.Singleton;
 import com.google.auto.service.AutoService;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import java.util.Set;
-import static com.freenote.utils.LogUtils.error;
+import static com.freenote.utils.MessagerUtils.error;
 
 @AutoService(Processor.class)
 public class SingletonProcessor extends AbstractProcessor {

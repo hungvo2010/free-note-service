@@ -5,9 +5,10 @@ import com.freenote.app.server.handshaker.impl.AcceptHandshakeImpl;
 import com.freenote.app.server.core.connection.PerClientConnectionHandler;
 import com.freenote.app.server.core.event.ConnectionEvent;
 import com.freenote.app.server.core.nio.state.MessageState;
+import com.freenote.app.server.endpoints.EndpointResolver;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.exceptions.ConnectionException;
-import com.freenote.app.server.model.NetworkResponseData;
+import com.freenote.app.server.model.ws.NetworkResponseData;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.parser.HttpParser;
@@ -18,23 +19,21 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-import static generated.URIHandlerRegistry.getInstanceByURI;
 
 public class NIOIncomingSocketHandler implements PerClientConnectionHandler {
     private static final Logger log = LogManager.getLogger(NIOIncomingSocketHandler.class);
     private final AcceptHandshakeHandler handshakeHandler;
     private final HttpParser httpParser;
+    private final EndpointResolver endpointResolver;
 
-    public NIOIncomingSocketHandler(AcceptHandshakeHandler handshakeHandler, HttpParser httpParser) {
+    public NIOIncomingSocketHandler(AcceptHandshakeHandler handshakeHandler, HttpParser httpParser, EndpointResolver endpointResolver) {
         this.handshakeHandler = handshakeHandler;
         this.httpParser = httpParser;
+        this.endpointResolver = endpointResolver;
     }
 
-    public NIOIncomingSocketHandler() {
-        this(new AcceptHandshakeImpl(), new HttpParserImpl());
+    public NIOIncomingSocketHandler(EndpointResolver endpointResolver) {
+        this(new AcceptHandshakeImpl(), new HttpParserImpl(), endpointResolver);
     }
 
     private void writeHandshakeResponse(NetworkRequestData networkData, HttpUpgradeRequest request) throws IOException {
@@ -51,7 +50,7 @@ public class NIOIncomingSocketHandler implements PerClientConnectionHandler {
     }
 
     private URIEndpointHandler getPathHandler(HttpUpgradeRequest upgradeRequest) {
-        var pathHandler = (URIEndpointHandler) (getInstanceByURI(upgradeRequest.getPath()));
+        var pathHandler = endpointResolver.resolve(upgradeRequest.getPath());
         if (pathHandler == null) {
             log.warn("No handler found for URI: {}", upgradeRequest.getPath());
             throw new AcceptConnectionException("No handler for URI: " + upgradeRequest.getPath());
@@ -97,61 +96,5 @@ public class NIOIncomingSocketHandler implements PerClientConnectionHandler {
         } catch (IOException ex) {
             log.error("Error closing connection", ex);
         }
-    }
-
-
-    public String predictPartyVictory(String senate) {
-        Deque<Character> deque = new ArrayDeque<>();
-        var allPlayers = senate.length();
-        var i = 0;
-        while (i < allPlayers) {
-            var c = senate.charAt(i);
-            if (deque.isEmpty()) {
-                deque.offer(c);
-                deque.offer(c);
-            } else {
-                if (c != deque.peekFirst()) {
-                    int count = 0;
-
-                    while (!deque.isEmpty() && deque.peekFirst() != c && count < 1) {
-                        deque.removeFirst();
-                        count++;
-                    }
-                    if (count == 0) {
-                        return c == 'R' ? "Radiant" : "Dire";
-                    }
-                    else {
-                        deque.addLast(c);
-                    }
-                } else if (c != deque.peekLast()) {
-
-                    int count = 0;
-
-                    while (!deque.isEmpty() && deque.peekLast() != c && count < 1) {
-                        deque.removeLast();
-                        count++;
-                    }
-                    if (count == 0) {
-                        return c == 'R' ? "Radiant" : "Dire";
-                    }
-                    else {
-                        deque.addFirst(c);
-                    }
-                }
-                else {
-                    deque.addFirst(c);
-                    deque.addLast(c);
-                }
-            }
-            i++;
-        }
-        return deque.peekFirst() == 'R' ? "Radiant" : "Dire";
-    }
-
-    public static void main(String[] args) {
-        NIOIncomingSocketHandler handler = new NIOIncomingSocketHandler();
-        String senate = "DRRD";
-        String result = handler.predictPartyVictory(senate);
-        System.out.println("Predicted winner for senate '" + senate + "': " + result);
     }
 }

@@ -1,7 +1,8 @@
-package com.freenote.app.server.endpoints;
+package com.freedraw.endpoint;
 
 
 import com.freenote.annotations.WebSocketEndpoint;
+import com.freenote.app.server.endpoints.AbstractEndpointHandler;
 import com.freenote.app.server.model.connection.WebSocketConnection;
 import com.freenote.app.server.frames.factory.ServerFrameFactory;
 

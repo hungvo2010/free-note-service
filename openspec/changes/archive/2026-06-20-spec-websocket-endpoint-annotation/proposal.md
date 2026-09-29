@@ -23,5 +23,5 @@ The `@WebSocketEndpoint` annotation and its annotation processors form the backb
 
 ## Impact
 
-- Affected code: `com.freenote.annotations.WebSocketEndpoint`, `com.freenote.processors.WebServerProcessor`, `com.freenote.processors.BeanProviderProcessor`, `generated.URIHandlerRegistry`, `DefaultLegacySessionBasedConnectionHandler`
+- Affected code: `com.freenote.annotations.WebSocketEndpoint`, `com.freenote.processors.WebServerProcessor`, `com.freenote.processors.WebServerProcessor`, `generated.URIHandlerRegistry`, `DefaultLegacySessionBasedConnectionHandler`
 - No API changes, no dependency changes, no breaking changes

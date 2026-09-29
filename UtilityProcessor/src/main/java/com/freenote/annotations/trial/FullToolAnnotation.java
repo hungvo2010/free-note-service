@@ -1,4 +1,4 @@
-package com.freenote.annotations;
+package com.freenote.annotations.trial;
 
 import java.lang.annotation.*;
 

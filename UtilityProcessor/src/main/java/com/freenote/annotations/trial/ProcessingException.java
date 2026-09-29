@@ -1,4 +1,4 @@
-package com.freenote.exceptions;
+package com.freenote.annotations.trial;
 
 
 import lombok.Getter;

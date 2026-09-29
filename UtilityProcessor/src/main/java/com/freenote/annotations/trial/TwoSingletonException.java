@@ -1,4 +1,4 @@
-package com.freenote.exceptions;
+package com.freenote.annotations.trial;
 
 public class TwoSingletonException extends RuntimeException {
     public TwoSingletonException(String message) {
