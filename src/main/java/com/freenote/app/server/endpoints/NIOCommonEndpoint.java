@@ -1,7 +1,7 @@
-package com.freenote.app.server.routes.endpoint;
+package com.freenote.app.server.endpoints;
 
 import com.freenote.app.server.model.connection.WebSocketConnection;
-import com.freenote.app.server.parser.ByteBufferFrameParserImpl;
+import com.freenote.app.server.parser.impl.ByteBufferFrameParserImpl;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;

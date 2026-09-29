@@ -1,4 +1,4 @@
-package com.freenote.app.server.routes.endpoint;
+package com.freenote.app.server.endpoints;
 
 import com.freenote.annotations.WebSocketEndpoint;
 import com.freenote.app.server.frames.FrameType;
@@ -9,7 +9,6 @@ import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.NetworkResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
-import com.freenote.app.server.routes.URIEndpointHandler;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;

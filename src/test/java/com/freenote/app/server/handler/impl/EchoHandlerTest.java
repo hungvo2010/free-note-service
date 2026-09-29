@@ -1,7 +1,7 @@
 package com.freenote.app.server.handler.impl;
 
-import com.freenote.app.server.routes.URIEndpointHandler;
-import com.freenote.app.server.routes.endpoint.NewEchoEndpoint;
+import com.freenote.app.server.endpoints.URIEndpointHandler;
+import com.freenote.app.server.endpoints.NewEchoEndpoint;
 import com.freenote.app.server.model.NetworkResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.util.FrameUtil;

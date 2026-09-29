@@ -1,8 +1,9 @@
-package com.freenote.app.server.parser;
+package com.freenote.app.server.parser.impl;
 
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.ws.NetworkRequestData;
+import com.freenote.app.server.parser.WebSocketFrameParser;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.freenote.app.server.routes.endpoint;
+package com.freenote.app.server.endpoints;
 
 
 import com.freenote.annotations.WebSocketEndpoint;

@@ -1,4 +1,4 @@
-package com.freenote.app.server.routes;
+package com.freenote.app.server.endpoints;
 
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.NetworkResponseData;

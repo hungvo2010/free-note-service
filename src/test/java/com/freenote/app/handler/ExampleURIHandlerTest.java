@@ -1,7 +1,7 @@
 package com.freenote.app.handler;
 
-import com.freenote.app.server.routes.URIEndpointHandler;
-import com.freenote.app.server.routes.endpoint.FragmentedEndpoint;
+import com.freenote.app.server.endpoints.URIEndpointHandler;
+import com.freenote.app.server.endpoints.FragmentedEndpoint;
 import com.freenote.app.server.model.NetworkResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.test.StubNetworkRequestData;

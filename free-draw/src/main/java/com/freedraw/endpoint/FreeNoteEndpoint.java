@@ -17,7 +17,7 @@ import com.freenote.app.server.model.connection.WebSocketConnection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.model.enums.MsgType;
-import com.freenote.app.server.routes.endpoint.AbstractEndpointHandler;
+import com.freenote.app.server.endpoints.AbstractEndpointHandler;
 import com.freenote.app.server.util.FrameUtil;
 import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;

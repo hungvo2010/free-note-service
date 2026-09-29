@@ -1,7 +1,7 @@
 package com.freenote.app.server.model.ws;
 
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.parser.FullFrameParser;
+import com.freenote.app.server.parser.impl.InputStreamFrameParserImpl;
 import com.freenote.app.server.util.IOUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -63,7 +63,7 @@ public class BlockingNetworkRequestData implements NetworkRequestData {
             throw new EOFException("Connection already closed by peer");
         }
         try {
-            return new FullFrameParser().getRawBytes(inputStream);
+            return new InputStreamFrameParserImpl.FullFrameParser().getRawBytes(inputStream);
         } catch (SocketException e) {
             // SSLSocket ném exception này khi peer đã close_notify thay vì trả -1
             markReadClosed();

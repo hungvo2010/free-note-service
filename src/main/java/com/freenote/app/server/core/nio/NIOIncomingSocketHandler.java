@@ -12,7 +12,7 @@ import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.parser.HttpParser;
 import com.freenote.app.server.parser.impl.HttpParserImpl;
-import com.freenote.app.server.routes.URIEndpointHandler;
+import com.freenote.app.server.endpoints.URIEndpointHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

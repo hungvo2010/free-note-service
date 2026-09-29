@@ -1,4 +1,4 @@
-package com.freenote.app.server.routes.endpoint;
+package com.freenote.app.server.endpoints;
 
 import com.freenote.app.server.model.connection.WebSocketConnection;
 import com.freenote.app.server.exceptions.ClientDisconnectException;
@@ -9,10 +9,9 @@ import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.NetworkResponseData;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.ws.NetworkRequestData;
-import com.freenote.app.server.parser.InputStreamFrameParserImpl;
+import com.freenote.app.server.parser.impl.InputStreamFrameParserImpl;
 import com.freenote.app.server.parser.WebSocketFrameParser;
-import com.freenote.app.server.routes.URIEndpointHandler;
-import com.freenote.app.server.routes.frames.WebSocketFrameDispatcher;
+import com.freenote.app.server.endpoints.frames.WebSocketFrameDispatcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import otel.metrics.MetricUtils;

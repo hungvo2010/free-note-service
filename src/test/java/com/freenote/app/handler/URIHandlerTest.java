@@ -2,8 +2,8 @@ package com.freenote.app.handler;
 
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.frames.factory.ClientFrameFactory;
-import com.freenote.app.server.routes.URIEndpointHandler;
-import com.freenote.app.server.routes.endpoint.NewEchoEndpoint;
+import com.freenote.app.server.endpoints.URIEndpointHandler;
+import com.freenote.app.server.endpoints.NewEchoEndpoint;
 import com.freenote.app.server.model.NetworkResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.util.IOUtils;
@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

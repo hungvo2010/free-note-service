@@ -4,7 +4,7 @@ import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.DataFrame;
-import com.freenote.app.server.routes.endpoint.FragmentedEndpoint;
+import com.freenote.app.server.endpoints.FragmentedEndpoint;
 import com.freenote.app.server.model.NetworkResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.util.IOUtils;
