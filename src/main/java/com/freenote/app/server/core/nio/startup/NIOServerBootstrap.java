@@ -2,7 +2,7 @@ package com.freenote.app.server.core.nio.startup;
 
 import com.freenote.app.server.config.ServerSocketConfig;
 import com.freenote.app.server.core.connection.PerClientConnectionHandler;
-import com.freenote.app.server.core.nio.ConnectionPipeline;
+import com.freenote.app.server.core.nio.NIOConnectionPipes;
 import com.freenote.app.server.core.nio.events.NIOEvent;
 import com.freenote.app.server.core.nio.sessions.NIOServerSession;
 import com.freenote.app.server.core.nio.transport.NetworkSelector;
@@ -35,7 +35,7 @@ public class NIOServerBootstrap implements ServerBootstrap {
     public void start(PerClientConnectionHandler handler, ServerSocketConfig socketConfig) {
         try (var serverSocketChannel = tryOpenSocketChannel(socketConfig)) {
             var selector = openNetworkSelector();
-            var connectionPipeline = new ConnectionPipeline(handler);
+            var connectionPipeline = new NIOConnectionPipes(handler);
             var nioServerSession = NIOServerSession.builder()
                     .serverSocketChannel(serverSocketChannel)
                     .selector(selector)

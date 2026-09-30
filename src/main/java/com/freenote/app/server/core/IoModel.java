@@ -1,4 +1,4 @@
-package com.freenote.app.server.core.startup;
+package com.freenote.app.server.core;
 
 import com.freenote.app.server.config.SSLConfig;
 import com.freenote.app.server.core.connection.PerClientConnectionHandler;
@@ -7,6 +7,7 @@ import com.freenote.app.server.core.legacy.startup.LegacyBootstrap;
 import com.freenote.app.server.core.nio.NIOIncomingSocketHandler;
 import com.freenote.app.server.core.nio.startup.AsyncNIOServerBootstrap;
 import com.freenote.app.server.core.nio.startup.NIOServerBootstrap;
+import com.freenote.app.server.core.startup.ServerBootstrap;
 import com.freenote.app.server.endpoints.EndpointResolver;
 
 public record IoModel(ServerBootstrap acceptLoop, PerClientConnectionHandler handler) {

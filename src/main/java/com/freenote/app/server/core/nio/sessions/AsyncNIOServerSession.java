@@ -1,6 +1,6 @@
 package com.freenote.app.server.core.nio.sessions;
 
-import com.freenote.app.server.core.nio.ConnectionPipeline;
+import com.freenote.app.server.core.nio.NIOConnectionPipes;
 import com.freenote.app.server.core.nio.transport.NetworkSelector;
 import com.freenote.app.server.exceptions.AcceptConnectionException;
 import com.freenote.app.server.model.ws.AsyncNIONetworkRequestData;
@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AsyncNIOServerSession {
     private NetworkSelector selector;
     private AsynchronousServerSocketChannel asyncServerChannel;
-    private ConnectionPipeline pipeline;
+    private NIOConnectionPipes pipeline;
     private static final Logger log = LogManager.getLogger(AsyncNIOServerSession.class);
     @Builder.Default
     private final Map<AsynchronousSocketChannel, AsyncNIONetworkRequestData> channelData = new ConcurrentHashMap<>();

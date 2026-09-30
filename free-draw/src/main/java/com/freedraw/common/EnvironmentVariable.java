@@ -1,6 +1,6 @@
 package com.freedraw.common;
 
-import com.freenote.app.server.config.AppConfig;
+import com.freenote.app.server.config.datasources.ConfigRepository;
 import lombok.experimental.UtilityClass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,7 +14,9 @@ public class EnvironmentVariable {
 
     public static String getTargetDirectory() {
         try {
-            String targetDir = AppConfig.get("freenote.target.directory", "");
+            var configRepo = new ConfigRepository();
+            configRepo.load();
+            String targetDir = configRepo.getOrDefault("freenote.target.directory", "");
             String platform = System.getProperty("os.name").toLowerCase();
             if (platform.contains("win")) {
                 if (targetDir == null || targetDir.isEmpty()) {

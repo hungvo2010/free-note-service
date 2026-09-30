@@ -1,8 +1,8 @@
 package com.freedraw.legacy;
 
-import com.freenote.app.server.config.AppConfig;
 import com.freenote.app.server.config.SSLConfig;
 import com.freenote.app.server.config.ServerSocketConfig;
+import com.freenote.app.server.config.datasources.ConfigRepository;
 import com.freenote.app.server.core.legacy.WebSocketServer;
 import com.freenote.app.server.endpoints.URIEndpointHandler;
 import org.apache.logging.log4j.LogManager;
@@ -12,9 +12,11 @@ public class SSLFreeNoteServer {
     private static final Logger log = LogManager.getLogger(SSLFreeNoteServer.class);
 
     public static void main(String[] args) throws Exception {
-        int port = AppConfig.getInt("server.ssl.port", 8189);
-        String keystorePath = AppConfig.get("server.ssl.keystore.path", "keystore.p12");
-        String keystorePassword = AppConfig.get("server.ssl.keystore.password", "changeit");
+        var configRepo = new ConfigRepository();
+        configRepo.load();
+        int port = Integer.parseInt(configRepo.getOrDefault("server.ssl.port", "8189"));
+        String keystorePath = configRepo.getOrDefault("server.ssl.keystore.path", "keystore.p12");
+        String keystorePassword = configRepo.getOrDefault("server.ssl.keystore.password", "changeit");
 
         log.info("Starting SSL server with keystore: {}", keystorePath);
 

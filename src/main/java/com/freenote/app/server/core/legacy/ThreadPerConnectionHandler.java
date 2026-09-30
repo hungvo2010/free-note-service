@@ -54,14 +54,6 @@ public class ThreadPerConnectionHandler implements PerClientConnectionHandler {
         return null;
     }
 
-    private void closeRequest(NetworkRequestData networkRequestData) {
-        try {
-            networkRequestData.close();
-        } catch (IOException e) {
-            throw new ConnectionException("Error closing connection", e);
-        }
-    }
-
     private HttpUpgradeRequest doHandShakeAndRouting(NetworkRequestData networkRequestData) throws IOException {
         var upgradeRequest = httpParser.parse(networkRequestData.read());
         performHandshake(networkRequestData, upgradeRequest);
@@ -102,7 +94,7 @@ public class ThreadPerConnectionHandler implements PerClientConnectionHandler {
     private URIEndpointHandler getEndpointHandler(HttpUpgradeRequest upgradeRequest) {
         var endpointHandler = endpointResolver.resolve(upgradeRequest.getPath());
         if (endpointHandler == null) {
-            log.warn("No handler found for URI: {}", upgradeRequest.getPath());
+            log.error("No handler found for URI: {}", upgradeRequest.getPath());
             throw new AcceptConnectionException("No handler for URI: " + upgradeRequest.getPath());
         }
         return endpointHandler;
@@ -116,6 +108,14 @@ public class ThreadPerConnectionHandler implements PerClientConnectionHandler {
         } catch (Exception ignore) {
         } finally {
             closeRequest(networkRequestData);
+        }
+    }
+
+    private void closeRequest(NetworkRequestData networkRequestData) {
+        try {
+            networkRequestData.close();
+        } catch (IOException e) {
+            throw new ConnectionException("Error closing connection", e);
         }
     }
 }

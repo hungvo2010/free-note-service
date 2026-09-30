@@ -1,7 +1,7 @@
 package com.freenote.app.server.handshaker.impl;
 
 import com.freenote.app.server.handshaker.AcceptHandshakeHandler;
-import com.freenote.app.server.config.AppConfig;
+import com.freenote.app.server.config.datasources.ConfigRepository;
 import com.freenote.app.server.exceptions.HandshakeException;
 import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.http.HttpUpgradeResponse;
@@ -96,7 +96,9 @@ public class AcceptHandshakeImpl implements AcceptHandshakeHandler {
     }
 
     private static void loadAllowedOriginsFromConfig() {
-        String additionalOrigins = AppConfig.get("allowed.origins", "");
+        var configRepo = new ConfigRepository();
+        configRepo.load();
+        String additionalOrigins = configRepo.getOrDefault("allowed.origins", "");
         var combined = new ArrayList<>(DEFAULT_ALLOWED_ORIGINS);
         if (isValidCommaSeparated(additionalOrigins)) {
             combined.addAll(Arrays.asList(additionalOrigins.split(",")));

@@ -1,7 +1,5 @@
 package com.freenote.app.server.config.datasources;
 
-import com.freenote.app.server.config.AppConfig;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -40,7 +38,7 @@ public class FileSource implements ConfigSource {
     }
 
     private void loadProperties(String configFile) {
-        try (InputStream input = AppConfig.class.getClassLoader()
+        try (InputStream input = FileSource.class.getClassLoader()
                 .getResourceAsStream(configFile)) {
             if (input != null) {
                 properties.load(input);
