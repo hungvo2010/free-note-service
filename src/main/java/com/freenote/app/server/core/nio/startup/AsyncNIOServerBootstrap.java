@@ -1,11 +1,11 @@
 package com.freenote.app.server.core.nio.startup;
 
-import com.freenote.app.server.core.config.ServerSocketConfig;
-import com.freenote.app.server.core.connection.IncomingConnectionHandler;
-import com.freenote.app.server.core.nio.ConnectionPipeline;
+import com.freenote.app.server.config.ServerSocketConfig;
+import com.freenote.app.server.core.connection.PerClientConnectionHandler;
+import com.freenote.app.server.core.nio.NIOConnectionPipes;
 import com.freenote.app.server.core.nio.sessions.AsyncNIOServerSession;
 import com.freenote.app.server.core.startup.ServerBootstrap;
-import com.freenote.app.server.exceptions.NIOServerInitializationException;
+import com.freenote.app.server.exceptions.WebSocketException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,19 +20,19 @@ public class AsyncNIOServerBootstrap implements ServerBootstrap {
     private AbstractExecutorService virtualExecutorService;
 
     @Override
-    public void start(IncomingConnectionHandler connectionHandler, ServerSocketConfig socketConfig) {
+    public void start(PerClientConnectionHandler connectionHandler, ServerSocketConfig socketConfig) {
         try (var serverSocketChannel = tryOpenSocketChannel(socketConfig)) {
-            var connectionPipeline = new ConnectionPipeline(connectionHandler);
+            var connectionPipeline = new NIOConnectionPipes(connectionHandler);
             var nioServerSession = buildServerSession(serverSocketChannel, connectionPipeline);
             logServerInitialization();
             nioServerSession.registerReadEvent();
             Thread.currentThread().join();
         } catch (Exception e) {
-            throw new NIOServerInitializationException("Failed to open server socket channel", e);
+            throw new WebSocketException.NIOServerInitializationException("Failed to open server socket channel", e);
         }
     }
 
-    private AsyncNIOServerSession buildServerSession(AsynchronousServerSocketChannel serverSocketChannel, ConnectionPipeline connectionPipeline) {
+    private AsyncNIOServerSession buildServerSession(AsynchronousServerSocketChannel serverSocketChannel, NIOConnectionPipes connectionPipeline) {
         return AsyncNIOServerSession.builder()
                 .asyncServerChannel(serverSocketChannel)
                 .pipeline(connectionPipeline)
@@ -42,10 +42,10 @@ public class AsyncNIOServerBootstrap implements ServerBootstrap {
     private AsynchronousServerSocketChannel tryOpenSocketChannel(ServerSocketConfig socketConfig) {
         try {
             var asyncServerSocketChannel = AsynchronousServerSocketChannel.open();
-            asyncServerSocketChannel.bind(new InetSocketAddress(socketConfig.port()));
+            asyncServerSocketChannel.bind(new InetSocketAddress(socketConfig.getPort()));
             return asyncServerSocketChannel;
         } catch (Exception e) {
-            throw new NIOServerInitializationException("Failed to open server socket channel", e);
+            throw new WebSocketException.NIOServerInitializationException("Failed to open server socket channel", e);
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.freedraw.repository;
 
 import com.freedraw.entities.Draft;
-import com.freedraw.entities.DraftAction;
 import com.freedraw.repository.persistence.disk.DiskPersistenceConfig;
 import com.freedraw.repository.persistence.disk.PersistenceContext;
 import com.freedraw.repository.persistence.disk.PersistenceManager;
@@ -68,7 +67,7 @@ public class InMemDraftRepositoryImpl implements DraftRepository {
     /**
      * Add an action to a draft
      */
-    public void addAction(String draftId, DraftAction action) {
+    public void addAction(String draftId, Draft.DraftAction action) {
         persistenceContext.addAction(draftId, action);
         log.debug("Action added to draft {}", draftId);
     }
@@ -76,7 +75,7 @@ public class InMemDraftRepositoryImpl implements DraftRepository {
     /**
      * Insert an action at a specific position
      */
-    public void insertAction(String draftId, int position, DraftAction action) {
+    public void insertAction(String draftId, int position, Draft.DraftAction action) {
         persistenceContext.insertAction(draftId, position, action);
         log.debug("Action inserted at position {} in draft {}", position, draftId);
     }

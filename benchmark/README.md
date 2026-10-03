@@ -4,10 +4,14 @@ This directory benchmarks the two WebSocket server implementations in this repo
 under identical load and captures the metrics that actually separate them —
 especially **memory per connection** and **echo latency**.
 
-| Server   | Entry point | Threading model |
-|----------|-------------|-----------------|
-| `vthread` | `com.freenote.app.server.core.legacy.launcher.SimpleServer` | `Executors.newVirtualThreadPerTaskExecutor()` — **1 virtual thread per connection** |
-| `nio`     | `com.freenote.app.server.core.nio.launcher.nio.NIOSimpleServer` | `Executors.newFixedThreadPool(2)` + a single `Selector` loop — **O(1) threads** |
+Both arms run the same entry point,
+`com.freenote.app.server.core.startup.FreeNoteApplication`; the arm is chosen by the
+second command-line argument (`serverType`):
+
+| Server   | `serverType` | Threading model |
+|----------|--------------|-----------------|
+| `vthread` | `thread-per-connection` | `Executors.newVirtualThreadPerTaskExecutor()` — **1 virtual thread per connection** |
+| `nio`     | `nio` | `Executors.newFixedThreadPool(2)` + a single `Selector` loop — **O(1) threads** |
 
 Both expose the same `/echo` WebSocket route (echoes text frames, answers pings).
 
@@ -110,6 +114,12 @@ The script holds everything constant **except** the server implementation:
 5. **Fixed heap ceiling.** If vthread hits `-Xmx` under high connection counts,
    it will GC thrash or OOM. Raise `HEAP=1g` and re-run to find the steady-state
    cost rather than the OOM cliff.
+6. **Telemetry is now symmetric between the arms.** Both run through
+   `FreeNoteApplication`, so both initialise OpenTelemetry and export OTLP spans.
+   The `nio` arm previously ran `NIOSimpleServer`, which did no telemetry setup at
+   all — its per-event spans fell through to a no-op provider. **`nio` results
+   recorded before this change are not comparable to new ones**, and if
+   `otlp.http.endpoint` is unreachable the exporter's retries add noise to both arms.
 
 ## Going deeper
 

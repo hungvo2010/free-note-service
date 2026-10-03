@@ -2,7 +2,6 @@ package com.freedraw.service;
 
 import com.freedraw.dto.DraftRequestData;
 import com.freedraw.entities.Draft;
-import com.freedraw.entities.DraftAction;
 import com.freedraw.exception.DraftNotFoundException;
 import com.freedraw.repository.DraftRepository;
 import org.apache.logging.log4j.LogManager;
@@ -49,9 +48,9 @@ public class DraftService {
 
     private void applyActionToDraft(Draft draft, DraftRequestData data) {
         // Logic for merging shapes now resides IN Draft or DraftAction [3]
-        DraftAction action = (data.isConnect()) ? 
+        Draft.DraftAction action = (data.isConnect()) ?
             draft.generateMergedAction() : // Move Method: Draft merges its own shapes
-            new DraftAction(data.getContent());
+            new Draft.DraftAction(data.getContent());
 
         draft.addAction(action);
     }

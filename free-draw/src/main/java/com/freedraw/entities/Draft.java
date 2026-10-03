@@ -7,14 +7,12 @@ import com.freedraw.dto.DraftRequestContent;
 import com.freedraw.dto.ShapeData;
 import com.freenote.app.server.util.JSONUtils;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -74,4 +72,30 @@ public class Draft {
         log.info(JSONUtils.toJSONString(draft));
     }
 
+    @NoArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @Getter
+    public static class DraftAction {
+        private static final String ALL_SHAPES_KEY = "allShapes";
+
+        private List<ShapeData> shapes = new ArrayList<>();
+        private final Map<String, Object> actionData = new HashMap<>();
+
+        public DraftAction(DraftRequestContent requestContent) {
+            this.shapes = new ArrayList<>(requestContent.getShapes());
+        }
+
+        public DraftAction(List<ShapeData> allShapes) {
+            this.shapes = new ArrayList<>(allShapes);
+            this.actionData.put(ALL_SHAPES_KEY, true);
+        }
+
+        public void putData(String key, Object value) {
+            actionData.put(key, value);
+        }
+
+        public List<ShapeData> getShapes() {
+            return Collections.unmodifiableList(shapes);
+        }
+    }
 }

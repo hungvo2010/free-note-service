@@ -1,9 +1,9 @@
 package com.freedraw.legacy;
 
-import com.freenote.app.server.core.config.AppConfig;
-import com.freenote.app.server.core.config.SSLConfig;
-import com.freenote.app.server.core.config.ServerSocketConfig;
-import com.freenote.app.server.core.legacy.WebSocketServer;
+import com.freenote.app.server.config.ServerSocketConfig;
+import com.freenote.app.server.config.ConfigRepository;
+import com.freenote.app.server.core.WebSocketServer;
+import com.freenote.app.server.endpoints.URIEndpointHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,16 +11,19 @@ public class SSLFreeNoteServer {
     private static final Logger log = LogManager.getLogger(SSLFreeNoteServer.class);
 
     public static void main(String[] args) throws Exception {
-        int port = AppConfig.getInt("server.ssl.port", 8189);
-        String keystorePath = AppConfig.get("server.ssl.keystore.path", "keystore.p12");
-        String keystorePassword = AppConfig.get("server.ssl.keystore.password", "changeit");
+        var configRepo = new ConfigRepository();
+        configRepo.load();
+        int port = Integer.parseInt(configRepo.getOrDefault("server.ssl.port", "8189"));
+        String keystorePath = configRepo.getOrDefault("server.ssl.keystore.path", "keystore.p12");
+        String keystorePassword = configRepo.getOrDefault("server.ssl.keystore.password", "changeit");
 
         log.info("Starting SSL server with keystore: {}", keystorePath);
 
         WebSocketServer server = WebSocketServer.builder()
-                .sslConfig(new SSLConfig(keystorePath, keystorePassword))
+                .sslConfig(new ServerSocketConfig.SSLConfig(keystorePath, keystorePassword))
                 .serverType("thread-per-connection")
                 .socketConfig(new ServerSocketConfig(port))
+                .endpointResolver(path -> (URIEndpointHandler) generated.URIHandlerRegistry.getInstanceByURI(path))
                 .build();
         server.start();
     }

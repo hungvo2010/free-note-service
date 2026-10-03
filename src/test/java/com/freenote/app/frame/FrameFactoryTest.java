@@ -1,7 +1,7 @@
 package com.freenote.app.frame;
 
 import com.freenote.app.server.frames.FrameType;
-import com.freenote.app.server.frames.factory.ServerFrameFactory;
+import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.util.IOUtils;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +19,7 @@ class FrameFactoryTest {
     @Test
     void givenFrameTypeThenCreateServerFrame() {
         FrameType frameType = FrameType.BINARY;
-        var factory = new ServerFrameFactory();
+        var factory = new FrameFactory.ServerFrameFactory();
         var frame = factory.createBinaryFrame("Hello World".getBytes());
         assertEquals(frame.getOpcode(), frameType.getOpCode());
     }

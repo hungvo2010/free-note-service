@@ -1,10 +1,9 @@
 package com.freenote.app.server.core.nio.sessions;
 
-import com.freenote.app.server.core.nio.ConnectionPipeline;
+import com.freenote.app.server.core.nio.NIOConnectionPipes;
 import com.freenote.app.server.core.nio.events.NIOEvent;
 import com.freenote.app.server.core.nio.transport.NetworkSelector;
-import com.freenote.app.server.exceptions.AcceptConnectionException;
-import com.freenote.app.server.exceptions.NIOReadException;
+import com.freenote.app.server.exceptions.WebSocketException;
 import com.freenote.app.server.model.ws.NIONetworkRequestData;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NIOServerSession {
     private NetworkSelector selector;
     private ServerSocketChannel serverSocketChannel;
-    private ConnectionPipeline pipeline;
+    private NIOConnectionPipes pipeline;
     private static final Logger log = LogManager.getLogger(NIOServerSession.class);
     @Builder.Default
     private final Map<SocketChannel, NIONetworkRequestData> channelData = new ConcurrentHashMap<>();
@@ -35,7 +34,7 @@ public class NIOServerSession {
         try {
             serverSocketChannel.register(selector.getSelector(), SelectionKey.OP_ACCEPT);
         } catch (ClosedChannelException e) {
-            throw new AcceptConnectionException("Failed to register accept event for server socket channel", e);
+            throw new WebSocketException.AcceptConnectionException("Failed to register accept event for server socket channel", e);
         }
     }
 
@@ -50,11 +49,11 @@ public class NIOServerSession {
                 client.register(selector.getSelector(), SelectionKey.OP_READ);
             }
         } catch (IOException e) {
-            throw new AcceptConnectionException("Failed to accept connection", e);
+            throw new WebSocketException.AcceptConnectionException("Failed to accept connection", e);
         }
     }
 
-    public void handleReadEvent(NIOEvent nioEvent) throws NIOReadException {
+    public void handleReadEvent(NIOEvent nioEvent) throws WebSocketException.NIOReadException {
         try {
             SocketChannel channel = (SocketChannel) nioEvent.getChannel();
             NIONetworkRequestData networkData = channelData.get(channel);
@@ -71,7 +70,7 @@ public class NIOServerSession {
                 cleanupChannel(nioEvent, networkData);
             }
         } catch (Exception e) {
-            throw new NIOReadException(e);
+            throw new WebSocketException.NIOReadException(e);
         }
     }
 

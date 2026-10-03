@@ -59,19 +59,21 @@ export const options = {
     },
 };
 
+export const veryLargePayload = 'x'.repeat(Math.pow(2, 17));
+
 // ── Per-VU script ────────────────────────────────────────────────────────────
 export default function () {
     // Each VU opens one WebSocket and holds it until the test ends.
     // k6 will retry the connect call if the server is temporarily overloaded
     // (TCP backlog full), so the VU doesn't exit early.
 
-    const res = ws.connect(WS_URL, { tags: { test_type: 'virtual-thread-flood' } }, function (socket) {
+    const res = ws.connect(WS_URL, { tags: { test_type: 'virtual-thread-flood' }, headers: { 'X-Pad': 'a'.repeat(60000) } }, function (socket) {
 
         // --- open: handshake completed, virtual thread is now alive on server
         socket.on('open', function () {
             // Send one payload so there is at least one ws_msgs_sent data point
             socket.send(JSON.stringify({
-                type:      'hello',
+                type:      "hello",
                 vu:        __VU,
                 timestamp: Date.now(),
             }));

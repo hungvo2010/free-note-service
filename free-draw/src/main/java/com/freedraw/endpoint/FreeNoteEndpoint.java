@@ -5,21 +5,18 @@ import com.freedraw.dto.DraftResponseContent;
 import com.freedraw.dto.DraftResponseData;
 import com.freedraw.dto.HeartbeatMsg;
 import com.freedraw.entities.Draft;
-import com.freedraw.entities.DraftAction;
 import com.freedraw.legacy.ConnectionsRegistry;
 import com.freedraw.models.core.AppConnection;
-import com.freedraw.models.core.Room;
 import com.freedraw.models.core.RoomRegistry;
 import com.freedraw.repository.InMemDraftRepositoryImpl;
 import com.freedraw.resources.RedisClient;
 import com.freedraw.service.DraftService;
 import com.freenote.annotations.WebSocketEndpoint;
-import com.freenote.app.server.core.model.connection.WebSocketConnection;
-import com.freenote.app.server.exceptions.ClientDisconnectException;
+import com.freenote.app.server.exceptions.WebSocketException;
+import com.freenote.app.server.frames.factory.FrameFactory;
+import com.freenote.app.server.model.connection.WebSocketConnection;
 import com.freenote.app.server.frames.base.ControlFrame;
-import com.freenote.app.server.model.enums.MsgType;
-import com.freenote.app.server.routes.endpoint.AbstractEndpointHandler;
-import com.freenote.app.server.util.FrameUtil;
+import com.freenote.app.server.endpoints.AbstractEndpointHandler;
 import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,18 +28,19 @@ import java.util.List;
 public class FreeNoteEndpoint extends AbstractEndpointHandler {
     private static final Logger log = LogManager.getLogger(FreeNoteEndpoint.class);
     private static final DraftResponseData DEFAULT_MESSAGE_PAYLOAD = new DraftResponseData();
-    private final DraftService draftService = new DraftService(new InMemDraftRepositoryImpl());
+    private DraftService draftService = new DraftService(new InMemDraftRepositoryImpl());
     private final RoomRegistry roomRegistry = RoomRegistry.getInstance();
+    private final FrameFactory.ServerFrameFactory frameFactory = new FrameFactory.ServerFrameFactory();
 
     @Override
     public void onData(WebSocketConnection webSocketConnection, String message) {
         try {
             var heartbeat = JSONUtils.fromJSON(message, HeartbeatMsg.class);
-            if (heartbeat != null && heartbeat.getMsgType() == MsgType.PING) {
+            if (heartbeat != null && heartbeat.getMsgType() == HeartbeatMsg.MsgType.PING) {
                 log.info("Received Heartbeat PING");
                 ConnectionsRegistry.refresh(webSocketConnection.getNetworkRequestData());
-                heartbeat.setMsgType(MsgType.PONG);
-                webSocketConnection.setResponseFrame(FrameUtil.createApplicationFrame(heartbeat));
+                heartbeat.setMsgType(HeartbeatMsg.MsgType.PONG);
+                webSocketConnection.setResponseFrame(frameFactory.createApplicationFrame(heartbeat));
                 return;
             }
 
@@ -86,7 +84,7 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
         var connection = new AppConnection(webSocketConnection);
         ConnectionsRegistry.unregister(connection);
         roomRegistry.removeConnection(connection);
-        throw new ClientDisconnectException("Client sent CLOSE frame");
+        throw new WebSocketException.ClientDisconnectException("Client sent CLOSE frame");
     }
 
     @Override
@@ -101,7 +99,7 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
         ConnectionsRegistry.refresh(webSocketConnection.getNetworkRequestData());
     }
 
-    private DraftAction getLastAction(Draft draft) {
+    private Draft.DraftAction getLastAction(Draft draft) {
         return draft.getActions().get(draft.getActions().size() - 1);
     }
 
@@ -113,7 +111,7 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
             broadCastMessage(connectionsToBroadcast, responseData);
         } catch (Exception e) {
             log.error("Error broadcasting message: {}", e);
-            removeConnection(targetRoom, newConnection);
+            targetRoom.remove(newConnection);
         }
     }
 
@@ -123,9 +121,4 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
             RedisClient.notifyStickyServer(connection.getSenderId(), message);
         }
     }
-
-    private void removeConnection(Room targetRoom, AppConnection newConnection) {
-        targetRoom.remove(newConnection);
-    }
-
 }

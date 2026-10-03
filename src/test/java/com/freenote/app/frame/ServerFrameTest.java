@@ -1,6 +1,6 @@
 package com.freenote.app.frame;
 
-import com.freenote.app.server.frames.factory.ServerFrameFactory;
+import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
@@ -14,11 +14,11 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ServerFrameTest {
-    private static ServerFrameFactory serverFrameFactory = null;
+    private static FrameFactory.ServerFrameFactory serverFrameFactory = null;
 
     @BeforeAll
     static void setup() {
-        serverFrameFactory = new ServerFrameFactory();
+        serverFrameFactory = new FrameFactory.ServerFrameFactory();
     }
 
     @Test

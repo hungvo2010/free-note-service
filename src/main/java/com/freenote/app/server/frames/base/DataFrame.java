@@ -1,14 +1,12 @@
 package com.freenote.app.server.frames.base;
 
+import com.freenote.app.server.exceptions.WebSocketException;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.util.FrameUtil;
 
 import java.io.IOException;
 import java.io.ObjectOutput;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
-
-import static com.freenote.app.server.util.FrameUtil.getFramePayloadLengthSupplier;
-import static com.freenote.app.server.util.FrameUtil.getMaskingKeyStartSupplier;
 
 public class DataFrame extends WebSocketFrame {
 
@@ -41,20 +39,19 @@ public class DataFrame extends WebSocketFrame {
     @Override
     protected void parsePayloadLength(byte[] bytes) {
         isMasked = ((bytes[1] & 0x80) >> 7) == 1;
-        payloadLength = FrameUtil.parsePayloadLength(bytes);
+        payloadLength = readPayloadLength(bytes);
     }
 
     @Override
     protected void parsePayload(byte[] bytes) {
-        var maskingKeyStart = getMaskingKeyStartSupplier().applyAsInt(bytes[1] & 0x7F);
-        var payloadDataStart = maskingKeyStart + maskingKey.length;
+        var payloadDataStart = maskingKeyOffset(bytes[1] & 0x7F) + maskingKey.length;
         payloadData = Arrays.copyOfRange(bytes, payloadDataStart, payloadDataStart + (int) payloadLength);
     }
 
     @Override
     public void writeFrameMaskHeader(ObjectOutput out) throws IOException {
         var maskByte = isMasked ? (byte) 0x80 : (byte) 0x00;
-        var secondByte = (byte) (maskByte | (byte) (getFramePayloadLengthSupplier().applyAsLong(payloadLength)));
+        var secondByte = (byte) (maskByte | lengthMarker(payloadLength));
         out.writeByte(secondByte);
     }
 
@@ -80,12 +77,37 @@ public class DataFrame extends WebSocketFrame {
 
     @Override
     public void parseMaskingKey(byte[] bytes) {
-        var maskingKeyStart = getMaskingKeyStartSupplier().applyAsInt(bytes[1] & 0x7F);
-        maskingKey = isMasked ? Arrays.copyOfRange(bytes, maskingKeyStart, maskingKeyStart + DEFAULT_MASKING_KEY_LENGTH) : new byte[0]; // Masking key is present if masked is true
+        var maskingKeyStart = maskingKeyOffset(bytes[1] & 0x7F);
+        maskingKey = isMasked ? Arrays.copyOfRange(bytes, maskingKeyStart, maskingKeyStart + DEFAULT_MASKING_KEY_LENGTH) : new byte[0];
     }
 
     @Override
     public void writePayload(ObjectOutput out) throws IOException {
-        out.write(isMasked ? FrameUtil.maskPayload(payloadData, maskingKey) : payloadData);
+        out.write(isMasked ? applyMask(payloadData, maskingKey) : payloadData);
+    }
+
+    private long readPayloadLength(byte[] bytes) {
+        var marker = bytes[1] & 0x7F;
+        if (marker < MAX_PAYLOAD_LENGTH_7_BITS) {
+            return marker;
+        }
+        if (marker == MAX_PAYLOAD_LENGTH_7_BITS) {
+            if (bytes.length < 4) {
+                throw new WebSocketException.InvalidFrameException("Payload length is too short for extended payload length");
+            }
+            return ByteBuffer.wrap(bytes, 2, 2).getShort() & 0xFFFFL;
+        }
+        if (bytes.length < 10) {
+            throw new WebSocketException.InvalidFrameException("Payload length is too short for extended payload length");
+        }
+        return ByteBuffer.wrap(bytes, 2, 8).getLong();
+    }
+
+    private int maskingKeyOffset(int secondByte) {
+        return secondByte < MAX_PAYLOAD_LENGTH_7_BITS ? 2 : (secondByte == MAX_PAYLOAD_LENGTH_7_BITS ? 4 : 10);
+    }
+
+    private int lengthMarker(long length) {
+        return length < MAX_PAYLOAD_LENGTH_7_BITS ? (int) length : (length < 65535 ? 126 : 127);
     }
 }

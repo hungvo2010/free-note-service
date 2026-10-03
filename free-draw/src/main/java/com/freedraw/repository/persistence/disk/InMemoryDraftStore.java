@@ -1,7 +1,6 @@
 package com.freedraw.repository.persistence.disk;
 
 import com.freedraw.entities.Draft;
-import com.freedraw.entities.DraftAction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -79,7 +78,7 @@ public class InMemoryDraftStore {
     /**
      * Add an action to a draft (append)
      */
-    public void addAction(String draftId, DraftAction action) {
+    public void addAction(String draftId, Draft.DraftAction action) {
         lock.writeLock().lock();
         try {
             Draft draft = drafts.get(draftId);
@@ -98,12 +97,12 @@ public class InMemoryDraftStore {
     /**
      * Insert an action at a specific position
      */
-    public void insertAction(String draftId, int position, DraftAction action) {
+    public void insertAction(String draftId, int position, Draft.DraftAction action) {
         lock.writeLock().lock();
         try {
             Draft draft = drafts.get(draftId);
             if (draft != null) {
-                List<DraftAction> actions = draft.getActions();
+                List<Draft.DraftAction> actions = draft.getActions();
                 if (position >= 0 && position <= actions.size()) {
                     actions.add(position, action);
                     markDirty(draftId);
@@ -127,7 +126,7 @@ public class InMemoryDraftStore {
         try {
             Draft draft = drafts.get(draftId);
             if (draft != null) {
-                List<DraftAction> actions = draft.getActions();
+                List<Draft.DraftAction> actions = draft.getActions();
                 if (position >= 0 && position < actions.size()) {
                     actions.remove(position);
                     markDirty(draftId);

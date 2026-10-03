@@ -1,0 +1,269 @@
+/* Shared stylesheet for every lesson and reference document in this workspace.
+   Link it, don't copy it: <link rel="stylesheet" href="../assets/lesson.css">
+   Component hooks at the bottom (.callout, .compare, .quiz, .steps) are the
+   reusable widgets — prefer them over bespoke markup. */
+
+:root {
+  --ink: #1c1917;
+  --ink-soft: #57534e;
+  --ink-faint: #a8a29e;
+  --rule: #e7e5e4;
+  --paper: #fdfcfb;
+  --accent: #1d4ed8;
+  --good: #15803d;
+  --warn: #b45309;
+  --bad: #b91c1c;
+  --code-bg: #f5f5f4;
+  --measure: 38rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e7e5e4;
+    --ink-soft: #a8a29e;
+    --ink-faint: #78716c;
+    --rule: #292524;
+    --paper: #1c1917;
+    --accent: #93c5fd;
+    --good: #86efac;
+    --warn: #fcd34d;
+    --bad: #fca5a5;
+    --code-bg: #292524;
+  }
+}
+
+html {
+  font-size: 106%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0 auto;
+  padding: 4rem 1.5rem 6rem;
+  max-width: var(--measure);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  line-height: 1.62;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---- headings ---- */
+
+h1, h2, h3, h4 {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 2.6em 0 0.6em;
+}
+
+h1 { font-size: 1.9rem; margin-top: 0; }
+h2 { font-size: 1.3rem; padding-bottom: 0.3em; border-bottom: 1px solid var(--rule); }
+h3 { font-size: 1.05rem; }
+h4 { font-size: 0.95rem; color: var(--ink-soft); }
+
+.lede {
+  font-size: 1.1rem;
+  color: var(--ink-soft);
+  margin-bottom: 2rem;
+}
+
+/* ---- text ---- */
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+
+strong { font-weight: 650; }
+mark { background: #fef08a; color: var(--ink); padding: 0 0.15em; }
+
+ul, ol { padding-left: 1.4em; }
+li { margin: 0.35em 0; }
+li::marker { color: var(--ink-faint); }
+
+hr { border: 0; border-top: 1px solid var(--rule); margin: 2.5em 0; }
+
+/* ---- code ---- */
+
+code, pre, kbd {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.84em;
+}
+
+code { background: var(--code-bg); padding: 0.12em 0.34em; border-radius: 3px; }
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--ink-faint);
+  border-radius: 4px;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+
+pre code { background: none; padding: 0; font-size: 1em; }
+
+pre .c { color: var(--ink-faint); font-style: italic; }   /* comment */
+pre .bad { color: var(--bad); }
+pre .good { color: var(--good); }
+pre .hl { background: #fef9c3; }                          /* highlight a line */
+
+kbd {
+  border: 1px solid var(--rule);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  padding: 0.1em 0.4em;
+  background: var(--code-bg);
+}
+
+/* ---- tables ---- */
+
+table { border-collapse: collapse; width: 100%; margin: 1.5em 0; font-size: 0.92rem; }
+th, td { text-align: left; padding: 0.5em 0.7em; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.78rem;
+     text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
+
+/* ---- lesson furniture ---- */
+
+.lesson-meta {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 0.4rem;
+}
+
+.win {
+  border-left: 3px solid var(--good);
+  padding-left: 1rem;
+  margin: 1.5em 0;
+}
+.win::before {
+  content: "Win";
+  display: block;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--good);
+  margin-bottom: 0.2em;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.82rem;
+  border-top: 1px solid var(--rule);
+  margin-top: 4rem;
+  padding-top: 1rem;
+}
+
+/* ---- reusable components ---- */
+
+/* Callout: <div class="callout warn">…</div> */
+.callout {
+  border: 1px solid var(--rule);
+  border-left-width: 3px;
+  border-radius: 4px;
+  padding: 0.8rem 1rem;
+  margin: 1.5em 0;
+  font-size: 0.95rem;
+}
+.callout p:first-child { margin-top: 0; }
+.callout p:last-child { margin-bottom: 0; }
+.callout.note { border-left-color: var(--accent); }
+.callout.warn { border-left-color: var(--warn); }
+.callout.bad  { border-left-color: var(--bad); }
+.callout .label {
+  display: block;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  margin-bottom: 0.25em;
+}
+
+/* Before/after or A/B comparison: <div class="compare"><div><h4>Before</h4>…</div>…</div> */
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5em 0; }
+.compare > div { border: 1px solid var(--rule); border-radius: 4px; padding: 0.7rem 0.9rem; }
+.compare > div > h4:first-child { margin-top: 0; }
+@media (max-width: 34rem) { .compare { grid-template-columns: 1fr; } }
+
+/* Quiz: <div class="quiz"><p class="q">…</p><ol class="choices">…</ol>
+   <details><summary>Check</summary><p>…</p></details></div>
+   No JavaScript: the answer is hidden in a details element. */
+.quiz {
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 1rem 1.2rem;
+  margin: 1.75em 0;
+  background: var(--code-bg);
+}
+.quiz .q { font-weight: 600; margin-top: 0; }
+.quiz .choices { list-style: upper-alpha; }
+.quiz details { margin-top: 0.8em; }
+.quiz summary {
+  cursor: pointer;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.8rem;
+  color: var(--accent);
+}
+.quiz details p { margin-bottom: 0.3em; }
+.quiz .verdict { font-weight: 650; }
+.quiz .verdict.correct { color: var(--good); }
+.quiz .verdict.wrong { color: var(--bad); }
+
+/* Numbered real-world steps: <ol class="steps"> */
+.steps { counter-reset: step; list-style: none; padding-left: 0; }
+.steps > li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 2.2rem;
+  margin: 1.1em 0;
+}
+.steps > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0.15em;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid var(--ink-faint);
+  border-radius: 50%;
+  text-align: center;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.5rem;
+  color: var(--ink-soft);
+}
+
+/* Citation / source aside: <p class="source">…</p> */
+.source {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  border-top: 1px solid var(--rule);
+  padding-top: 0.6em;
+  margin-top: 1.6em;
+}
+.source a { color: var(--ink-soft); }
+
+/* ---- print ---- */
+
+@media print {
+  :root {
+    --ink: #000; --ink-soft: #333; --ink-faint: #666;
+    --rule: #ccc; --paper: #fff; --code-bg: #f4f4f4;
+  }
+  body { padding: 0; max-width: none; font-size: 10.5pt; }
+  a { color: #000; text-decoration: none; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.75em; color: #555; }
+  h2, h3 { break-after: avoid; }
+  pre, table, .callout, .compare, .quiz { break-inside: avoid; }
+  .nav { display: none; }
+  .quiz details { display: block; }
+  .quiz details > summary { display: none; }
+}

@@ -2,7 +2,7 @@ package com.freenote.app.test;
 
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.ws.NetworkRequestData;
-import com.freenote.app.server.parser.FullFrameParser;
+import com.freenote.app.server.parser.WebSocketFrameParser;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,7 +24,7 @@ public class StubNetworkRequestData implements NetworkRequestData {
 
     @Override
     public byte[] readFrameBytes() throws IOException {
-        return new FullFrameParser().getRawBytes(inputStream);
+        return new WebSocketFrameParser.InputStreamFrameParserImpl.FullFrameParser().getRawBytes(inputStream);
     }
 
     @Override

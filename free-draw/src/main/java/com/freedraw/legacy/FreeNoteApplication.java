@@ -4,10 +4,11 @@ import com.freedraw.common.EnvironmentVariable;
 import com.freedraw.dto.DraftResponseData;
 import com.freedraw.resources.RedisClient;
 import com.freedraw.resources.RedisKeys;
-import com.freenote.app.server.core.config.SSLConfig;
-import com.freenote.app.server.core.config.ServerSocketConfig;
-import com.freenote.app.server.core.config.datasources.ConfigRepository;
-import com.freenote.app.server.core.legacy.WebSocketServer;
+import com.freenote.app.server.config.ServerSocketConfig;
+import com.freenote.app.server.config.ServerSocketConfig.SSLConfig;
+import com.freenote.app.server.config.ConfigRepository;
+import com.freenote.app.server.core.WebSocketServer;
+import com.freenote.app.server.endpoints.URIEndpointHandler;
 import com.freenote.app.server.util.JSONUtils;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import org.apache.logging.log4j.LogManager;
@@ -50,6 +51,7 @@ public class FreeNoteApplication {
                             Optional.ofNullable(configRepo.get("freenote.server.type"))
                                     .orElse("thread-per-connection")
                     )
+                    .endpointResolver(path -> (URIEndpointHandler) generated.URIHandlerRegistry.getInstanceByURI(path))
                     .build();
             initPubSubs();
             server.start();

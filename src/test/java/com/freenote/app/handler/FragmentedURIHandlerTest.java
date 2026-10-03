@@ -1,11 +1,10 @@
 package com.freenote.app.handler;
 
-import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.DataFrame;
-import com.freenote.app.server.routes.endpoint.FragmentedEndpoint;
-import com.freenote.app.server.model.OutputWrapper;
+import com.freenote.app.server.endpoints.FragmentedEndpoint;
+import com.freenote.app.server.model.ws.NetworkResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.util.IOUtils;
 import com.freenote.app.test.StubNetworkRequestData;
@@ -21,7 +20,7 @@ import static org.mockito.Mockito.*;
 
 class FragmentedURIHandlerTest {
     private static final Logger log = LogManager.getLogger(FragmentedURIHandlerTest.class);
-    private final FrameFactory clientFactory = new ClientFrameFactory();
+    private final FrameFactory clientFactory = new FrameFactory.ClientFrameFactory();
     private final FragmentedEndpoint handler = new FragmentedEndpoint();
 
     @Test
@@ -29,7 +28,7 @@ class FragmentedURIHandlerTest {
         var mockOutputStream = mock(OutputStream.class);
         var networkData = mock(NetworkRequestData.class);
         when(networkData.read(any(byte[].class))).thenReturn(-1);
-        assertFalse(handler.handle(networkData, new OutputWrapper(mockOutputStream)));
+        assertFalse(handler.handle(networkData, new NetworkResponseData(mockOutputStream)));
     }
 
     @Test
@@ -50,7 +49,7 @@ class FragmentedURIHandlerTest {
 
         Thread newThread = new Thread(() -> {
             try {
-                var result = handler.handle(new StubNetworkRequestData(inputStream), new OutputWrapper(outputStream));
+                var result = handler.handle(new StubNetworkRequestData(inputStream), new NetworkResponseData(outputStream));
                 log.info("Result: {}", result);
                 atomicBoolean.set(result);
             } catch (Throwable t) {
@@ -78,7 +77,7 @@ class FragmentedURIHandlerTest {
         IOUtils.writeOutPut(pipedOutputStream, someFrame);
 
         var outputStream = new ByteArrayOutputStream();
-        var result = handler.handle(new StubNetworkRequestData(inputStream), new OutputWrapper(outputStream));
+        var result = handler.handle(new StubNetworkRequestData(inputStream), new NetworkResponseData(outputStream));
 
         assertFalse(result);
     }
@@ -93,7 +92,7 @@ class FragmentedURIHandlerTest {
         IOUtils.writeOutPut(pipedOutputStream, someFrame);
 
         var outputStream = new ByteArrayOutputStream();
-        var result = handler.handle(new StubNetworkRequestData(inputStream), new OutputWrapper(outputStream));
+        var result = handler.handle(new StubNetworkRequestData(inputStream), new NetworkResponseData(outputStream));
 
         assertTrue(result);
     }
@@ -110,7 +109,7 @@ class FragmentedURIHandlerTest {
         var outputStream = mock(OutputStream.class);
         doThrow(new IOException("Simulated write error")).when(outputStream).write(any(byte[].class));
 
-        var result = handler.handle(new StubNetworkRequestData(inputStream), new OutputWrapper(outputStream));
+        var result = handler.handle(new StubNetworkRequestData(inputStream), new NetworkResponseData(outputStream));
 
         assertFalse(result);
     }

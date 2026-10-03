@@ -1,0 +1,89 @@
+package com.freenote.app.server.model.connection;
+
+import com.freenote.app.server.frames.factory.FrameFactory;
+import com.freenote.app.server.frames.ws.WebSocketFrame;
+import com.freenote.app.server.model.ws.NetworkResponseData;
+import com.freenote.app.server.model.app.AppRequestData;
+import com.freenote.app.server.model.app.AppResponseData;
+import com.freenote.app.server.model.ws.NetworkRequestData;
+import com.freenote.app.server.util.IOUtils;
+import com.freenote.app.server.util.JSONUtils;
+import lombok.Builder;
+import lombok.Data;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+@Data
+@Builder
+public class WebSocketConnection {
+    private final NetworkRequestData networkRequestData;
+    private final NetworkResponseData responseData;
+    private AppRequestData appRequestData;
+    private AppResponseData appResponseData;
+    private WebSocketFrame requestFrame;
+    private WebSocketFrame responseFrame;
+
+    public void sendCurrentResponse() throws IOException {
+        if (hasResponseFrame()) {
+            writeFrame(responseFrame);
+        } else if (hasResponseData()) {
+            writeAsJsonTextFrame(appResponseData);
+        }
+    }
+
+    public boolean hasResponseFrame() {
+        return responseFrame != null;
+    }
+
+    public boolean hasResponseData() {
+        return appResponseData != null;
+    }
+
+    private void writeFrame(WebSocketFrame frame) throws IOException {
+        this.networkRequestData.write(IOUtils.frameToBytes(frame));
+    }
+
+    private void writeAsJsonTextFrame(AppResponseData obj) throws IOException {
+        String json = JSONUtils.toJSONString(obj);
+        writeFrame(FrameFactory.SERVER.createTextFrame(json));
+    }
+
+    public void sendText(String message) {
+        setResponseFrame(FrameFactory.SERVER.createTextFrame(message));
+    }
+
+    public byte[] getPayloadBytes() throws IOException {
+        byte[] dataToWrite = new byte[0];
+        if (hasResponseFrame()) {
+            dataToWrite = IOUtils.frameToBytes(responseFrame);
+        } else if (hasResponseData()) {
+            dataToWrite = getFromResponseObject();
+        }
+        return dataToWrite;
+    }
+
+    private byte[] getFromResponseObject() throws IOException {
+        byte[] dataToWrite;
+        try (var baos = new ByteArrayOutputStream()) {
+            IOUtils.writeOutPut(
+                    baos,
+                    FrameFactory.SERVER.createTextFrame(
+                            JSONUtils.toJSONString(getAppResponseData()
+                            )));
+            dataToWrite = baos.toByteArray();
+        }
+        return dataToWrite;
+    }
+
+    public Object getRemoteAddress() {
+        return networkRequestData.getRemoteAddress();
+    }
+
+    public static WebSocketConnection from(NetworkRequestData requestData, NetworkResponseData responseData) {
+        return WebSocketConnection.builder()
+                .networkRequestData(requestData)
+                .responseData(responseData)
+                .build();
+    }
+}

@@ -1,7 +1,7 @@
 package com.freenote.app.frame;
 
-import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.FrameType;
+import com.freenote.app.server.frames.factory.FrameFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -9,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClientFrameTest {
-    static ClientFrameFactory clientFrameFactory = null;
+    static FrameFactory.ClientFrameFactory clientFrameFactory = null;
 
     @BeforeAll
     static void setup() {
-        clientFrameFactory = new ClientFrameFactory();
+        clientFrameFactory = new FrameFactory.ClientFrameFactory();
     }
 
     @Test
