@@ -1,8 +1,7 @@
 package com.freenote.app.frame;
 
-import com.freenote.app.server.exceptions.InvalidFrameException;
-import com.freenote.app.server.frames.factory.ClientFrameFactory;
-import com.freenote.app.server.frames.factory.ServerFrameFactory;
+import com.freenote.app.server.exceptions.WebSocketException;
+import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
@@ -16,13 +15,13 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DataFrameTest {
-    static ClientFrameFactory clientFrameFactory = null;
-    static ServerFrameFactory serverFrameFactory = null;
+    static FrameFactory.ClientFrameFactory clientFrameFactory = null;
+    static FrameFactory.ServerFrameFactory serverFrameFactory = null;
 
     @BeforeAll
     static void setup() {
-        clientFrameFactory = new ClientFrameFactory();
-        serverFrameFactory = new ServerFrameFactory();
+        clientFrameFactory = new FrameFactory.ClientFrameFactory();
+        serverFrameFactory = new FrameFactory.ServerFrameFactory();
     }
 
     @Test
@@ -45,7 +44,7 @@ class DataFrameTest {
 
         assertEquals(FrameType.TEXT.getOpCode(), dataFrame.getOpcode());
         assertFalse(dataFrame.isMasked());
-        assertThrows(InvalidFrameException.class, () -> new String(WebSocketFrame.applyMask(dataFrame.getPayloadData(), dataFrame.getMaskingKey())));
+        assertThrows(WebSocketException.InvalidFrameException.class, () -> new String(WebSocketFrame.applyMask(dataFrame.getPayloadData(), dataFrame.getMaskingKey())));
     }
 
     @Test
@@ -104,12 +103,12 @@ class DataFrameTest {
 
     @Test
     void givenTruncatedTwoByteExtendedPayloadLength_whenParsed_thenThrows() {
-        assertThrows(InvalidFrameException.class, () -> DataFrame.fromRawFrameBytes(new byte[]{0x00, 126, 0x01}));
+        assertThrows(WebSocketException.InvalidFrameException.class, () -> DataFrame.fromRawFrameBytes(new byte[]{0x00, 126, 0x01}));
     }
 
     @Test
     void givenTruncatedEightByteExtendedPayloadLength_whenParsed_thenThrows() {
-        assertThrows(InvalidFrameException.class, () -> DataFrame.fromRawFrameBytes(new byte[]{0x00, 127, 0x01, 0x02, 0x03, 0x04}));
+        assertThrows(WebSocketException.InvalidFrameException.class, () -> DataFrame.fromRawFrameBytes(new byte[]{0x00, 127, 0x01, 0x02, 0x03, 0x04}));
     }
 
     @Test
@@ -122,7 +121,7 @@ class DataFrameTest {
 
     @Test
     void givenInvalidMaskingKey_whenApplied_thenThrows() {
-        assertThrows(InvalidFrameException.class, () -> WebSocketFrame.applyMask(new byte[]{0x01, 0x02}, new byte[]{0x0F, 0x0F}));
+        assertThrows(WebSocketException.InvalidFrameException.class, () -> WebSocketFrame.applyMask(new byte[]{0x01, 0x02}, new byte[]{0x0F, 0x0F}));
     }
 
     private static byte[] writeToBytes(WebSocketFrame frame) throws IOException {

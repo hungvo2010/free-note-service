@@ -1,17 +1,17 @@
 package com.freenote.app.server.model.ws;
 
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.parser.impl.InputStreamFrameParserImpl;
+import com.freenote.app.server.parser.WebSocketFrameParser;
 import com.freenote.app.server.util.IOUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Arrays;
 
 @EqualsAndHashCode
 public class BlockingNetworkRequestData implements NetworkRequestData {
@@ -63,7 +63,7 @@ public class BlockingNetworkRequestData implements NetworkRequestData {
             throw new EOFException("Connection already closed by peer");
         }
         try {
-            return new InputStreamFrameParserImpl.FullFrameParser().getRawBytes(inputStream);
+            return new WebSocketFrameParser.InputStreamFrameParserImpl.FullFrameParser().getRawBytes(inputStream);
         } catch (SocketException e) {
             // SSLSocket ném exception này khi peer đã close_notify thay vì trả -1
             markReadClosed();
@@ -95,12 +95,14 @@ public class BlockingNetworkRequestData implements NetworkRequestData {
 
     @Override
     public byte[] read() throws IOException {
-        var bytes = new byte[8192];
-        int count = this.read(bytes);
-        if (count == -1) {
-            return new byte[0];
+        int batchSize = 50;
+        var bytes = new byte[batchSize];
+        var dis = new ByteArrayOutputStream();
+        while (this.inputStream.available() > 0) {
+            int read = read(bytes);
+            dis.write(bytes, 0, Math.min(read, batchSize));
         }
-        return Arrays.copyOf(bytes, count);
+        return dis.toByteArray();
     }
 
     @Override

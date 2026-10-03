@@ -1,7 +1,6 @@
 package com.freedraw.repository.persistence.disk;
 
 import com.freedraw.entities.Draft;
-import com.freedraw.entities.DraftAction;
 import com.freedraw.repository.persistence.disk.service.SearchFieldByOffset;
 import com.freedraw.repository.persistence.disk.service.SearchIx;
 import com.freedraw.repository.persistence.disk.service.SearchOffset;
@@ -154,7 +153,7 @@ public class PersistenceContext implements PersistenceWriter {
     /**
      * Add action to draft in memory
      */
-    public void addAction(String draftId, DraftAction action) {
+    public void addAction(String draftId, Draft.DraftAction action) {
         if (inMemoryStore != null) {
             inMemoryStore.addAction(draftId, action);
         } else {
@@ -165,7 +164,7 @@ public class PersistenceContext implements PersistenceWriter {
     /**
      * Insert action at specific position in memory
      */
-    public void insertAction(String draftId, int position, DraftAction action) {
+    public void insertAction(String draftId, int position, Draft.DraftAction action) {
         if (inMemoryStore != null) {
             inMemoryStore.insertAction(draftId, position, action);
         } else {
@@ -179,7 +178,7 @@ public class PersistenceContext implements PersistenceWriter {
         return draft;
     }
 
-    private List<DraftAction> getDraftActionsStartLength(int draftPosition) {
+    private List<Draft.DraftAction> getDraftActionsStartLength(int draftPosition) {
         var startLength = getStartLength(getActionsStartLengthOffsets(), draftPosition);
         
         // Handle null or empty case (draft exists but has no actions yet)
@@ -202,12 +201,12 @@ public class PersistenceContext implements PersistenceWriter {
         }
         
         var actionsVector = getActionsVector();
-        var result = new ArrayList<DraftAction>();
+        var result = new ArrayList<Draft.DraftAction>();
         for (int j = 0; j < length; j++) {
             var actionData = actionsVector.getData(start + j);
             if (actionData != null && !actionData.isEmpty()) {
 //                log.info("Action data: {}", actionData);
-                result.add(JSONUtils.fromJSON(actionData, DraftAction.class));
+                result.add(JSONUtils.fromJSON(actionData, Draft.DraftAction.class));
             }
         }
         return result;

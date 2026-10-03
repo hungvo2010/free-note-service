@@ -1,7 +1,7 @@
 package com.freenote.app.handler;
 
+import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
-import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.endpoints.URIEndpointHandler;
 import com.freenote.app.server.endpoints.NewEchoEndpoint;
 import com.freenote.app.server.model.ws.NetworkResponseData;
@@ -23,11 +23,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class URIHandlerTest {
-    static ClientFrameFactory clientFrameFactory = null;
+    static FrameFactory.ClientFrameFactory clientFrameFactory = null;
 
     @BeforeAll
     static void setup() {
-        clientFrameFactory = new ClientFrameFactory();
+        clientFrameFactory = new FrameFactory.ClientFrameFactory();
     }
 
     private final URIEndpointHandler mockURIHandler = new NewEchoEndpoint();

@@ -1,6 +1,6 @@
 package com.freenote.app.server.frames.base;
 
-import com.freenote.app.server.exceptions.InvalidFrameException;
+import com.freenote.app.server.exceptions.WebSocketException;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 
 import java.io.IOException;
@@ -93,12 +93,12 @@ public class DataFrame extends WebSocketFrame {
         }
         if (marker == MAX_PAYLOAD_LENGTH_7_BITS) {
             if (bytes.length < 4) {
-                throw new InvalidFrameException("Payload length is too short for extended payload length");
+                throw new WebSocketException.InvalidFrameException("Payload length is too short for extended payload length");
             }
             return ByteBuffer.wrap(bytes, 2, 2).getShort() & 0xFFFFL;
         }
         if (bytes.length < 10) {
-            throw new InvalidFrameException("Payload length is too short for extended payload length");
+            throw new WebSocketException.InvalidFrameException("Payload length is too short for extended payload length");
         }
         return ByteBuffer.wrap(bytes, 2, 8).getLong();
     }

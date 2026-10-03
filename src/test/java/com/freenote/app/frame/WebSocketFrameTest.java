@@ -1,7 +1,7 @@
 package com.freenote.app.frame;
 
-import com.freenote.app.server.exceptions.InvalidFrameException;
-import com.freenote.app.server.frames.factory.ServerFrameFactory;
+import com.freenote.app.server.exceptions.WebSocketException;
+import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.base.ControlFrame;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.FrameType;
@@ -15,11 +15,11 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class WebSocketFrameTest {
-    static ServerFrameFactory serverFrameFactory = null;
+    static FrameFactory.ServerFrameFactory serverFrameFactory = null;
 
     @BeforeAll
     static void setup() {
-        serverFrameFactory = new ServerFrameFactory();
+        serverFrameFactory = new FrameFactory.ServerFrameFactory();
     }
 
     @Test
@@ -35,7 +35,7 @@ class WebSocketFrameTest {
     @Test
     void givenInvalidBytes_whenParseToWebSocketFrame_thenMustThrowException() {
         var bytes = new byte[]{(byte) 0x81};
-        assertThrows(InvalidFrameException.class, () -> DataFrame.fromRawFrameBytes(bytes));
+        assertThrows(WebSocketException.InvalidFrameException.class, () -> DataFrame.fromRawFrameBytes(bytes));
     }
 
     @Test

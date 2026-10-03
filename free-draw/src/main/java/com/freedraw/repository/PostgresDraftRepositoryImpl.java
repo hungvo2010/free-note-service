@@ -1,7 +1,6 @@
 package com.freedraw.repository;
 
 import com.freedraw.entities.Draft;
-import com.freedraw.entities.DraftAction;
 import com.freedraw.resources.PostgresClient;
 import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
@@ -102,13 +101,13 @@ public class PostgresDraftRepositoryImpl implements DraftRepository {
         }
     }
 
-    private List<DraftAction> loadActions(Connection connection, String draftId) throws SQLException {
-        List<DraftAction> actions = new ArrayList<>();
+    private List<Draft.DraftAction> loadActions(Connection connection, String draftId) throws SQLException {
+        List<Draft.DraftAction> actions = new ArrayList<>();
         try (PreparedStatement ps = connection.prepareStatement(SELECT_ACTIONS)) {
             ps.setString(1, draftId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    DraftAction action = JSONUtils.fromJSON(rs.getString("shapes_json"), DraftAction.class);
+                    Draft.DraftAction action = JSONUtils.fromJSON(rs.getString("shapes_json"), Draft.DraftAction.class);
                     if (action != null) {
                         actions.add(action);
                     }
@@ -139,10 +138,10 @@ public class PostgresDraftRepositoryImpl implements DraftRepository {
     }
 
     private void appendNewActions(Connection connection, Draft draft, long existingCount) throws SQLException {
-        List<DraftAction> actions = draft.getActions();
+        List<Draft.DraftAction> actions = draft.getActions();
         long actionCount = actions.size();
         for (long seq = existingCount; seq < actionCount; seq++) {
-            DraftAction action = actions.get((int) seq);
+            Draft.DraftAction action = actions.get((int) seq);
             if (action == null) {
                 continue;
             }

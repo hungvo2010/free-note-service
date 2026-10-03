@@ -1,7 +1,7 @@
 package com.freenote.app.server.frames.handler;
 
 import com.freenote.app.server.model.connection.WebSocketConnection;
-import com.freenote.app.server.model.http.HttpUpgradeRequest;
+import com.freenote.app.server.handshaker.http.HttpUgrade;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -11,7 +11,7 @@ public interface WebSocketFrameHandler {
 
     void onMessage(WebSocketConnection webSocketConnection, ByteBuffer message);
 
-    void onOpen(WebSocketConnection webSocketConnection, HttpUpgradeRequest handshake);
+    void onOpen(WebSocketConnection webSocketConnection, HttpUgrade.HttpUpgradeRequest handshake);
 
     void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote);
 

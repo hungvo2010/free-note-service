@@ -1,7 +1,6 @@
 package com.freenote.app.parser;
 
 import com.freenote.app.server.parser.HttpParser;
-import com.freenote.app.server.parser.impl.HttpParserImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 class HttpParserTest {
-    private final HttpParser httpParser = new HttpParserImpl();
+    private final HttpParser httpParser = new HttpParser.HttpParserImpl();
 
     @Test
     void givenRawUpgradeRequest_whenParse_thenOk() throws IOException {

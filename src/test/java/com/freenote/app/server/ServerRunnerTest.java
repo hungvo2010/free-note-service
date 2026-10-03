@@ -1,7 +1,7 @@
 package com.freenote.app.server;
 
 import com.freenote.app.server.core.startup.FreeNoteApplication;
-import com.freenote.app.server.frames.factory.ClientFrameFactory;
+import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -96,7 +96,7 @@ class ServerRunnerTest {
 
             log.info("Send echo message");
             try {
-                IOUtils.writeOutPut(pipeOutputStream, new ClientFrameFactory().createTextFrame("hello-world"));
+                IOUtils.writeOutPut(pipeOutputStream, new FrameFactory.ClientFrameFactory().createTextFrame("hello-world"));
             } catch (Exception e) {
                 log.error("Failed to write to socket", e);
             }

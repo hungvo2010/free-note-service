@@ -1,6 +1,6 @@
 package com.freenote.app.http;
 
-import com.freenote.app.server.model.http.HttpUpgradeResponse;
+import com.freenote.app.server.handshaker.http.HttpUgrade;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,12 +9,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class HttpResponseTest {
     @Test
     void givenSpecialCaseThenSuccess() {
-        assertNull(HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE.getUpgrade());
+        assertNull(HttpUgrade.HttpUpgradeResponse.EMPTY_UPGRADE_RESPONSE.getUpgrade());
     }
 
     @Test
     void givenHttpResponseThenToStringSuccess() {
-        var stringVersion = HttpUpgradeResponse.builder()
+        var stringVersion = HttpUgrade.HttpUpgradeResponse.builder()
                 .statusCode("101")
                 .statusText("Switching Protocols")
                 .version("HTTP/1.1")

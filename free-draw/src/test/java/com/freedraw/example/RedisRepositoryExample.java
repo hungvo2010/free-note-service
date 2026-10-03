@@ -1,7 +1,6 @@
 package com.freedraw.example;
 
 import com.freedraw.entities.Draft;
-import com.freedraw.entities.DraftAction;
 import com.freedraw.repository.RedisRepositoryImpl;
 import com.freedraw.resources.RedisClient;
 import org.apache.logging.log4j.LogManager;
@@ -22,7 +21,7 @@ public class RedisRepositoryExample {
             // Example 1: Create and save a new draft
             log.info("=== Example 1: Creating and saving a draft ===");
             Draft newDraft = new Draft();
-            DraftAction action = new DraftAction();
+            Draft.DraftAction action = new Draft.DraftAction();
             newDraft.addAction(action);
             
             repository.save(newDraft);

@@ -6,7 +6,6 @@ import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.LargeFrame;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.factory.FrameFactory;
-import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.model.ws.NetworkResponseData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
@@ -23,7 +22,7 @@ import java.util.List;
 @WebSocketEndpoint("/update")
 public class FragmentedEndpoint implements URIEndpointHandler {
     private static final Logger log = LogManager.getLogger(FragmentedEndpoint.class);
-    private final FrameFactory frameFactory = new ServerFrameFactory();
+    private final FrameFactory frameFactory = new FrameFactory.ServerFrameFactory();
 
     @Override
     public boolean handle(NetworkRequestData networkRequestData, NetworkResponseData responseData) {

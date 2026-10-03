@@ -1,7 +1,6 @@
 package com.freenote.app.frame;
 
-import com.freenote.app.server.exceptions.InvalidFrameStateException;
-import com.freenote.app.server.frames.factory.ClientFrameFactory;
+import com.freenote.app.server.exceptions.WebSocketException;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.LargeFrame;
@@ -13,12 +12,12 @@ import java.nio.charset.StandardCharsets;
 import static org.junit.jupiter.api.Assertions.*;
 
 class LargeFrameTest {
-    private final FrameFactory clientFrameFactory = new ClientFrameFactory();
+    private final FrameFactory clientFrameFactory = new FrameFactory.ClientFrameFactory();
 
     @Test
     void givenFreshLargeFrame_whenCallMergeFrames_thenThrowFrameStateException() {
         LargeFrame largeFrame = new LargeFrame();
-        assertThrows(InvalidFrameStateException.class, largeFrame::getMergedFrame);
+        assertThrows(WebSocketException.InvalidFrameStateException.class, largeFrame::getMergedFrame);
     }
 
     @Test

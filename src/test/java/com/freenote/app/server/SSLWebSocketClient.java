@@ -1,7 +1,7 @@
 package com.freenote.app.server;
 
-import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.base.DataFrame;
+import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 import com.freenote.app.server.util.IOUtils;
 import org.apache.logging.log4j.LogManager;
@@ -160,7 +160,7 @@ public class SSLWebSocketClient {
         OutputStream outputStream = socket.getOutputStream();
         outputStream.flush();
 
-        IOUtils.writeOutPut(outputStream, new ClientFrameFactory().createTextFrame(new String(payload, StandardCharsets.UTF_8)));
+        IOUtils.writeOutPut(outputStream, new FrameFactory.ClientFrameFactory().createTextFrame(new String(payload, StandardCharsets.UTF_8)));
     }
 
     public String receiveMessage() throws IOException {

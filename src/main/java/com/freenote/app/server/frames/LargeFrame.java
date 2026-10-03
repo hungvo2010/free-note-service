@@ -1,7 +1,7 @@
 package com.freenote.app.server.frames;
 
-import com.freenote.app.server.exceptions.InvalidFrameStateException;
-import com.freenote.app.server.frames.factory.ServerFrameFactory;
+import com.freenote.app.server.exceptions.WebSocketException;
+import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.base.DataFrame;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
 
@@ -13,10 +13,10 @@ public class LargeFrame {
     private FragmentState fragmentState;
     private final List<DataFrame> fragmentMessages;
     private WebSocketFrame mergedFrame;
-    private final ServerFrameFactory serverFrameFactory;
+    private final FrameFactory.ServerFrameFactory serverFrameFactory;
 
     public LargeFrame() {
-        serverFrameFactory = new ServerFrameFactory();
+        serverFrameFactory = new FrameFactory.ServerFrameFactory();
         fragmentMessages = new ArrayList<>();
         fragmentState = FragmentState.NO_INIT;
     }
@@ -45,7 +45,7 @@ public class LargeFrame {
 
     private void mergeFragmentsIfCompleted() {
         if (fragmentState != FragmentState.COMPLETED) {
-            throw new InvalidFrameStateException("Cannot merge fragments, message is not completed");
+            throw new WebSocketException.InvalidFrameStateException("Cannot merge fragments, message is not completed");
         }
         long totalLength = fragmentMessages.stream().map(DataFrame::getPayloadLength).reduce(0L, Long::sum);
         var mergedPayload = ByteBuffer.allocate((int) totalLength);
@@ -62,7 +62,7 @@ public class LargeFrame {
 
     public WebSocketFrame getMergedFrame() {
         if (fragmentState != FragmentState.COMPLETED) {
-            throw new InvalidFrameStateException("Cannot get merged frame, message is not completed");
+            throw new WebSocketException.InvalidFrameStateException("Cannot get merged frame, message is not completed");
         }
         return new DataFrame(fragmentMessages.get(0).getOpcode(), mergedFrame.getPayloadData().clone());
     }

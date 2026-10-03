@@ -5,7 +5,6 @@ import com.freedraw.dto.DraftResponseContent;
 import com.freedraw.dto.DraftResponseData;
 import com.freedraw.dto.HeartbeatMsg;
 import com.freedraw.entities.Draft;
-import com.freedraw.entities.DraftAction;
 import com.freedraw.legacy.ConnectionsRegistry;
 import com.freedraw.models.core.AppConnection;
 import com.freedraw.models.core.RoomRegistry;
@@ -13,12 +12,11 @@ import com.freedraw.repository.InMemDraftRepositoryImpl;
 import com.freedraw.resources.RedisClient;
 import com.freedraw.service.DraftService;
 import com.freenote.annotations.WebSocketEndpoint;
+import com.freenote.app.server.exceptions.WebSocketException;
+import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.model.connection.WebSocketConnection;
-import com.freenote.app.server.exceptions.ClientDisconnectException;
 import com.freenote.app.server.frames.base.ControlFrame;
-import com.freenote.app.server.model.enums.MsgType;
 import com.freenote.app.server.endpoints.AbstractEndpointHandler;
-import com.freenote.app.server.frames.factory.ServerFrameFactory;
 import com.freenote.app.server.util.JSONUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,16 +30,16 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
     private static final DraftResponseData DEFAULT_MESSAGE_PAYLOAD = new DraftResponseData();
     private DraftService draftService = new DraftService(new InMemDraftRepositoryImpl());
     private final RoomRegistry roomRegistry = RoomRegistry.getInstance();
-    private final ServerFrameFactory frameFactory = new ServerFrameFactory();
+    private final FrameFactory.ServerFrameFactory frameFactory = new FrameFactory.ServerFrameFactory();
 
     @Override
     public void onData(WebSocketConnection webSocketConnection, String message) {
         try {
             var heartbeat = JSONUtils.fromJSON(message, HeartbeatMsg.class);
-            if (heartbeat != null && heartbeat.getMsgType() == MsgType.PING) {
+            if (heartbeat != null && heartbeat.getMsgType() == HeartbeatMsg.MsgType.PING) {
                 log.info("Received Heartbeat PING");
                 ConnectionsRegistry.refresh(webSocketConnection.getNetworkRequestData());
-                heartbeat.setMsgType(MsgType.PONG);
+                heartbeat.setMsgType(HeartbeatMsg.MsgType.PONG);
                 webSocketConnection.setResponseFrame(frameFactory.createApplicationFrame(heartbeat));
                 return;
             }
@@ -86,7 +84,7 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
         var connection = new AppConnection(webSocketConnection);
         ConnectionsRegistry.unregister(connection);
         roomRegistry.removeConnection(connection);
-        throw new ClientDisconnectException("Client sent CLOSE frame");
+        throw new WebSocketException.ClientDisconnectException("Client sent CLOSE frame");
     }
 
     @Override
@@ -101,7 +99,7 @@ public class FreeNoteEndpoint extends AbstractEndpointHandler {
         ConnectionsRegistry.refresh(webSocketConnection.getNetworkRequestData());
     }
 
-    private DraftAction getLastAction(Draft draft) {
+    private Draft.DraftAction getLastAction(Draft draft) {
         return draft.getActions().get(draft.getActions().size() - 1);
     }
 

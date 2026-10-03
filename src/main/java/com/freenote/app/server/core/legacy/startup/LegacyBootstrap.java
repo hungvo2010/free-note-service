@@ -1,11 +1,8 @@
 package com.freenote.app.server.core.legacy.startup;
 
-import com.freenote.app.server.config.SSLConfig;
 import com.freenote.app.server.config.ServerSocketConfig;
 import com.freenote.app.server.core.connection.PerClientConnectionHandler;
 import com.freenote.app.server.core.event.ConnectionEvent;
-import com.freenote.app.server.core.legacy.socket.RawServerSocketProvider;
-import com.freenote.app.server.core.legacy.socket.SSLServerSocketProvider;
 import com.freenote.app.server.core.legacy.socket.ServerSocketProvider;
 import com.freenote.app.server.core.startup.ServerBootstrap;
 import com.freenote.app.server.model.ws.BlockingNetworkRequestData;
@@ -20,18 +17,18 @@ import static com.freenote.app.server.util.RuntimeUtils.logServerInitialization;
 
 public class LegacyBootstrap implements ServerBootstrap {
     private ExecutorService virtualExecutorService = Executors.newVirtualThreadPerTaskExecutor();
-    private ServerSocketProvider serverSocketProvider = new RawServerSocketProvider();
+    private ServerSocketProvider serverSocketProvider = new ServerSocketProvider.RawServerSocketProvider();
     private static final Logger log = LogManager.getLogger(LegacyBootstrap.class);
 
     public LegacyBootstrap() {
     }
 
-    public static LegacyBootstrap createSSLBootstrap(SSLConfig sslConfig) {
+    public static LegacyBootstrap createSSLBootstrap(ServerSocketConfig.SSLConfig sslConfig) {
         return new LegacyBootstrap(sslConfig);
     }
 
-    private LegacyBootstrap(SSLConfig sslConfig) {
-        this.serverSocketProvider = new SSLServerSocketProvider(sslConfig);
+    private LegacyBootstrap(ServerSocketConfig.SSLConfig sslConfig) {
+        this.serverSocketProvider = new ServerSocketProvider.SSLServerSocketProvider(sslConfig);
     }
 
     @Override

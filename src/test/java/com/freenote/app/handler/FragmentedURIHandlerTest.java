@@ -1,6 +1,5 @@
 package com.freenote.app.handler;
 
-import com.freenote.app.server.frames.factory.ClientFrameFactory;
 import com.freenote.app.server.frames.factory.FrameFactory;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.frames.base.DataFrame;
@@ -21,7 +20,7 @@ import static org.mockito.Mockito.*;
 
 class FragmentedURIHandlerTest {
     private static final Logger log = LogManager.getLogger(FragmentedURIHandlerTest.class);
-    private final FrameFactory clientFactory = new ClientFrameFactory();
+    private final FrameFactory clientFactory = new FrameFactory.ClientFrameFactory();
     private final FragmentedEndpoint handler = new FragmentedEndpoint();
 
     @Test

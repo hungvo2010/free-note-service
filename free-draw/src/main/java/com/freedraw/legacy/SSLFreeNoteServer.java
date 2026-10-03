@@ -1,9 +1,8 @@
 package com.freedraw.legacy;
 
-import com.freenote.app.server.config.SSLConfig;
 import com.freenote.app.server.config.ServerSocketConfig;
-import com.freenote.app.server.config.datasources.ConfigRepository;
-import com.freenote.app.server.core.legacy.WebSocketServer;
+import com.freenote.app.server.config.ConfigRepository;
+import com.freenote.app.server.core.WebSocketServer;
 import com.freenote.app.server.endpoints.URIEndpointHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +20,7 @@ public class SSLFreeNoteServer {
         log.info("Starting SSL server with keystore: {}", keystorePath);
 
         WebSocketServer server = WebSocketServer.builder()
-                .sslConfig(new SSLConfig(keystorePath, keystorePassword))
+                .sslConfig(new ServerSocketConfig.SSLConfig(keystorePath, keystorePassword))
                 .serverType("thread-per-connection")
                 .socketConfig(new ServerSocketConfig(port))
                 .endpointResolver(path -> (URIEndpointHandler) generated.URIHandlerRegistry.getInstanceByURI(path))

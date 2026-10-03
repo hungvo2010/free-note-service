@@ -3,7 +3,6 @@ package com.freenote.app.server.core.nio;
 import com.freenote.app.server.core.connection.PerClientConnectionHandler;
 import com.freenote.app.server.core.event.ConnectionEvent;
 import com.freenote.app.server.core.nio.state.ConnectionState;
-import com.freenote.app.server.core.nio.state.HandShakeState;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +23,7 @@ public class NIOConnectionPipes {
     }
 
     public boolean process(NetworkRequestData networkData) {
-        ConnectionState state = connectionStates.computeIfAbsent(networkData, k -> new HandShakeState());
+        ConnectionState state = connectionStates.computeIfAbsent(networkData, k -> new ConnectionState.HandShakeState());
         try {
             var connectionEvent = buildConnectionEvent(networkData, state);
             var upgradeRequest = perClientHandler.handle(connectionEvent);

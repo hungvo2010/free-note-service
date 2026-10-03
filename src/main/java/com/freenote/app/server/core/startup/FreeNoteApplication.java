@@ -1,9 +1,8 @@
 package com.freenote.app.server.core.startup;
 
-import com.freenote.app.server.config.SSLConfig;
 import com.freenote.app.server.config.ServerSocketConfig;
-import com.freenote.app.server.config.datasources.ConfigRepository;
-import com.freenote.app.server.core.legacy.WebSocketServer;
+import com.freenote.app.server.config.ConfigRepository;
+import com.freenote.app.server.core.WebSocketServer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,7 +33,7 @@ public class FreeNoteApplication {
             WebSocketServer server = WebSocketServer.builder()
                     .sslConfig(
                             sslEnabled ?
-                                    new SSLConfig(
+                                    new ServerSocketConfig.SSLConfig(
                                             configRepo.getOrDefault("server.ssl.keystore.path", "keystore.p12"),
                                             configRepo.getOrDefault("server.ssl.keystore.password", "changeit"))
                                     : null

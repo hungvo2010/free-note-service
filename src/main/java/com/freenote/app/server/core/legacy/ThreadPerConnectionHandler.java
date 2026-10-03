@@ -1,19 +1,15 @@
 package com.freenote.app.server.core.legacy;
 
+import com.freenote.app.server.exceptions.WebSocketException;
 import com.freenote.app.server.handshaker.AcceptHandshakeHandler;
-import com.freenote.app.server.handshaker.impl.AcceptHandshakeImpl;
 import com.freenote.app.server.core.connection.PerClientConnectionHandler;
 import com.freenote.app.server.core.event.ConnectionEvent;
 import com.freenote.app.server.endpoints.EndpointResolver;
 import com.freenote.app.server.model.connection.WebSocketConnection;
-import com.freenote.app.server.exceptions.AcceptConnectionException;
-import com.freenote.app.server.exceptions.ClientDisconnectException;
-import com.freenote.app.server.exceptions.ConnectionException;
+import com.freenote.app.server.handshaker.http.HttpUgrade;
 import com.freenote.app.server.model.ws.NetworkResponseData;
-import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import com.freenote.app.server.parser.HttpParser;
-import com.freenote.app.server.parser.impl.HttpParserImpl;
 import com.freenote.app.server.endpoints.URIEndpointHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,16 +30,17 @@ public class ThreadPerConnectionHandler implements PerClientConnectionHandler {
     }
 
     public ThreadPerConnectionHandler(EndpointResolver endpointResolver) {
-        this(new AcceptHandshakeImpl(), new HttpParserImpl(), endpointResolver);
+        this(new AcceptHandshakeHandler.AcceptHandshakeImpl(), new HttpParser.HttpParserImpl(), endpointResolver);
     }
 
     @Override
-    public HttpUpgradeRequest handle(ConnectionEvent event) throws ConnectionException, IOException {
+    public HttpUgrade.HttpUpgradeRequest handle(ConnectionEvent event) throws WebSocketException.ConnectionException, IOException {
         var networkRequestData = event.getNetworkRequestData();
         try {
             var upgradeRequest = doHandShakeAndRouting(networkRequestData);
             pollToEndpointHandler(networkRequestData, upgradeRequest);
-        } catch (ClientDisconnectException | AcceptConnectionException connectionException) {
+        } catch (WebSocketException.ClientDisconnectException |
+                 WebSocketException.AcceptConnectionException connectionException) {
             // concurrent-users đã được decrement trong routeToHandler#finally
             log.info("Client disconnected => self closed: {}", connectionException.getMessage());
             closeRequest(networkRequestData);
@@ -54,24 +51,24 @@ public class ThreadPerConnectionHandler implements PerClientConnectionHandler {
         return null;
     }
 
-    private HttpUpgradeRequest doHandShakeAndRouting(NetworkRequestData networkRequestData) throws IOException {
+    private HttpUgrade.HttpUpgradeRequest doHandShakeAndRouting(NetworkRequestData networkRequestData) throws IOException {
         var upgradeRequest = httpParser.parse(networkRequestData.read());
         performHandshake(networkRequestData, upgradeRequest);
         MetricUtils.incrementAcceptedHandshakeCount(1);
         return upgradeRequest;
     }
 
-    private void performHandshake(NetworkRequestData networkRequestData, HttpUpgradeRequest request) throws IOException {
+    private void performHandshake(NetworkRequestData networkRequestData, HttpUgrade.HttpUpgradeRequest request) throws IOException {
         log.debug("Performing handshake for: {}", request);
         var upgradeResponse = this.handshakeHandler.process(request);
         if (!upgradeResponse.getStatusCode().equals("101")) {
-            throw new AcceptConnectionException("Handshake failed, connection not accepted");
+            throw new WebSocketException.AcceptConnectionException("Handshake failed, connection not accepted");
         }
 
         networkRequestData.write(upgradeResponse.toRawBytes());
     }
 
-    private void pollToEndpointHandler(NetworkRequestData networkRequestData, HttpUpgradeRequest upgradeRequest) throws IOException {
+    private void pollToEndpointHandler(NetworkRequestData networkRequestData, HttpUgrade.HttpUpgradeRequest upgradeRequest) throws IOException {
         var endpointHandler = getEndpointHandler(upgradeRequest);
         var responseData = NetworkResponseData.from(networkRequestData);
         MetricUtils.incrementConcurrentUsers();
@@ -91,11 +88,11 @@ public class ThreadPerConnectionHandler implements PerClientConnectionHandler {
         }
     }
 
-    private URIEndpointHandler getEndpointHandler(HttpUpgradeRequest upgradeRequest) {
+    private URIEndpointHandler getEndpointHandler(HttpUgrade.HttpUpgradeRequest upgradeRequest) {
         var endpointHandler = endpointResolver.resolve(upgradeRequest.getPath());
         if (endpointHandler == null) {
             log.error("No handler found for URI: {}", upgradeRequest.getPath());
-            throw new AcceptConnectionException("No handler for URI: " + upgradeRequest.getPath());
+            throw new WebSocketException.AcceptConnectionException("No handler for URI: " + upgradeRequest.getPath());
         }
         return endpointHandler;
     }
@@ -115,7 +112,7 @@ public class ThreadPerConnectionHandler implements PerClientConnectionHandler {
         try {
             networkRequestData.close();
         } catch (IOException e) {
-            throw new ConnectionException("Error closing connection", e);
+            throw new WebSocketException.ConnectionException("Error closing connection", e);
         }
     }
 }

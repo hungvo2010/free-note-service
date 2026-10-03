@@ -1,6 +1,6 @@
 package com.freenote.app.server.core;
 
-import com.freenote.app.server.config.SSLConfig;
+import com.freenote.app.server.config.ServerSocketConfig;
 import com.freenote.app.server.core.connection.PerClientConnectionHandler;
 import com.freenote.app.server.core.legacy.ThreadPerConnectionHandler;
 import com.freenote.app.server.core.legacy.startup.LegacyBootstrap;
@@ -12,7 +12,7 @@ import com.freenote.app.server.endpoints.EndpointResolver;
 
 public record IoModel(ServerBootstrap acceptLoop, PerClientConnectionHandler handler) {
 
-    public static IoModel of(String serverType, SSLConfig sslConfig, EndpointResolver endpointResolver) {
+    public static IoModel of(String serverType, ServerSocketConfig.SSLConfig sslConfig, EndpointResolver endpointResolver) {
         if (sslConfig != null) {
             return new IoModel(LegacyBootstrap.createSSLBootstrap(sslConfig), new ThreadPerConnectionHandler(endpointResolver));
         }

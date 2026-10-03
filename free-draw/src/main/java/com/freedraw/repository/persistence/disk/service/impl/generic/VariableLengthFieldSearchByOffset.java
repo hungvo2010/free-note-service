@@ -4,7 +4,7 @@ import com.freedraw.repository.persistence.disk.FileUtility;
 import com.freedraw.repository.persistence.disk.service.SearchFieldByOffset;
 import com.freedraw.repository.persistence.disk.type.DataType;
 import com.freedraw.repository.persistence.disk.type.DataTypeRegistry;
-import com.freenote.app.server.exceptions.DiskReadException;
+import com.freenote.app.server.exceptions.WebSocketException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -87,7 +87,7 @@ public class VariableLengthFieldSearchByOffset<T> implements SearchFieldByOffset
             return newOffset;
         } catch (IOException e) {
             log.error("Failed to append data to file: {}", this.path, e);
-            throw new DiskReadException("Error appending data to file: " + this.path, e);
+            throw new WebSocketException.DiskReadException("Error appending data to file: " + this.path, e);
         }
     }
 

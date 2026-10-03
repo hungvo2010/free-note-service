@@ -2,7 +2,7 @@ package com.freenote.app.server.core.nio.sessions;
 
 import com.freenote.app.server.core.nio.NIOConnectionPipes;
 import com.freenote.app.server.core.nio.transport.NetworkSelector;
-import com.freenote.app.server.exceptions.AcceptConnectionException;
+import com.freenote.app.server.exceptions.WebSocketException;
 import com.freenote.app.server.model.ws.AsyncNIONetworkRequestData;
 import com.freenote.app.server.model.ws.NetworkRequestData;
 import lombok.Builder;
@@ -76,7 +76,7 @@ public class AsyncNIOServerSession {
             MetricUtils.incrementConcurrentUsers();
             return buffer;
         } catch (Exception e) {
-            throw new AcceptConnectionException("Failed to accept connection", e);
+            throw new WebSocketException.AcceptConnectionException("Failed to accept connection", e);
         }
     }
 

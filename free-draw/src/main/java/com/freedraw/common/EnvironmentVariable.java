@@ -1,6 +1,6 @@
 package com.freedraw.common;
 
-import com.freenote.app.server.config.datasources.ConfigRepository;
+import com.freenote.app.server.config.ConfigRepository;
 import lombok.experimental.UtilityClass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

@@ -7,9 +7,7 @@ import com.freenote.app.server.core.nio.events.NIOEvent;
 import com.freenote.app.server.core.nio.sessions.NIOServerSession;
 import com.freenote.app.server.core.nio.transport.NetworkSelector;
 import com.freenote.app.server.core.startup.ServerBootstrap;
-import com.freenote.app.server.exceptions.AcceptConnectionException;
-import com.freenote.app.server.exceptions.NIOReadException;
-import com.freenote.app.server.exceptions.SelectorInterruptException;
+import com.freenote.app.server.exceptions.WebSocketException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import otel.metrics.MetricUtils;
@@ -60,8 +58,8 @@ public class NIOServerBootstrap implements ServerBootstrap {
     private ServerSocketChannel tryOpenSocketChannel(ServerSocketConfig socketConfig) throws IOException {
         var serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.configureBlocking(false);
-        serverSocketChannel.bind(new InetSocketAddress(socketConfig.port()));
-        log.info("Starting server on port {}", socketConfig.port());
+        serverSocketChannel.bind(new InetSocketAddress(socketConfig.getPort()));
+        log.info("Starting server on port {}", socketConfig.getPort());
         return serverSocketChannel;
     }
 
@@ -73,12 +71,12 @@ public class NIOServerBootstrap implements ServerBootstrap {
                 waitForEvents(selector);
                 dispatcherReadyEvents(nioServerSession);
             }
-        } catch (NIOReadException | AcceptConnectionException | IOException e) {
+        } catch (WebSocketException.NIOReadException | WebSocketException.AcceptConnectionException | IOException e) {
             log.error("Error during NIO selector loop", e);
         }
     }
 
-    private void dispatcherReadyEvents(NIOServerSession nioServerSession) throws IOException, NIOReadException {
+    private void dispatcherReadyEvents(NIOServerSession nioServerSession) throws IOException, WebSocketException.NIOReadException {
         var selector = nioServerSession.getSelector();
         Set<NIOEvent> selectedKeys = selector.getNewSelectionEvents();
         Iterator<NIOEvent> eventIterator = selectedKeys.iterator();
@@ -92,10 +90,10 @@ public class NIOServerBootstrap implements ServerBootstrap {
     private void waitForEvents(NetworkSelector selector) throws IOException {
         int numReadyChannels = selector.select();
         if (numReadyChannels == 0)
-            throw new SelectorInterruptException("Selector is interrupted or no channels are ready");
+            throw new WebSocketException.SelectorInterruptException("Selector is interrupted or no channels are ready");
     }
 
-    private void handleSelectedKey(NIOServerSession nioServerSession, NIOEvent nioEvent) throws NIOReadException, AcceptConnectionException {
+    private void handleSelectedKey(NIOServerSession nioServerSession, NIOEvent nioEvent) throws WebSocketException.NIOReadException, WebSocketException.AcceptConnectionException {
         if (nioEvent.isNewConnection()) {
             handleNewConnectionEvent(nioServerSession, nioEvent);
         } else if (nioEvent.isNewMessage()) {
@@ -103,12 +101,12 @@ public class NIOServerBootstrap implements ServerBootstrap {
         }
     }
 
-    private void handleNewConnectionEvent(NIOServerSession nioServerSession, NIOEvent nioEvent) throws AcceptConnectionException {
+    private void handleNewConnectionEvent(NIOServerSession nioServerSession, NIOEvent nioEvent) throws WebSocketException.AcceptConnectionException {
         nioServerSession.acceptConnection(nioEvent);
         MetricUtils.incrementConcurrentUsers();
     }
 
-    private void handleReadableEvent(NIOServerSession nioServerSession, NIOEvent nioEvent) throws NIOReadException {
+    private void handleReadableEvent(NIOServerSession nioServerSession, NIOEvent nioEvent) throws WebSocketException.NIOReadException {
         nioServerSession.handleReadEvent(nioEvent);
     }
 

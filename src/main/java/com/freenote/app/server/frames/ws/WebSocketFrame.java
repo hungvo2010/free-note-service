@@ -1,6 +1,6 @@
 package com.freenote.app.server.frames.ws;
 
-import com.freenote.app.server.exceptions.InvalidFrameException;
+import com.freenote.app.server.exceptions.WebSocketException;
 import com.freenote.app.server.frames.FrameType;
 import com.freenote.app.server.endpoints.frames.WebSocketFrameDispatcher;
 import lombok.Getter;
@@ -58,7 +58,7 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
             parseMaskingKey(bytes);
             parsePayload(bytes);
         } catch (Exception e) {
-            throw new InvalidFrameException("Exception when parsing raw bytes to WebSocket frame", e);
+            throw new WebSocketException.InvalidFrameException("Exception when parsing raw bytes to WebSocket frame", e);
         }
     }
 
@@ -111,7 +111,7 @@ public abstract class WebSocketFrame implements Serializable, Externalizable {
 
     public static byte[] applyMask(byte[] payload, byte[] maskingKey) {
         if (maskingKey.length != 4) {
-            throw new InvalidFrameException("Masking key must be 4 bytes long");
+            throw new WebSocketException.InvalidFrameException("Masking key must be 4 bytes long");
         }
         byte[] result = new byte[payload.length];
         for (int i = 0; i < payload.length; i++) {

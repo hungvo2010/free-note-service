@@ -1,15 +1,12 @@
 package com.freenote.app.server.endpoints;
 
+import com.freenote.app.server.exceptions.WebSocketException;
 import com.freenote.app.server.model.connection.WebSocketConnection;
-import com.freenote.app.server.exceptions.ClientDisconnectException;
-import com.freenote.app.server.exceptions.ConnectionException;
-import com.freenote.app.server.exceptions.MessageParsingException;
 import com.freenote.app.server.frames.handler.WebSocketFrameHandler;
 import com.freenote.app.server.frames.ws.WebSocketFrame;
+import com.freenote.app.server.handshaker.http.HttpUgrade;
 import com.freenote.app.server.model.ws.NetworkResponseData;
-import com.freenote.app.server.model.http.HttpUpgradeRequest;
 import com.freenote.app.server.model.ws.NetworkRequestData;
-import com.freenote.app.server.parser.impl.InputStreamFrameParserImpl;
 import com.freenote.app.server.parser.WebSocketFrameParser;
 import com.freenote.app.server.endpoints.frames.WebSocketFrameDispatcher;
 import org.apache.logging.log4j.LogManager;
@@ -27,7 +24,7 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
     private final WebSocketFrameParser frameParser;
 
     public AbstractEndpointHandler() {
-        this.frameParser = new InputStreamFrameParserImpl();
+        this.frameParser = new WebSocketFrameParser.InputStreamFrameParserImpl();
     }
 
     protected AbstractEndpointHandler(WebSocketFrameParser frameParser) {
@@ -40,9 +37,8 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
         try {
             MetricUtils.getLatencyMetric().time(() -> this.serveConnection(networkRequestData, responseData));
             return true;
-        } catch (ConnectionException e) {
+        } catch (WebSocketException.ConnectionException e) {
             if (isClientDisconnect(e)) {
-                // Client tự đóng kết nối là chuyện bình thường -> không log stack trace (tránh log storm)
                 log.debug("Client disconnected: {}", e.getMessage());
             } else {
                 log.error("Error handling input stream", e);
@@ -53,10 +49,6 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
         }
     }
 
-    /**
-     * EOF / socket đã shutdown / connection reset = client đóng, không phải lỗi server.
-     * Những case này KHÔNG được log ở mức ERROR kèm stack trace.
-     */
     private boolean isClientDisconnect(Throwable throwable) {
         for (Throwable t = throwable; t != null; t = t.getCause()) {
             if (t instanceof EOFException || t instanceof SocketException) {
@@ -83,7 +75,7 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
             } else {
                 log.error("Error handling frame", e);
             }
-            throw new ConnectionException("Error handling frame", e);
+            throw new WebSocketException.ConnectionException("Error handling frame", e);
         }
     }
 
@@ -110,7 +102,7 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
         onData(webSocketConnection, message);
     }
 
-    private void handleErrorMessage(MessageParsingException e) {
+    private void handleErrorMessage(WebSocketException.MessageParsingException e) {
         log.error("Failed to parse message", e);
     }
 
@@ -129,14 +121,14 @@ public abstract class AbstractEndpointHandler implements URIEndpointHandler, Web
 
 
     @Override
-    public void onOpen(WebSocketConnection webSocketConnection, HttpUpgradeRequest handshake) {
+    public void onOpen(WebSocketConnection webSocketConnection, HttpUgrade.HttpUpgradeRequest handshake) {
 
     }
 
     @Override
     public void onClose(WebSocketConnection webSocketConnection, int code, String reason, boolean remote) {
         log.warn("Received CLOSE frame. No further processing.");
-        throw new ClientDisconnectException("Client sent CLOSE frame");
+        throw new WebSocketException.ClientDisconnectException("Client sent CLOSE frame");
     }
 
     @Override
